@@ -25,6 +25,7 @@ class SetupCore:
         self.default_model = config['default_model']
         self.output_dir = Path(config['output_dir'])
         self.project_path = self.output_dir / self.project_name
+        self.framework = config.get('framework', None)  # Optional framework selection
         
         # Setup Jinja2 environment
         template_dir = Path(__file__).parent / 'templates'
@@ -176,7 +177,25 @@ class SetupCore:
     def _generate_language_files(self):
         """Generate language-specific files."""
         if self.language == 'python':
-            requirements = self.jinja_env.get_template('python/requirements.txt.j2').render()
+            # Check if using FastAPI framework
+            if self.framework == 'fastapi':
+                requirements = self.jinja_env.get_template('python/fastapi_requirements.txt.j2').render()
+                # Create FastAPI project structure
+                (self.project_path / 'app').mkdir(exist_ok=True)
+                (self.project_path / 'app' / '__init__.py').touch()
+                (self.project_path / 'app' / 'api').mkdir(exist_ok=True)
+                (self.project_path / 'app' / 'api' / '__init__.py').touch()
+                (self.project_path / 'app' / 'core').mkdir(exist_ok=True)
+                (self.project_path / 'app' / 'core' / '__init__.py').touch()
+                (self.project_path / 'app' / 'models').mkdir(exist_ok=True)
+                (self.project_path / 'app' / 'models' / '__init__.py').touch()
+                (self.project_path / 'app' / 'schemas').mkdir(exist_ok=True)
+                (self.project_path / 'app' / 'schemas' / '__init__.py').touch()
+                (self.project_path / 'app' / 'services').mkdir(exist_ok=True)
+                (self.project_path / 'app' / 'services' / '__init__.py').touch()
+            else:
+                requirements = self.jinja_env.get_template('python/requirements.txt.j2').render()
+            
             (self.project_path / 'requirements.txt').write_text(requirements)
             
             # Create __init__.py files
@@ -243,6 +262,7 @@ class SetupCore:
         readme = self.jinja_env.get_template('README.md.j2').render(
             project_name=self.project_name,
             language=self.language,
+            framework=self.framework,
             agents=self.agents,
             has_claude_agent=any('claude' in agent for agent in self.agents)
         )
@@ -268,8 +288,19 @@ class SetupCore:
             (linter_configs_dir / 'pyproject.toml').write_text(pyproject_config)
             
         elif self.language in ['javascript', 'typescript']:
-            # Generate .eslintrc.json
-            eslint_config = self.jinja_env.get_template('javascript/.eslintrc.json.j2').render()
+            # Check if using React framework
+            if self.framework == 'react':
+                if self.language == 'typescript':
+                    eslint_config = self.jinja_env.get_template('typescript/.eslintrc.react.json.j2').render()
+                    # Also generate tsconfig.json
+                    tsconfig = self.jinja_env.get_template('typescript/tsconfig.json.j2').render()
+                    (self.project_path / 'tsconfig.json').write_text(tsconfig)
+                else:
+                    eslint_config = self.jinja_env.get_template('javascript/.eslintrc.react.json.j2').render()
+            else:
+                # Generate standard .eslintrc.json
+                eslint_config = self.jinja_env.get_template('javascript/.eslintrc.json.j2').render()
+            
             (linter_configs_dir / '.eslintrc.json').write_text(eslint_config)
             
             # Generate .prettierrc.json

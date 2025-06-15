@@ -32,6 +32,12 @@ def parse_arguments():
         help='Primary programming language for the project'
     )
     init_parser.add_argument(
+        '--framework',
+        type=str,
+        choices=['fastapi', 'react', 'nodejs', 'electron'],
+        help='Optional framework to use (e.g., fastapi for Python, react for JS/TS)'
+    )
+    init_parser.add_argument(
         '--agents',
         type=str,
         help='Comma-separated list of agents (e.g., poa,sma,deva_python,qaa,deva_claude_python)'
@@ -84,6 +90,30 @@ def interactive_mode():
     else:
         language = language_choice if language_choice in languages else 'python'
     
+    # Framework (optional)
+    print("\nAvailable frameworks (optional, press Enter to skip):")
+    framework_options = {
+        'python': ['fastapi'],
+        'javascript': ['react', 'nodejs', 'electron'],
+        'typescript': ['react', 'nodejs', 'electron']
+    }
+    
+    available_frameworks = framework_options.get(language, [])
+    framework = None
+    
+    if available_frameworks:
+        for i, fw in enumerate(available_frameworks, 1):
+            print(f"  {i}. {fw}")
+        
+        framework_choice = input("Select framework (number, name, or Enter to skip): ").strip()
+        if framework_choice:
+            if framework_choice.isdigit():
+                fw_idx = int(framework_choice) - 1
+                if 0 <= fw_idx < len(available_frameworks):
+                    framework = available_frameworks[fw_idx]
+            else:
+                framework = framework_choice if framework_choice in available_frameworks else None
+    
     # Agents
     print("\nAvailable agents:")
     print("  - poa (ProductOwnerAgent)")
@@ -126,6 +156,7 @@ def interactive_mode():
     return {
         'project_name': project_name,
         'language': language,
+        'framework': framework,
         'agents': agents,
         'llm_provider': llm_provider,
         'default_model': default_model,
@@ -151,6 +182,7 @@ def main():
             config = {
                 'project_name': args.project_name,
                 'language': args.language,
+                'framework': args.framework,
                 'agents': args.agents,
                 'llm_provider': args.llm_provider,
                 'default_model': args.default_model,

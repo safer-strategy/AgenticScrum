@@ -8,6 +8,27 @@ This project follows the AgenticScrum framework, combining Scrum methodologies w
 
 ## Project Structure
 
+{% if framework == 'fastapi' %}
+```
+{{ project_name }}/
+├── app/                      # FastAPI application
+│   ├── api/                  # API endpoints
+│   ├── core/                 # Core functionality (config, security)
+│   ├── models/               # Database models
+│   ├── schemas/              # Pydantic schemas
+│   └── services/             # Business logic
+├── agents/                   # AI agent configurations
+├── tests/                    # Test files
+├── docs/                     # Documentation
+├── standards/                # Coding standards and linter configs
+├── checklists/              # Quality checklists
+├── scripts/                 # Utility scripts
+├── init.sh                  # Environment management script
+├── docker-compose.yml       # Docker services configuration
+├── requirements.txt         # Python dependencies
+└── agentic_config.yaml      # AgenticScrum configuration
+```
+{% else %}
 ```
 {{ project_name }}/
 ├── agents/                   # AI agent configurations
@@ -24,6 +45,7 @@ This project follows the AgenticScrum framework, combining Scrum methodologies w
 ├── docker-compose.yml       # Docker services configuration
 └── agentic_config.yaml      # AgenticScrum configuration
 ```
+{% endif %}
 
 ## Getting Started
 
