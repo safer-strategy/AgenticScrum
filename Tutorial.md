@@ -476,4 +476,68 @@ When including the SecurityAuditAgent (SAA) in your project, you get automated s
    - Run SAA before QAAgent final review
    - Include security findings in sprint retrospectives
 
+### **Retrofitting an Existing Project**
+
+If you have an existing project and want to adopt AgenticScrum gradually, here's a quick example:
+
+#### **Step 1: Assess Your Project**
+
+```bash
+# From the AgenticScrum directory
+python scripts/retrofit_project.py assess --path ~/my-existing-project
+
+# This outputs:
+# - Detected languages and frameworks
+# - Complexity score
+# - Recommended timeline
+# - Risk assessment
+```
+
+#### **Step 2: Create Retrofit Plan**
+
+```bash
+python scripts/retrofit_project.py plan --path ~/my-existing-project
+```
+
+#### **Step 3: Initialize Agents**
+
+```bash
+# Start with just POA and one developer agent
+python scripts/retrofit_project.py init-agents \
+  --path ~/my-existing-project \
+  --languages python \
+  --frameworks django
+```
+
+#### **Step 4: Gradual Integration**
+
+1. **Week 1-2**: Use POA to manage new feature requests
+2. **Week 3-4**: Introduce DeveloperAgent for new code only
+3. **Week 5-6**: Add QAAgent for code reviews
+4. **Week 7+**: Expand to full agent ecosystem
+
+#### **Example: Adding AgenticScrum to a Django Project**
+
+```yaml
+# ~/my-django-project/agentic_config.yaml
+project_name: "MyDjangoApp"
+project_type: "retrofit"
+retrofit_mode: true
+
+existing_structure:
+  type: "django-standard"
+  source_dirs: ["myapp/", "api/", "core/"]
+  test_dirs: ["tests/"]
+  
+agents:
+  enabled: ["poa", "deva_python", "qaa"]
+  pilot_features: ["new-payment-api"]
+  
+integration:
+  ci_cd: "github-actions"
+  preserve_workflows: true
+```
+
+The agents will automatically learn your Django patterns and generate code that fits seamlessly with your existing codebase.
+
 Happy coding with AgenticScrum! 🚀

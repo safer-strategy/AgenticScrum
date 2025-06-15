@@ -43,6 +43,8 @@
 │   │   ├── qaa
 │   │   │   └── persona_rules.yaml.j2
 │   │   ├── README.md.j2
+│   │   ├── retrofit
+│   │   │   └── retrofit_persona_rules.yaml.j2
 │   │   ├── ruby
 │   │   │   └── Gemfile.j2
 │   │   ├── rust
@@ -63,13 +65,15 @@
 │       ├── test_security.py
 │       └── test_setup_core.py
 ├── checklists
-│   └── agent_feedback_form.md
+│   ├── agent_feedback_form.md
+│   └── retrofit_assessment.md
 ├── CLAUDE.md
 ├── Design.md
 ├── dir_tree.txt
 ├── docs
 │   ├── AGENT_OPTIMIZATION.md
-│   └── FEEDBACK_WORKFLOW.md
+│   ├── FEEDBACK_WORKFLOW.md
+│   └── RETROFITTING_GUIDE.md
 ├── EPIC_1_STORY_123.md
 ├── EPIC_1.STORY_124-127.md
 ├── init.sh
@@ -80,8 +84,9 @@
 ├── scripts
 │   ├── collect_agent_metrics.py
 │   ├── feedback_analyzer.py
+│   ├── retrofit_project.py
 │   └── update_agent_config.py
 ├── setup.py
 └── Tutorial.md
 
-25 directories, 60 files
+26 directories, 64 files

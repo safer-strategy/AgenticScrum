@@ -39,7 +39,7 @@ Templates are organized by purpose in `agentic_scrum_setup/templates/`:
 - `common/` - Shared files (init.sh, docker-compose.yml)
 - `checklists/` - Quality checklists for development workflow
 - `standards/` - Coding standards templates
-- Agent-specific directories (`poa/`, `sma/`, `qaa/`) - Individual agent persona configurations
+- Agent-specific directories (`poa/`, `sma/`, `deva_python/`, `qaa/`) - Individual agent persona configurations
 - Language-specific directories (`python/`, `javascript/`, `java/`, `go/`, `rust/`, `csharp/`, `php/`, `ruby/`)
 - Root-level templates (`.gitignore.j2`, `README.md.j2`, `agentic_config.yaml.j2`)
 
@@ -64,7 +64,7 @@ pytest
 # Run tests with coverage
 pytest --cov=agentic_scrum_setup
 
-# Run specific test file
+# Run tests with specific file
 pytest agentic_scrum_setup/tests/test_cli.py
 
 # Run specific test
@@ -143,6 +143,11 @@ python setup.py sdist bdist_wheel
 twine upload dist/*
 ```
 
+## Development Best Practices
+
+- Always run 'tree --gitignore > dir_tree.txt' when new files are created
+- Always git add commit and push
+
 ## Architecture Notes
 
 ### CLI Design
@@ -206,6 +211,32 @@ Comprehensive `.gitignore` generation with 600+ patterns covering:
 - AgenticScrum-specific directories (`.mcp_cache/`, `agent_outputs/`, `sprint_artifacts/`)
 - Cloud provider and security-related files
 
+## Retrofitting Existing Projects
+
+AgenticScrum supports gradual integration into existing codebases through the retrofitting system:
+
+### Assessment Script
+```bash
+python scripts/retrofit_project.py assess --path /path/to/project
+```
+- Analyzes languages, frameworks, structure, and complexity
+- Generates customized retrofit plan
+- Estimates timeline and identifies risks
+
+### Retrofit Templates
+Located in `agentic_scrum_setup/templates/retrofit/`:
+- `retrofit_persona_rules.yaml.j2` - Agent configuration that respects existing patterns
+- Templates include pattern matching and code style preservation
+
+### Key Retrofitting Features
+1. **Non-disruptive Integration**: Preserves existing structure and workflows
+2. **Pattern Learning**: Agents analyze and match existing code patterns
+3. **Phased Adoption**: Start with one agent, expand gradually
+4. **CI/CD Integration**: Works with existing pipelines
+5. **Team-Friendly**: Enhances rather than replaces current processes
+
+See [Retrofitting Guide](docs/RETROFITTING_GUIDE.md) for detailed instructions.
+
 ## Important Implementation Details
 
 1. **Template Loading**: Uses Jinja2 FileSystemLoader with trim_blocks and lstrip_blocks enabled for clean output
@@ -218,3 +249,4 @@ Comprehensive `.gitignore` generation with 600+ patterns covering:
 8. **Security**: Generates `.sample` files for sensitive configs and comprehensive `.gitignore` patterns
 9. **Framework Support**: Automatically adjusts project structure based on framework selection (FastAPI, Express, React, etc.)
 10. **Agent Optimization**: Feedback loop system allows continuous improvement of agent configurations based on performance metrics
+```

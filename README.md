@@ -11,6 +11,7 @@
 * [Key Features](#key-features)  
 * [Getting Started](#getting-started)  
   * [The Setup Utility](#the-setup-utility)  
+  * [Retrofitting Existing Projects](#retrofitting-existing-projects)  
 * [Project Directory Structure](#project-directory-structure)  
 * [The AgenticScrum Workflow](#the-agenticscrum-workflow)  
   * [Agent Personas & Rules](#agent-personas--rules)  
@@ -26,6 +27,7 @@
 * [Additional Resources](#additional-resources)  
   * [Conceptual Design Document](#conceptual-design-document)  
   * [Tutorial & Getting Started Guide](#tutorial--getting-started-guide)  
+  * [Retrofitting Guide](#retrofitting-guide)  
 * [Contributing](#contributing)  
 * [License](#license)
 
@@ -123,6 +125,32 @@ This command will:
 6. Scaffold checklist documents like definition\_of\_done.md.
 
 If run interactively (e.g., agentic-scrum-setup init), the CLI will prompt for necessary information.
+
+### **Retrofitting Existing Projects**
+
+AgenticScrum can be gradually integrated into existing codebases without disrupting current workflows. This approach is ideal for teams who want to leverage AI agents without starting from scratch.
+
+**Quick Start for Retrofitting:**
+
+```bash
+# Assess your existing project
+python scripts/retrofit_project.py assess --path /path/to/your/project
+
+# Generate a customized retrofit plan
+python scripts/retrofit_project.py plan --path /path/to/your/project
+
+# Initialize agents for your specific tech stack
+python scripts/retrofit_project.py init-agents --path /path/to/your/project \
+  --languages python,javascript --frameworks django,react
+```
+
+**Key Benefits of Retrofitting:**
+- **Non-disruptive integration** - Keep your existing structure and workflows
+- **Gradual adoption** - Start with one agent, expand as comfortable
+- **Respect existing patterns** - Agents learn and match your code style
+- **Preserve team dynamics** - Enhance rather than replace current processes
+
+For detailed retrofitting instructions, see the [Retrofitting Guide](docs/RETROFITTING_GUIDE.md).
 
 ## **Project Directory Structure**
 
@@ -354,6 +382,16 @@ If you're looking for a hands-on, step-by-step guide to building your first Agen
 * Creating an Electron + React frontend
 * Integrating with Docker for containerized development
 * Practical examples of using AgenticScrum agents in development
+
+### **Retrofitting Guide**
+
+For teams with existing projects who want to adopt AgenticScrum incrementally, see the [Retrofitting Guide](docs/RETROFITTING_GUIDE.md). This guide covers:
+
+* Assessing your existing codebase for AgenticScrum compatibility
+* Creating a phased adoption plan
+* Configuring agents to respect existing patterns
+* Integrating with current CI/CD pipelines
+* Managing the transition with minimal disruption
 
 ## **Contributing**
 
