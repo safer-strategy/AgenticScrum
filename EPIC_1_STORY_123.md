@@ -5,7 +5,7 @@
 **Epic:** 01 - AgenticScrum Core Configuration
 **Story Points:** 3
 **Priority:** P1 (High - Enables best-practice integration for a key AI model and local environment)
-**Status:** To Do
+**Status:** Done
 **Assigned To:** [Developer Name]
 **Created:** 2025-06-13
 **Last Update:** 2025-06-13 20:47
@@ -17,20 +17,20 @@
 ## 🎯 Acceptance Criteria
 
 ### Persona & Configuration Generation
-- [ ] **Claude Agent Scaffolding**: When initializing a project with a Claude developer agent (e.g., `... --agents deva_claude_python`), the utility MUST create a dedicated directory under `agents/developer_agent/claude_python_expert/`.
-- [ ] [cite_start]**`CLAUDE.md` Generation**: The utility MUST generate a `CLAUDE.md` file in the project's root directory. [cite: 1]
-- [ ] [cite_start]**Persona Rules Update**: The generated `persona_rules.yaml` for the Claude agent MUST include a specific rule instructing it to always consult the root `CLAUDE.md` file. [cite: 1]
-- [ ] [cite_start]**MCP Configuration**: The utility MUST generate a template `.mcp.json` file in the project root to configure Model Context Protocol servers. [cite: 1]
+- [x] **Claude Agent Scaffolding**: When initializing a project with a Claude developer agent (e.g., `... --agents deva_claude_python`), the utility MUST create a dedicated directory under `agents/developer_agent/claude_python_expert/`.
+- [x] [cite_start]**`CLAUDE.md` Generation**: The utility MUST generate a `CLAUDE.md` file in the project's root directory. [cite: 1]
+- [x] [cite_start]**Persona Rules Update**: The generated `persona_rules.yaml` for the Claude agent MUST include a specific rule instructing it to always consult the root `CLAUDE.md` file. [cite: 1]
+- [x] [cite_start]**MCP Configuration**: The utility MUST generate a template `.mcp.json` file in the project root to configure Model Context Protocol servers. [cite: 1]
 
 ### **Environment Scripting (New)**
-- [ ] **`init.sh` Generation**: The utility MUST generate a themed `init.sh` script in the project's root directory.
-- [ ] **Executable Permissions**: The generated `init.sh` script MUST have execute permissions set (`chmod +x`).
-- [ ] **Variable Project Name**: The `init.sh` script MUST use the project name provided during setup as a shell variable for display purposes.
-- [ ] **Idempotent Actions**: The script's actions (e.g., starting services) MUST be idempotent.
-- [ ] **`docker-compose.yml` Generation**: The utility MUST generate a placeholder `docker-compose.yml` file in the root directory that the `init.sh` script can use.
+- [x] **`init.sh` Generation**: The utility MUST generate a themed `init.sh` script in the project's root directory.
+- [x] **Executable Permissions**: The generated `init.sh` script MUST have execute permissions set (`chmod +x`).
+- [x] **Variable Project Name**: The `init.sh` script MUST use the project name provided during setup as a shell variable for display purposes.
+- [x] **Idempotent Actions**: The script's actions (e.g., starting services) MUST be idempotent.
+- [x] **`docker-compose.yml` Generation**: The utility MUST generate a placeholder `docker-compose.yml` file in the root directory that the `init.sh` script can use.
 
 ### Documentation & Multi-Agent Workflow
-- [ ] [cite_start]**Multi-Agent Guide**: A section MUST be added to the root `README.md` explaining how to run multiple Claude agents concurrently using techniques like `git worktree`. [cite: 1]
+- [x] [cite_start]**Multi-Agent Guide**: A section MUST be added to the root `README.md` explaining how to run multiple Claude agents concurrently using techniques like `git worktree`. [cite: 1]
 
 ## 🔧 Technical Implementation Details
 
@@ -204,13 +204,13 @@ main "$@"
 ### Testing Requirements
 
 #### Unit Tests:
-- [ ] **(New)** Verify `init.sh` is generated with executable permissions.
-- [ ] **(New)** Verify the project name variable in `init.sh` matches the input.
-- [ ] **(New)** Verify `docker-compose.yml` is generated with the correct project name in the container name.
+- [x] **(New)** Verify `init.sh` is generated with executable permissions.
+- [x] **(New)** Verify the project name variable in `init.sh` matches the input.
+- [x] **(New)** Verify `docker-compose.yml` is generated with the correct project name in the container name.
 
 #### Integration Tests:
-- [ ] Run the `init` command end-to-end and inspect the full generated project to ensure all files (`init.sh`, `docker-compose.yml`, Claude-specific files) are present and correctly configured.
+- [x] Run the `init` command end-to-end and inspect the full generated project to ensure all files (`init.sh`, `docker-compose.yml`, Claude-specific files) are present and correctly configured.
 
 #### Manual Testing Scenarios:
-- [ ] Initialize a project, navigate into the directory, and run `./init.sh help` to confirm the themed output works.
+- [x] Initialize a project, navigate into the directory, and run `./init.sh help` to confirm the themed output works.
 - [ ] Run `./init.sh up` and `./init.sh down` to test the Docker commands (assuming Docker is installed).

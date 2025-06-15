@@ -30,7 +30,9 @@ Templates are organized by purpose in `agentic_scrum_setup/templates/`:
 - `common/` - Shared files (init.sh, docker-compose.yml)
 - `checklists/` - Quality checklists for development workflow
 - `standards/` - Coding standards templates
-- Language-specific directories (`python/`, `javascript/`)
+- Agent-specific directories (`poa/`, `sma/`, `qaa/`) - Individual agent persona configurations
+- Language-specific directories (`python/`, `javascript/`, `java/`, `go/`, `rust/`, `csharp/`, `php/`, `ruby/`)
+- Root-level templates (`.gitignore.j2`, `README.md.j2`, `agentic_config.yaml.j2`)
 
 ## Development Commands
 
@@ -79,7 +81,7 @@ mypy agentic_scrum_setup/
 # Run in interactive mode
 agentic-scrum-setup init
 
-# Run with all arguments
+# Run with all arguments - supports 9 languages
 agentic-scrum-setup init \
   --project-name "MyProject" \
   --language python \
@@ -87,6 +89,9 @@ agentic-scrum-setup init \
   --llm-provider anthropic \
   --default-model claude-3-opus-20240229 \
   --output-dir ./projects
+
+# Supported languages: python, javascript, typescript, java, go, rust, csharp, php, ruby
+# Supported agents: poa, sma, deva_python, deva_javascript, deva_claude_python, qaa
 ```
 
 ### Building and Distribution
@@ -116,12 +121,33 @@ All project files are generated using Jinja2 templates with the following contex
 The `init.sh` script is automatically made executable using proper Unix permissions (setup_core.py:116). This is tested in test_setup_core.py:74.
 
 ### Agent Configuration
-Agents are mapped to directory structures in setup_core.py:94. Claude-specific agents get specialized templates from the `claude/` directory.
+Agents are mapped to directory structures in setup_core.py:94. Claude-specific agents get specialized templates from the `claude/` directory. Each agent type (POA, SMA, QAA) has dedicated persona_rules.yaml templates with role-specific capabilities and rules.
+
+### Language-Specific File Generation
+The framework automatically generates appropriate dependency and configuration files based on the selected language:
+- Python: `requirements.txt` and `__init__.py` files
+- JavaScript/TypeScript: `package.json` with appropriate dependencies
+- Java: `pom.xml` with Maven configuration and standard directory structure
+- Go: `go.mod` with module definition
+- Rust: `Cargo.toml` with package configuration and `src/main.rs`
+- C#: `.csproj` file with .NET configuration
+- PHP: `composer.json` with PSR-4 autoloading
+- Ruby: `Gemfile` with development dependencies
+
+### .gitignore Management
+Comprehensive `.gitignore` generation with 600+ patterns covering:
+- Language-specific build artifacts and dependencies
+- IDE and editor temporary files
+- Framework-specific patterns (Django, Laravel, React, etc.)
+- AgenticScrum-specific directories (`.mcp_cache/`, `agent_outputs/`, `sprint_artifacts/`)
+- Cloud provider and security-related files
 
 ## Important Implementation Details
 
 1. **Template Loading**: Uses Jinja2 FileSystemLoader with trim_blocks and lstrip_blocks enabled for clean output
 2. **Error Handling**: CLI provides user-friendly error messages and falls back to interactive mode gracefully
 3. **Extensibility**: New languages and agents can be added by creating appropriate templates
-4. **Testing**: Comprehensive test coverage including CLI parsing, file generation, and permissions
-5. **Package Distribution**: Includes all templates via MANIFEST.in configuration
+4. **MCP Integration**: Generates `.mcp.json` configuration for Claude Code integration when Claude agents are selected
+5. **File Permissions**: Automatically sets executable permissions on generated scripts (init.sh)
+6. **Testing**: Comprehensive test coverage including CLI parsing, file generation, and permissions
+7. **Package Distribution**: Includes all templates via MANIFEST.in configuration

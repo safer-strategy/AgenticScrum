@@ -254,6 +254,28 @@ class SetupCore:
         )
         (self.project_path / 'standards' / 'coding_standards.md').write_text(coding_standards)
         
+        # Generate linter configurations
+        linter_configs_dir = self.project_path / 'standards' / 'linter_configs'
+        linter_configs_dir.mkdir(parents=True, exist_ok=True)
+        
+        if self.language == 'python':
+            # Generate .flake8
+            flake8_config = self.jinja_env.get_template('python/.flake8.j2').render()
+            (linter_configs_dir / '.flake8').write_text(flake8_config)
+            
+            # Generate pyproject.toml
+            pyproject_config = self.jinja_env.get_template('python/pyproject.toml.j2').render()
+            (linter_configs_dir / 'pyproject.toml').write_text(pyproject_config)
+            
+        elif self.language in ['javascript', 'typescript']:
+            # Generate .eslintrc.json
+            eslint_config = self.jinja_env.get_template('javascript/.eslintrc.json.j2').render()
+            (linter_configs_dir / '.eslintrc.json').write_text(eslint_config)
+            
+            # Generate .prettierrc.json
+            prettier_config = self.jinja_env.get_template('javascript/.prettierrc.json.j2').render()
+            (linter_configs_dir / '.prettierrc.json').write_text(prettier_config)
+        
         # Generate checklists
         checklists = [
             'definition_of_done.md',
