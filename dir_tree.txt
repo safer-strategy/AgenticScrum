@@ -1,0 +1,87 @@
+.
+├── agentic_scrum_setup
+│   ├── cli.py
+│   ├── setup_core.py
+│   ├── templates
+│   │   ├── agentic_config.yaml.j2
+│   │   ├── agentic_config.yaml.sample.j2
+│   │   ├── checklists
+│   │   │   ├── code_review_checklist.md.j2
+│   │   │   ├── definition_of_done.md.j2
+│   │   │   ├── security_audit_checklist.md.j2
+│   │   │   └── sprint_planning_checklist.md.j2
+│   │   ├── claude
+│   │   │   ├── CLAUDE.md.j2
+│   │   │   └── persona_rules.yaml.j2
+│   │   ├── common
+│   │   │   ├── docker-compose.yml.j2
+│   │   │   └── init.sh.j2
+│   │   ├── csharp
+│   │   │   └── project.csproj.j2
+│   │   ├── docs
+│   │   │   └── SECURITY.md.j2
+│   │   ├── generic_persona_rules.yaml.j2
+│   │   ├── generic_priming_script.md.j2
+│   │   ├── go
+│   │   │   └── go.mod.j2
+│   │   ├── java
+│   │   │   ├── pom.xml.j2
+│   │   │   └── spring_pom.xml.j2
+│   │   ├── javascript
+│   │   │   ├── express_package.json.j2
+│   │   │   ├── package.json.j2
+│   │   │   └── react_package.json.j2
+│   │   ├── persona_rules_advanced.yaml.j2
+│   │   ├── php
+│   │   │   └── composer.json.j2
+│   │   ├── poa
+│   │   │   └── persona_rules.yaml.j2
+│   │   ├── python
+│   │   │   ├── fastapi_requirements.txt.j2
+│   │   │   ├── pyproject.toml.j2
+│   │   │   └── requirements.txt.j2
+│   │   ├── qaa
+│   │   │   └── persona_rules.yaml.j2
+│   │   ├── README.md.j2
+│   │   ├── ruby
+│   │   │   └── Gemfile.j2
+│   │   ├── rust
+│   │   │   └── Cargo.toml.j2
+│   │   ├── saa
+│   │   │   ├── persona_rules.yaml.j2
+│   │   │   └── priming_script.md.j2
+│   │   ├── sma
+│   │   │   └── persona_rules.yaml.j2
+│   │   ├── standards
+│   │   │   └── coding_standards.md.j2
+│   │   └── typescript
+│   │       └── tsconfig.json.j2
+│   └── tests
+│       ├── test_cli.py
+│       ├── test_framework_support.py
+│       ├── test_security_audit_agent.py
+│       ├── test_security.py
+│       └── test_setup_core.py
+├── checklists
+│   └── agent_feedback_form.md
+├── CLAUDE.md
+├── Design.md
+├── dir_tree.txt
+├── docs
+│   ├── AGENT_OPTIMIZATION.md
+│   └── FEEDBACK_WORKFLOW.md
+├── EPIC_1_STORY_123.md
+├── EPIC_1.STORY_124-127.md
+├── init.sh
+├── LICENSE
+├── MANIFEST.in
+├── README.md
+├── requirements-dev.txt
+├── scripts
+│   ├── collect_agent_metrics.py
+│   ├── feedback_analyzer.py
+│   └── update_agent_config.py
+├── setup.py
+└── Tutorial.md
+
+25 directories, 60 files
