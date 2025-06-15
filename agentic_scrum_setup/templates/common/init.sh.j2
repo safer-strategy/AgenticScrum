@@ -1,0 +1,119 @@
+#!/bin/bash
+
+# -----------------------------------------------------------------------------
+# Init Script for the '{{ project_name }}' project
+#
+# This script provides a centralized place to manage the development
+# environment, including Docker services, testing, and other utilities.
+# -----------------------------------------------------------------------------
+
+# --- Configuration ---
+PROJECT_NAME="{{ project_name }}"
+
+# --- Theme & Colors ---
+C_RESET='\033[0m'
+C_BLACK='\033[0;30m'
+C_RED='\033[0;31m'
+C_GREEN='\033[0;32m'
+C_YELLOW='\033[0;33m'
+C_BLUE='\033[0;34m'
+C_PURPLE='\033[0;35m'
+C_CYAN='\033[0;36m'
+C_WHITE='\033[0;37m'
+C_BOLD='\033[1m'
+
+# --- Helper Functions ---
+function header() {
+  echo -e "${C_PURPLE}${C_BOLD}"
+  echo "    ___    __  __   ____   _____   ____    ___    _   _ "
+  echo "   / __|  |  \/  | |  _ \  | ____| |  _ \  / __|  | | | |"
+  echo "  | |     | |\/| | | |_) | |  _|   | |_) | \_ \  | |_| |"
+  echo "  | |___  | |  | | |  __/  | |___  |  _ <  |___/  |  _  |"
+  echo "   \___|  |_|  |_| |_|     |_____| |_| \_\ ____/  |_| |_|"
+  echo ""
+  echo -e "      >> Welcome to the ${PROJECT_NAME} Environment Manager <<      "
+  echo -e "${C_RESET}"
+}
+
+function info() {
+  echo -e "${C_BLUE}${C_BOLD}INFO:${C_RESET} $1"
+}
+
+function success() {
+  echo -e "${C_GREEN}${C_BOLD}SUCCESS:${C_RESET} $1"
+}
+
+function error() {
+  echo -e "${C_RED}${C_BOLD}ERROR:${C_RESET} $1"
+}
+
+# --- Core Functions ---
+function start_services() {
+  info "Starting Docker services in detached mode..."
+  if docker-compose up -d --build; then
+    success "Services are up and running."
+  else
+    error "Failed to start Docker services."
+    exit 1
+  fi
+}
+
+function stop_services() {
+  info "Stopping Docker services..."
+  if docker-compose down; then
+    success "Services have been stopped."
+  else
+    error "Failed to stop Docker services."
+  fi
+}
+
+function show_logs() {
+  info "Tailing logs for all services. Press Ctrl+C to exit."
+  docker-compose logs -f
+}
+
+function run_tests() {
+  info "Running tests inside the app container..."
+  # Modify 'app' and the test command as needed
+  if docker-compose exec app pytest; then
+    success "All tests passed."
+  else
+    error "Tests failed."
+  fi
+}
+
+function show_help() {
+  header
+  echo "Usage: ./init.sh [command]"
+  echo ""
+  echo "Commands:"
+  echo -e "  ${C_YELLOW}up${C_RESET}         - Build and start all Docker services."
+  echo -e "  ${C_YELLOW}down${C_RESET}       - Stop and remove all Docker services."
+  echo -e "  ${C_YELLOW}logs${C_RESET}       - Tail the logs from all running services."
+  echo -e "  ${C_YELLOW}test${C_RESET}       - Run the test suite within the Docker container."
+  echo -e "  ${C_YELLOW}help${C_RESET}       - Show this help message."
+  echo ""
+}
+
+# --- Main Dispatcher ---
+function main() {
+  case "$1" in
+    up)
+      start_services
+      ;;
+    down)
+      stop_services
+      ;;
+    logs)
+      show_logs
+      ;;
+    test)
+      run_tests
+      ;;
+    help|*)
+      show_help
+      ;;
+  esac
+}
+
+main "$@"

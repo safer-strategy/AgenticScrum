@@ -1,0 +1,94 @@
+# Code Review Checklist - {{ project_name }}
+
+Use this checklist when reviewing code submissions to ensure quality and consistency.
+
+## Functionality
+- [ ] Code accomplishes the intended goal
+- [ ] All acceptance criteria are met
+- [ ] No obvious bugs or logic errors
+- [ ] Edge cases are handled appropriately
+- [ ] Error handling is comprehensive
+
+## Code Quality
+- [ ] Code follows project coding standards
+- [ ] Naming is clear and consistent
+- [ ] No code duplication (DRY principle)
+- [ ] Functions/methods are focused (single responsibility)
+- [ ] Code complexity is reasonable
+
+## Testing
+- [ ] Adequate test coverage for new code
+- [ ] Tests are clear and test the right things
+- [ ] Tests follow AAA pattern (Arrange, Act, Assert)
+- [ ] Both positive and negative test cases included
+- [ ] Tests run successfully
+
+## Performance
+- [ ] No obvious performance issues
+- [ ] Efficient algorithms used
+- [ ] Database queries are optimized
+- [ ] No memory leaks
+- [ ] Caching used appropriately
+
+## Security
+- [ ] Input validation is present
+- [ ] No hardcoded secrets or credentials
+- [ ] SQL injection prevention (parameterized queries)
+- [ ] XSS prevention (proper escaping)
+- [ ] Authentication/authorization checks in place
+
+## Maintainability
+- [ ] Code is self-documenting
+- [ ] Complex sections have comments
+- [ ] No dead code
+- [ ] Dependencies are justified
+- [ ] Breaking changes are documented
+
+## Architecture
+- [ ] Follows established patterns
+- [ ] Proper separation of concerns
+- [ ] Interfaces used appropriately
+- [ ] No circular dependencies
+- [ ] Scalability considered
+
+## Documentation
+- [ ] Function/method documentation complete
+- [ ] README updated if needed
+- [ ] API documentation current
+- [ ] Configuration changes documented
+- [ ] Migration guides provided (if breaking changes)
+
+## AI-Generated Code Specific
+- [ ] No hallucinated imports or APIs
+- [ ] Generated code matches project style
+- [ ] Integration points are correct
+- [ ] No unnecessary complexity
+- [ ] Comments explain any non-obvious AI decisions
+
+## Final Checks
+- [ ] Build passes
+- [ ] Linter passes
+- [ ] No merge conflicts
+- [ ] Commit messages are clear
+- [ ] PR description explains changes
+
+## Review Feedback Template
+```
+### Overall Assessment
+[Approved/Needs Changes/Rejected]
+
+### Strengths
+- [What was done well]
+
+### Required Changes
+- [ ] [Critical issues that must be fixed]
+
+### Suggestions
+- [Optional improvements]
+
+### Questions
+- [Clarifications needed]
+```
+
+---
+*Remember: Code reviews should be constructive and focus on the code, not the coder.*

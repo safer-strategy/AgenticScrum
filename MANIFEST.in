@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include MANIFEST.in
+recursive-include agentic_scrum_setup/templates *.j2
+global-exclude __pycache__
+global-exclude *.py[co]

@@ -1,0 +1,26 @@
+# AgenticScrum Configuration
+project:
+  name: "{{ project_name }}"
+  language: "{{ language }}"
+  created: "{{ now().strftime('%Y-%m-%d') }}"
+
+llm:
+  provider: "{{ llm_provider }}"
+  default_model: "{{ default_model }}"
+  api_key: "${{{ llm_provider|upper }}_API_KEY}"  # Set as environment variable
+
+agents:
+{% for agent in agents %}
+  - {{ agent }}
+{% endfor %}
+
+settings:
+  auto_save: true
+  verbose_logging: false
+  test_before_commit: true
+  
+directories:
+  source: "src"
+  tests: "tests"
+  docs: "docs"
+  agents: "agents"

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>{{ project_name|replace(' ', '') }}</AssemblyName>
+    <RootNamespace>{{ project_name|replace(' ', '') }}</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Add your project dependencies here -->
+    <!-- Example: <PackageReference Include="Newtonsoft.Json" Version="13.0.3" /> -->
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <!-- Development dependencies -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
+    <PackageReference Include="xunit" Version="2.4.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" />
+    <PackageReference Include="Moq" Version="4.20.69" />
+  </ItemGroup>
+
+</Project>

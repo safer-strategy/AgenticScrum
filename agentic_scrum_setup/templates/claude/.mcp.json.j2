@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/{{ project_name }}"],
+      "description": "Filesystem access for the {{ project_name }} project"
+    },
+    "git": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git"],
+      "description": "Git operations for version control"
+    }
+  },
+  "projectContext": {
+    "name": "{{ project_name }}",
+    "description": "AgenticScrum-powered {{ language }} project",
+    "rootPath": "/{{ project_name }}",
+    "primaryLanguage": "{{ language }}",
+    "aiAgents": {{ agents | tojson }}
+  }
+}

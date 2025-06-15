@@ -1,0 +1,15 @@
+# docker-compose.yml
+# Placeholder for project services.
+# The init.sh script uses this file to manage the development environment.
+
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: {{ project_name | lower | replace(' ', '_') }}_app
+    ports:
+      - "8000:8000" # Example port mapping
+    volumes:
+      - ./src:/app/src # Mount your source code
+    # command: python src/main.py # Example command

@@ -1,0 +1,408 @@
+# Coding Standards for {{ project_name }}
+
+## Overview
+This document defines the coding standards and best practices for the {{ project_name }} project. All code contributions must adhere to these standards.
+
+## General Principles
+
+1. **Readability**: Code should be written for humans to read, not just machines to execute
+2. **Simplicity**: Favor simple, clear solutions over clever, complex ones
+3. **Consistency**: Follow established patterns and conventions throughout the codebase
+4. **Testability**: Write code that is easy to test and maintain
+
+## {{ language|title }}-Specific Standards
+
+{% if language == 'python' %}
+### Python Standards
+
+#### Style Guide
+- Follow PEP 8 for code style
+- Use Black for automatic code formatting
+- Maximum line length: 88 characters (Black default)
+
+#### Naming Conventions
+- Functions and variables: `snake_case`
+- Classes: `PascalCase`
+- Constants: `UPPER_SNAKE_CASE`
+- Private methods/attributes: prefix with single underscore `_private_method`
+
+#### Type Hints
+- Use type hints for all function signatures
+- Use `from typing import` for complex types
+- Example:
+  ```python
+  def calculate_total(items: List[Dict[str, float]]) -> float:
+      return sum(item['price'] for item in items)
+  ```
+
+#### Docstrings
+- Use Google-style docstrings for all public functions and classes
+- Include parameter types and return types
+- Example:
+  ```python
+  def process_data(data: str, validate: bool = True) -> Dict[str, Any]:
+      """Process input data and return structured result.
+      
+      Args:
+          data: Raw input data string
+          validate: Whether to validate input (default: True)
+          
+      Returns:
+          Processed data as dictionary
+          
+      Raises:
+          ValueError: If data is invalid and validate=True
+      """
+  ```
+
+{% elif language == 'javascript' %}
+### JavaScript Standards
+
+#### Style Guide
+- Use ESLint with Airbnb configuration
+- Use Prettier for code formatting
+- Semicolons: Required
+- Quotes: Single quotes for strings
+
+#### Naming Conventions
+- Functions and variables: `camelCase`
+- Classes and constructors: `PascalCase`
+- Constants: `UPPER_SNAKE_CASE`
+- Private methods: prefix with underscore `_privateMethod`
+
+#### Modern JavaScript
+- Use ES6+ features (arrow functions, destructuring, template literals)
+- Prefer `const` over `let`, avoid `var`
+- Use async/await over Promise chains
+
+#### Documentation
+- Use JSDoc for all exported functions and classes
+- Example:
+  ```javascript
+  /**
+   * Calculate the total price of items
+   * @param {Array<{price: number}>} items - Array of items with prices
+   * @returns {number} Total price
+   */
+  const calculateTotal = (items) => {
+    return items.reduce((sum, item) => sum + item.price, 0);
+  };
+  ```
+
+{% elif language == 'typescript' %}
+### TypeScript Standards
+
+#### Style Guide
+- Use ESLint with TypeScript plugin
+- Use Prettier for code formatting
+- Strict mode: enabled in tsconfig.json
+
+#### Type Definitions
+- Avoid `any` type - use `unknown` if type is truly unknown
+- Define interfaces for object shapes
+- Use enums for fixed sets of values
+- Example:
+  ```typescript
+  interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: UserRole;
+  }
+  
+  enum UserRole {
+    Admin = 'ADMIN',
+    User = 'USER',
+    Guest = 'GUEST'
+  }
+  ```
+
+#### Naming Conventions
+- Same as JavaScript, plus:
+- Interfaces: `PascalCase` without `I` prefix
+- Type aliases: `PascalCase`
+- Enums: `PascalCase` with `PascalCase` values
+
+{% elif language == 'java' %}
+### Java Standards
+
+#### Style Guide
+- Follow Oracle Java Code Conventions
+- Use Checkstyle for automated style checking
+- Line length: 120 characters maximum
+- Indentation: 4 spaces (no tabs)
+
+#### Naming Conventions
+- Classes: `PascalCase`
+- Methods and variables: `camelCase`
+- Constants: `UPPER_SNAKE_CASE`
+- Packages: `lowercase.with.dots`
+
+#### Code Organization
+- One public class per file
+- Package structure follows domain organization
+- Imports organized: java.*, javax.*, then third-party, then local
+- Example:
+  ```java
+  public class UserService {
+      private static final int MAX_RETRY_ATTEMPTS = 3;
+      
+      public Optional<User> findUserById(Long userId) {
+          // Implementation
+      }
+  }
+  ```
+
+#### Documentation
+- Use Javadoc for all public methods and classes
+- Include @param, @return, and @throws annotations
+
+{% elif language == 'go' %}
+### Go Standards
+
+#### Style Guide
+- Follow official Go formatting with `gofmt`
+- Use `golint` and `go vet` for code quality
+- Effective Go guidelines compliance
+
+#### Naming Conventions
+- Exported functions/types: `PascalCase`
+- Unexported functions/types: `camelCase`
+- Constants: `PascalCase` or `camelCase`
+- Interfaces: Often end with `-er` (e.g., `Reader`, `Writer`)
+
+#### Code Organization
+- Package names: short, lowercase, no underscores
+- One package per directory
+- Example:
+  ```go
+  type UserService struct {
+      repo UserRepository
+  }
+  
+  func (s *UserService) FindUser(id string) (*User, error) {
+      // Implementation
+  }
+  ```
+
+#### Error Handling
+- Always handle errors explicitly
+- Use meaningful error messages
+- Wrap errors with context when appropriate
+
+{% elif language == 'rust' %}
+### Rust Standards
+
+#### Style Guide
+- Use `rustfmt` for automatic formatting
+- Use `clippy` for linting
+- Follow official Rust style guidelines
+
+#### Naming Conventions
+- Functions and variables: `snake_case`
+- Types and traits: `PascalCase`
+- Constants and statics: `SCREAMING_SNAKE_CASE`
+- Modules: `snake_case`
+
+#### Code Organization
+- Use modules to organize code
+- Prefer composition over inheritance
+- Example:
+  ```rust
+  pub struct UserService {
+      repository: Box<dyn UserRepository>,
+  }
+  
+  impl UserService {
+      pub fn find_user(&self, id: &str) -> Result<User, UserError> {
+          // Implementation
+      }
+  }
+  ```
+
+#### Safety and Performance
+- Prefer owned types over borrowed when appropriate
+- Use `Option` and `Result` for error handling
+- Avoid `unwrap()` in production code
+
+{% elif language == 'csharp' %}
+### C# Standards
+
+#### Style Guide
+- Follow Microsoft C# Coding Conventions
+- Use PascalCase for public members
+- Use camelCase for private members
+- Use EditorConfig and StyleCop analyzers
+
+#### Naming Conventions
+- Classes, methods, properties: `PascalCase`
+- Local variables, parameters: `camelCase`
+- Private fields: `_camelCase` with underscore prefix
+- Constants: `PascalCase`
+
+#### Code Organization
+- One class per file (generally)
+- Organize using statements alphabetically
+- Example:
+  ```csharp
+  public class UserService
+  {
+      private readonly IUserRepository _userRepository;
+      
+      public async Task<User> GetUserAsync(int userId)
+      {
+          // Implementation
+      }
+  }
+  ```
+
+#### Documentation
+- Use XML documentation comments for public APIs
+- Include <summary>, <param>, and <returns> tags
+
+{% elif language == 'php' %}
+### PHP Standards
+
+#### Style Guide
+- Follow PSR-12 coding standard
+- Use PHP_CodeSniffer for automated checking
+- PHP 8.1+ features preferred
+
+#### Naming Conventions
+- Classes: `PascalCase`
+- Methods and properties: `camelCase`
+- Constants: `UPPER_SNAKE_CASE`
+- Variables: `$camelCase`
+
+#### Code Organization
+- Follow PSR-4 autoloading standard
+- One class per file
+- Example:
+  ```php
+  <?php
+  
+  declare(strict_types=1);
+  
+  namespace App\Service;
+  
+  class UserService
+  {
+      public function __construct(
+          private UserRepository $userRepository
+      ) {}
+      
+      public function findUser(int $userId): ?User
+      {
+          // Implementation
+      }
+  }
+  ```
+
+#### Type Declarations
+- Use strict types declaration
+- Type hint all parameters and return values
+- Use nullable types when appropriate
+
+{% elif language == 'ruby' %}
+### Ruby Standards
+
+#### Style Guide
+- Follow Ruby Style Guide (Rubocop)
+- Use 2 spaces for indentation
+- Maximum line length: 120 characters
+
+#### Naming Conventions
+- Classes and modules: `PascalCase`
+- Methods and variables: `snake_case`
+- Constants: `UPPER_SNAKE_CASE`
+- Files: `snake_case.rb`
+
+#### Code Organization
+- One class per file (generally)
+- Use modules for namespacing
+- Example:
+  ```ruby
+  class UserService
+    def initialize(user_repository)
+      @user_repository = user_repository
+    end
+    
+    def find_user(user_id)
+      # Implementation
+    end
+    
+    private
+    
+    attr_reader :user_repository
+  end
+  ```
+
+#### Ruby Idioms
+- Prefer blocks and iterators over loops
+- Use `attr_reader`, `attr_writer`, `attr_accessor` appropriately
+- Follow "duck typing" principles
+
+{% endif %}
+
+## Code Organization
+
+### File Structure
+- One class/module per file
+- Group related functionality in directories
+- Keep files focused and under 300 lines
+
+### Import Organization
+1. Standard library imports
+2. Third-party imports
+3. Local application imports
+4. Separate groups with blank lines
+
+## Error Handling
+
+- Always handle potential errors explicitly
+- Provide meaningful error messages
+- Log errors appropriately
+- Never silently catch and ignore errors
+
+## Testing Standards
+
+- Minimum 80% code coverage
+- Write tests before or alongside implementation
+- Test file naming: `[filename].test.{{ 'py' if language == 'python' else 'js' if language in ['javascript', 'typescript'] else language }}`
+- Use descriptive test names that explain what is being tested
+
+## Version Control
+
+- Write clear, descriptive commit messages
+- Keep commits focused on a single change
+- Reference issue numbers in commits when applicable
+- Follow conventional commits format:
+  - `feat:` for new features
+  - `fix:` for bug fixes
+  - `docs:` for documentation changes
+  - `refactor:` for code refactoring
+  - `test:` for test additions/changes
+
+## Security Guidelines
+
+- Never commit sensitive data (API keys, passwords)
+- Validate all input data
+- Use parameterized queries for database operations
+- Keep dependencies up to date
+
+## Performance Considerations
+
+- Profile before optimizing
+- Document any performance-critical code
+- Avoid premature optimization
+- Consider algorithmic complexity
+
+## Review Checklist
+
+Before submitting code for review, ensure:
+- [ ] Code follows these standards
+- [ ] All tests pass
+- [ ] New code has appropriate tests
+- [ ] Documentation is updated
+- [ ] No debugging code remains
+- [ ] Code has been linted

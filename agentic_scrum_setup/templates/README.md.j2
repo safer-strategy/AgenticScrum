@@ -1,0 +1,138 @@
+# {{ project_name }}
+
+An AgenticScrum-powered {{ language }} project utilizing AI agents for structured development.
+
+## Overview
+
+This project follows the AgenticScrum framework, combining Scrum methodologies with AI agent assistance to enhance development efficiency and code quality.
+
+## Project Structure
+
+```
+{{ project_name }}/
+├── agents/                   # AI agent configurations
+├── src/                      # Source code
+├── tests/                    # Test files
+├── docs/                     # Documentation
+│   ├── requirements/         # Product backlog and user stories
+│   ├── architecture/         # Architecture decisions and diagrams
+│   └── sprint_reports/       # Sprint logs and reports
+├── standards/                # Coding standards and linter configs
+├── checklists/              # Quality checklists
+├── scripts/                 # Utility scripts
+├── init.sh                  # Environment management script
+├── docker-compose.yml       # Docker services configuration
+└── agentic_config.yaml      # AgenticScrum configuration
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Docker and Docker Compose
+- {{ language }} development environment
+{% if language == 'python' %}
+- Python 3.8+
+{% elif language in ['javascript', 'typescript'] %}
+- Node.js 16+
+{% elif language == 'java' %}
+- Java 11+
+{% elif language == 'go' %}
+- Go 1.19+
+{% elif language == 'rust' %}
+- Rust 1.70+
+{% endif %}
+
+### Setup
+
+1. **Initialize the environment:**
+   ```bash
+   ./init.sh help  # See available commands
+   ./init.sh up    # Start Docker services
+   ```
+
+2. **Install dependencies:**
+{% if language == 'python' %}
+   ```bash
+   pip install -r requirements.txt
+   ```
+{% elif language in ['javascript', 'typescript'] %}
+   ```bash
+   npm install
+   ```
+{% elif language == 'java' %}
+   ```bash
+   mvn install  # or gradle build
+   ```
+{% elif language == 'go' %}
+   ```bash
+   go mod download
+   ```
+{% elif language == 'rust' %}
+   ```bash
+   cargo build
+   ```
+{% endif %}
+
+3. **Run tests:**
+   ```bash
+   ./init.sh test
+   ```
+
+## AI Agents
+
+This project uses the following AI agents:
+
+{% for agent in agents %}
+{% if agent == 'poa' %}
+- **ProductOwnerAgent (POA)**: Manages product backlog and creates user stories
+{% elif agent == 'sma' %}
+- **ScrumMasterAgent (SMA)**: Facilitates the development process and tracks progress
+{% elif agent == 'deva_python' %}
+- **PythonDeveloperAgent**: Generates Python code and unit tests
+{% elif agent == 'deva_javascript' %}
+- **JavaScriptDeveloperAgent**: Generates JavaScript code and unit tests
+{% elif agent == 'deva_claude_python' %}
+- **ClaudePythonDeveloperAgent**: Claude-specialized Python development agent
+{% elif agent == 'qaa' %}
+- **QAAgent (QAA)**: Reviews code and ensures quality standards
+{% endif %}
+{% endfor %}
+
+{% if has_claude_agent %}
+## Claude Integration
+
+This project includes Claude-specific configuration. The Claude agent is instructed to:
+- Always consult the `CLAUDE.md` file for project-specific guidance
+- Follow the coding standards defined in `standards/coding_standards.md`
+- Adhere to the Definition of Done checklist
+
+### Running Multiple Claude Agents
+
+To run multiple Claude agents concurrently, you can use `git worktree`:
+
+```bash
+# Create a new worktree for a second agent
+git worktree add ../{{ project_name }}-agent2 main
+
+# In the new worktree, the second agent can work independently
+cd ../{{ project_name }}-agent2
+# Start your second Claude instance here
+```
+{% endif %}
+
+## Development Workflow
+
+1. **Sprint Planning**: Review user stories in `docs/requirements/user_stories/`
+2. **Development**: Implement features following coding standards
+3. **Testing**: Ensure all tests pass before marking tasks complete
+4. **Code Review**: Use the code review checklist in `checklists/`
+5. **Sprint Review**: Document completed work in `docs/sprint_reports/`
+
+## Contributing
+
+Please follow the coding standards defined in `standards/coding_standards.md` and ensure all checklist items in `checklists/definition_of_done.md` are completed before submitting changes.
+
+## License
+
+[License information here]

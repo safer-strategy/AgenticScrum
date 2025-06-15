@@ -1,0 +1,7 @@
+# Development dependencies
+-e .[dev]
+
+# Additional development tools
+pre-commit>=3.0.0
+twine>=4.0.0  # For PyPI uploads
+wheel>=0.40.0

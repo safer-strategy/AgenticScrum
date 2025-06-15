@@ -1,0 +1,23 @@
+[package]
+name = "{{ project_name|lower|replace(' ', '-') }}"
+version = "0.1.0"
+edition = "2021"
+description = "{{ project_name }} - An AgenticScrum-powered Rust project"
+authors = ["Your Name <your.email@example.com>"]
+
+[dependencies]
+# Add your project dependencies here
+# Example: serde = { version = "1.0", features = ["derive"] }
+
+[dev-dependencies]
+# Development and testing dependencies
+tokio-test = "0.4"
+
+[[bin]]
+name = "{{ project_name|lower|replace(' ', '-') }}"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
