@@ -9,28 +9,66 @@ By the end, you'll have a running application with a **FastAPI** backend and an 
 #### **Prerequisites**
 
 Before we start, make sure you have the following installed on your macOS machine:
-* **Python** (version 3.10 or newer)
+* **Python** (version 3.10 or newer) with pip
 * **Node.js** (version 18 or newer), which includes `npm`
 * **Docker Desktop** (with Docker Compose)
 * A code editor like **Visual Studio Code**
-* Our custom **`agentic-scrum-setup`** utility (for this tutorial, we'll assume it's installed).
+* **Git** (to clone the AgenticScrum repository)
 
 ---
 
-### **Step 1: Scaffold Your Project with AgenticScrum**
+### **Step 1: Set Up AgenticScrum and Create Your Project**
 
-First, we'll generate the entire project structure using our setup utility. This ensures all the boilerplate, configuration, and agent personas are created correctly from the start.
+First, let's get the AgenticScrum framework and use it to create our project.
 
-Open your terminal and run the following command:
+#### **1a. Clone and Install AgenticScrum**
 
+```bash
+# Clone the AgenticScrum repository
+git clone https://github.com/yourusername/AgenticScrum.git
+cd AgenticScrum
+
+# Install the setup utility using the helper script
+./init.sh install
+```
+
+#### **1b. Create Your Project Using init.sh**
+
+The `init.sh` helper script makes it easy to create projects without remembering complex command-line arguments. Let's use it to create our cattle ranching app:
+
+```bash
+# Interactive mode - the script will guide you through all options
+./init.sh new
+```
+
+When prompted, enter the following:
+- **Project Name:** RanchHand
+- **Language:** Python (option 1)
+- **Framework:** FastAPI (option 2)
+- **Agents:** poa,sma,deva_claude_python,qaa (or just press Enter for smart defaults)
+- **LLM Provider:** Choose based on your API keys (OpenAI, Anthropic, etc.)
+
+**Alternative: Quick Setup**
+
+If you prefer a one-liner with defaults:
+```bash
+./init.sh quick RanchHand
+```
+
+**Alternative: Direct CLI Command**
+
+For those who prefer the direct approach:
 ```bash
 agentic-scrum-setup init \
   --project-name "RanchHand" \
   --language "python" \
-  --agents "poa,sma,deva_claude_python,qaa"
+  --framework "fastapi" \
+  --agents "poa,sma,deva_claude_python,qaa" \
+  --llm-provider "openai" \
+  --default-model "gpt-4-turbo-preview"
 ```
 
-This command creates a new folder named `RanchHand` with the complete directory structure, including configurations for our core agents and the Claude developer agent.
+The setup utility creates a new folder named `RanchHand` with the complete AgenticScrum directory structure, FastAPI-specific configurations, and all agent personas.
 
 ---
 
@@ -183,3 +221,62 @@ From here, you would use the AgenticScrum framework to add new features.
 * You would create a new user story for a feature, like "Add a form to register a new cow."
 * The **DeveloperAgent** (our Claude persona) would be prompted to write the new FastAPI endpoint and React form components, using the `CLAUDE.md` file for context on project standards.
 * The **QAAgent** would use the `code_review_checklist.md` to ensure the new code meets quality standards.
+
+---
+
+### **Appendix: Using init.sh for Different Scenarios**
+
+The `init.sh` helper script provides several convenient ways to create AgenticScrum projects. Here are some common scenarios:
+
+#### **Creating a React Frontend Project**
+
+```bash
+./init.sh new
+# Select: TypeScript (option 3)
+# Select: React framework (option 2)
+# Agents: poa,sma,deva_javascript,qaa
+```
+
+#### **Creating an Electron Desktop App**
+
+```bash
+./init.sh new
+# Select: JavaScript (option 2)
+# Select: Electron framework (option 4)
+```
+
+#### **Custom Setup with All Options**
+
+```bash
+./init.sh custom
+# This mode allows you to specify:
+# - Custom output directory
+# - Specific model configurations
+# - Advanced agent selections
+```
+
+#### **Viewing Available Options**
+
+```bash
+./init.sh help
+```
+
+This displays:
+- All supported languages (Python, JavaScript, TypeScript, Java, Go, Rust, C#, PHP, Ruby)
+- Available frameworks for each language
+- All agent types and their purposes
+- Command examples
+
+#### **Tips for Using init.sh**
+
+1. **First Time Setup**: Always run `./init.sh install` first to ensure the agentic-scrum-setup utility is installed.
+
+2. **Framework Selection**: The script automatically shows relevant frameworks based on your language choice.
+
+3. **Agent Selection**: The script suggests appropriate default agents based on your language choice.
+
+4. **LLM Configuration**: Have your API keys ready when selecting your LLM provider.
+
+5. **Project Location**: By default, projects are created in the current directory. Use the custom mode to specify a different location.
+
+Happy coding with AgenticScrum! 🚀
