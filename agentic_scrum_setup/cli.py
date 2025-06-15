@@ -26,16 +26,41 @@ def parse_arguments():
         help='Name of the project to create'
     )
     init_parser.add_argument(
+        '--project-type',
+        type=str,
+        choices=['single', 'fullstack'],
+        default='single',
+        help='Project type: single language or fullstack (default: single)'
+    )
+    init_parser.add_argument(
         '--language',
         type=str,
         choices=['python', 'javascript', 'typescript', 'java', 'go', 'rust', 'csharp', 'php', 'ruby'],
-        help='Primary programming language for the project'
+        help='Primary programming language (for single) or backend language (for fullstack)'
+    )
+    init_parser.add_argument(
+        '--frontend-language',
+        type=str,
+        choices=['javascript', 'typescript'],
+        help='Frontend language for fullstack projects'
     )
     init_parser.add_argument(
         '--framework',
         type=str,
         choices=['fastapi', 'react', 'nodejs', 'electron'],
-        help='Optional framework to use (e.g., fastapi for Python, react for JS/TS)'
+        help='Backend framework (for single) - e.g., fastapi for Python'
+    )
+    init_parser.add_argument(
+        '--backend-framework',
+        type=str,
+        choices=['fastapi', 'express', 'spring', 'gin', 'actix', 'aspnet'],
+        help='Backend framework for fullstack projects'
+    )
+    init_parser.add_argument(
+        '--frontend-framework',
+        type=str,
+        choices=['react', 'vue', 'angular', 'svelte'],
+        help='Frontend framework for fullstack projects'
     )
     init_parser.add_argument(
         '--agents',
@@ -74,45 +99,128 @@ def interactive_mode():
         print("Project name is required.")
         project_name = input("Enter project name: ").strip()
     
-    # Language
-    print("\nAvailable languages:")
-    languages = ['python', 'javascript', 'typescript', 'java', 'go', 'rust', 'csharp', 'php', 'ruby']
-    for i, lang in enumerate(languages, 1):
-        print(f"  {i}. {lang}")
+    # Project type
+    print("\nProject type:")
+    print("  1. Single language project")
+    print("  2. Fullstack project (backend + frontend)")
     
-    language_choice = input("Select language (number or name): ").strip()
-    if language_choice.isdigit():
-        language_idx = int(language_choice) - 1
-        if 0 <= language_idx < len(languages):
-            language = languages[language_idx]
+    project_type_choice = input("Select project type [1]: ").strip() or "1"
+    project_type = 'fullstack' if project_type_choice == "2" else 'single'
+    
+    if project_type == 'fullstack':
+        # Fullstack setup
+        print("\n=== Backend Configuration ===")
+        print("\nAvailable backend languages:")
+        backend_languages = ['python', 'javascript', 'typescript', 'java', 'go', 'rust', 'csharp']
+        for i, lang in enumerate(backend_languages, 1):
+            print(f"  {i}. {lang}")
+        
+        backend_choice = input("Select backend language (number or name): ").strip()
+        if backend_choice.isdigit():
+            idx = int(backend_choice) - 1
+            backend_language = backend_languages[idx] if 0 <= idx < len(backend_languages) else 'python'
         else:
-            language = 'python'
-    else:
-        language = language_choice if language_choice in languages else 'python'
-    
-    # Framework (optional)
-    print("\nAvailable frameworks (optional, press Enter to skip):")
-    framework_options = {
-        'python': ['fastapi'],
-        'javascript': ['react', 'nodejs', 'electron'],
-        'typescript': ['react', 'nodejs', 'electron']
-    }
-    
-    available_frameworks = framework_options.get(language, [])
-    framework = None
-    
-    if available_frameworks:
-        for i, fw in enumerate(available_frameworks, 1):
+            backend_language = backend_choice if backend_choice in backend_languages else 'python'
+        
+        # Backend framework
+        print("\nAvailable backend frameworks:")
+        backend_frameworks = {
+            'python': ['fastapi'],
+            'javascript': ['express'],
+            'typescript': ['express'],
+            'java': ['spring'],
+            'go': ['gin'],
+            'rust': ['actix'],
+            'csharp': ['aspnet']
+        }
+        
+        available_backend_fw = backend_frameworks.get(backend_language, [])
+        backend_framework = None
+        if available_backend_fw:
+            for i, fw in enumerate(available_backend_fw, 1):
+                print(f"  {i}. {fw}")
+            fw_choice = input("Select backend framework (Enter to skip): ").strip()
+            if fw_choice:
+                if fw_choice.isdigit():
+                    idx = int(fw_choice) - 1
+                    if 0 <= idx < len(available_backend_fw):
+                        backend_framework = available_backend_fw[idx]
+                elif fw_choice in available_backend_fw:
+                    backend_framework = fw_choice
+        
+        print("\n=== Frontend Configuration ===")
+        print("\nAvailable frontend languages:")
+        print("  1. JavaScript")
+        print("  2. TypeScript")
+        
+        frontend_choice = input("Select frontend language [2]: ").strip() or "2"
+        frontend_language = 'typescript' if frontend_choice == "2" else 'javascript'
+        
+        # Frontend framework
+        print("\nAvailable frontend frameworks:")
+        frontend_frameworks = ['react', 'vue', 'angular', 'svelte']
+        for i, fw in enumerate(frontend_frameworks, 1):
             print(f"  {i}. {fw}")
         
-        framework_choice = input("Select framework (number, name, or Enter to skip): ").strip()
-        if framework_choice:
-            if framework_choice.isdigit():
-                fw_idx = int(framework_choice) - 1
-                if 0 <= fw_idx < len(available_frameworks):
-                    framework = available_frameworks[fw_idx]
+        fw_choice = input("Select frontend framework [1]: ").strip() or "1"
+        if fw_choice.isdigit():
+            idx = int(fw_choice) - 1
+            frontend_framework = frontend_frameworks[idx] if 0 <= idx < len(frontend_frameworks) else 'react'
+        else:
+            frontend_framework = fw_choice if fw_choice in frontend_frameworks else 'react'
+        
+        # Set values for fullstack
+        language = backend_language
+        framework = None
+        agents_default = f"poa,sma,deva_{backend_language},deva_{frontend_language},qaa,saa"
+        
+    else:
+        # Single language setup
+        print("\nAvailable languages:")
+        languages = ['python', 'javascript', 'typescript', 'java', 'go', 'rust', 'csharp', 'php', 'ruby']
+        for i, lang in enumerate(languages, 1):
+            print(f"  {i}. {lang}")
+        
+        language_choice = input("Select language (number or name): ").strip()
+        if language_choice.isdigit():
+            language_idx = int(language_choice) - 1
+            if 0 <= language_idx < len(languages):
+                language = languages[language_idx]
             else:
-                framework = framework_choice if framework_choice in available_frameworks else None
+                language = 'python'
+        else:
+            language = language_choice if language_choice in languages else 'python'
+        
+        # Framework (optional)
+        print("\nAvailable frameworks (optional, press Enter to skip):")
+        framework_options = {
+            'python': ['fastapi'],
+            'javascript': ['react', 'nodejs', 'electron'],
+            'typescript': ['react', 'nodejs', 'electron']
+        }
+        
+        available_frameworks = framework_options.get(language, [])
+        framework = None
+        
+        if available_frameworks:
+            for i, fw in enumerate(available_frameworks, 1):
+                print(f"  {i}. {fw}")
+            
+            framework_choice = input("Select framework (number, name, or Enter to skip): ").strip()
+            if framework_choice:
+                if framework_choice.isdigit():
+                    fw_idx = int(framework_choice) - 1
+                    if 0 <= fw_idx < len(available_frameworks):
+                        framework = available_frameworks[fw_idx]
+                else:
+                    framework = framework_choice if framework_choice in available_frameworks else None
+        
+        # Set default values for single language
+        backend_language = None
+        backend_framework = None
+        frontend_language = None
+        frontend_framework = None
+        agents_default = f"poa,sma,deva_{language},qaa"
     
     # Agents
     print("\nAvailable agents:")
@@ -120,12 +228,13 @@ def interactive_mode():
     print("  - sma (ScrumMasterAgent)")
     print("  - deva_python (Python DeveloperAgent)")
     print("  - deva_javascript (JavaScript DeveloperAgent)")
+    print("  - deva_typescript (TypeScript DeveloperAgent)")
     print("  - deva_claude_python (Claude-specialized Python DeveloperAgent)")
     print("  - qaa (QAAgent)")
     print("  - saa (SecurityAuditAgent)")
     
-    agents_input = input("Enter agents (comma-separated, e.g., poa,sma,deva_python,qaa): ").strip()
-    agents = agents_input if agents_input else "poa,sma,deva_python,qaa"
+    agents_input = input(f"Enter agents (comma-separated) [{agents_default}]: ").strip()
+    agents = agents_input if agents_input else agents_default
     
     # LLM Provider
     print("\nAvailable LLM providers:")
@@ -156,8 +265,12 @@ def interactive_mode():
     
     return {
         'project_name': project_name,
+        'project_type': project_type,
         'language': language,
+        'frontend_language': frontend_language,
         'framework': framework,
+        'backend_framework': backend_framework,
+        'frontend_framework': frontend_framework,
         'agents': agents,
         'llm_provider': llm_provider,
         'default_model': default_model,
@@ -180,10 +293,23 @@ def main():
             print("Running in interactive mode...")
             config = interactive_mode()
         else:
+            # Validate fullstack requirements
+            if args.project_type == 'fullstack':
+                if not args.frontend_language:
+                    print("Error: --frontend-language is required for fullstack projects")
+                    sys.exit(1)
+                if not args.frontend_framework:
+                    print("Error: --frontend-framework is required for fullstack projects")
+                    sys.exit(1)
+            
             config = {
                 'project_name': args.project_name,
+                'project_type': args.project_type,
                 'language': args.language,
+                'frontend_language': args.frontend_language,
                 'framework': args.framework,
+                'backend_framework': args.backend_framework,
+                'frontend_framework': args.frontend_framework,
                 'agents': args.agents,
                 'llm_provider': args.llm_provider,
                 'default_model': args.default_model,

@@ -1,5 +1,3 @@
-Of course. Here is a full tutorial to guide a user in creating a full-stack cattle ranching application, setting up the development environment according to the guidelines we've established.
-
 ### **Tutorial: Building a Full-Stack Cattle Ranching Desktop App**
 
 Welcome! This tutorial will guide you, step-by-step, through setting up a complete development environment for a full-stack application. We'll create a desktop app for macOS to manage a cattle ranch. 🤠
@@ -42,10 +40,13 @@ The `init.sh` helper script makes it easy to create projects without remembering
 ```
 
 When prompted, enter the following:
+- **Project Type:** Fullstack project (option 2)
 - **Project Name:** RanchHand
-- **Language:** Python (option 1)
-- **Framework:** FastAPI (option 2)
-- **Agents:** poa,sma,deva_claude_python,qaa,saa (or just press Enter for smart defaults)
+- **Backend Language:** Python (option 1)
+- **Backend Framework:** FastAPI (option 1)
+- **Frontend Language:** TypeScript (option 2)
+- **Frontend Framework:** React (option 1)
+- **Agents:** poa,sma,deva_python,deva_typescript,qaa,saa (or press Enter for smart defaults)
 - **LLM Provider:** Choose based on your API keys (OpenAI, Anthropic, etc.)
 
 **Alternative: Quick Setup**
@@ -61,14 +62,17 @@ For those who prefer the direct approach:
 ```bash
 agentic-scrum-setup init \
   --project-name "RanchHand" \
+  --project-type "fullstack" \
   --language "python" \
-  --framework "fastapi" \
-  --agents "poa,sma,deva_claude_python,qaa,saa" \
+  --backend-framework "fastapi" \
+  --frontend-language "typescript" \
+  --frontend-framework "react" \
+  --agents "poa,sma,deva_python,deva_typescript,qaa,saa" \
   --llm-provider "openai" \
   --default-model "gpt-4-turbo-preview"
 ```
 
-The setup utility creates a new folder named `RanchHand` with the complete AgenticScrum directory structure, FastAPI-specific configurations, and all agent personas.
+The setup utility creates a new folder named `RanchHand` with separate backend and frontend directories, framework-specific configurations, and all agent personas for both Python and TypeScript development.
 
 ---
 
@@ -92,10 +96,10 @@ You'll see a themed menu with all the available commands. This is your go-to too
 
 Our backend will be a simple API that serves data about our cattle.
 
-1.  **Define the Data Model:** Open `/src/backend/models.py` and add a simple data model for a cow.
+1.  **Define the Data Model:** Open `/backend/app/models.py` and add a simple data model for a cow.
 
     ```python
-    # /src/backend/models.py
+    # /backend/app/models.py
     from pydantic import BaseModel
 
     class Cattle(BaseModel):
@@ -105,10 +109,10 @@ Our backend will be a simple API that serves data about our cattle.
         weight_kg: float
     ```
 
-2.  **Create the API Endpoint:** Now, let's create an endpoint in `/src/backend/main.py` to return a list of cattle.
+2.  **Create the API Endpoint:** Now, let's create an endpoint in `/backend/app/main.py` to return a list of cattle.
 
     ```python
-    # /src/backend/main.py
+    # /backend/app/main.py
     from fastapi import FastAPI
     from .models import Cattle
 
@@ -128,33 +132,40 @@ Our backend will be a simple API that serves data about our cattle.
 3.  **Add Dependencies:** Make sure your backend's `requirements.txt` includes FastAPI and its server.
 
     ```text
-    # /src/backend/requirements.txt
+    # /backend/requirements.txt
     fastapi
     uvicorn[standard]
     ```
 
 ---
 
-### **Step 4: Build the Electron + React Frontend**
+### **Step 4: Build the React Frontend**
 
-The frontend is a desktop application built with Electron that displays a React user interface.
+The frontend is built with React and TypeScript to display our cattle management interface.
 
-1.  **Configure Electron:** The main Electron process is configured in `/src/frontend/electron.js`. It's responsible for creating the application window and loading your React app.
+1.  **Configure TypeScript:** The TypeScript configuration is already set up in `/frontend/tsconfig.json`.
 
-2.  **Create a React Component:** Let's create a component in `/src/frontend/src/App.js` to fetch and display the cattle data.
+2.  **Create a React Component:** Let's create a component in `/frontend/src/App.tsx` to fetch and display the cattle data.
 
-    ```jsx
-    // /src/frontend/src/App.js
+    ```tsx
+    // /frontend/src/App.tsx
     import React, { useState, useEffect } from 'react';
+    
+    interface Cattle {
+      tag_id: string;
+      breed: string;
+      age: number;
+      weight_kg: number;
+    }
 
     function App() {
-      const [cattle, setCattle] = useState([]);
+      const [cattle, setCattle] = useState<Cattle[]>([]);
 
       useEffect(() => {
-        // In an Electron app, you fetch from the backend's Docker service URL
+        // Fetch from the backend API
         fetch('http://localhost:8000/api/cattle')
           .then(response => response.json())
-          .then(data => setCattle(data))
+          .then((data: Cattle[]) => setCattle(data))
           .catch(error => console.error('Error fetching cattle data:', error));
       }, []);
 
@@ -194,8 +205,8 @@ The frontend is a desktop application built with Electron that displays a React 
 
 The magic that connects our two services is the `docker-compose.yml` file. It was generated for us by the setup utility. It defines two main services: `backend` and `frontend`.
 
-* **`backend`**: Builds a Docker image from `/src/backend`, installs the Python dependencies, and runs the FastAPI server on port 8000.
-* **`frontend`**: Builds from `/src/frontend`, installs `npm` dependencies, and starts the React development server.
+* **`backend`**: Builds a Docker image from `/backend`, installs the Python dependencies, and runs the FastAPI server on port 8000.
+* **`frontend`**: Builds from `/frontend`, installs `npm` dependencies, and starts the React development server on port 3000.
 
 Docker Compose creates a virtual network where these services can easily communicate with each other.
 
@@ -209,7 +220,7 @@ This is the moment of truth. To build the Docker images, install all dependencie
 ./init.sh up
 ```
 
-After the build process completes, you will see logs from both services. An Electron application window for "RanchHand" will automatically pop up on your screen, displaying the list of cattle fetched live from your FastAPI backend.
+After the build process completes, you will see logs from both services. Navigate to http://localhost:3000 in your browser to see the React frontend displaying the list of cattle fetched live from your FastAPI backend.
 
 🎉 **Congratulations!** You now have a fully functional, containerized, full-stack development environment set up and structured according to our AgenticScrum guidelines.
 
@@ -233,13 +244,24 @@ From here, you would use the AgenticScrum framework to add new features.
 
 The `init.sh` helper script provides several convenient ways to create AgenticScrum projects. Here are some common scenarios:
 
-#### **Creating a React Frontend Project**
+#### **Creating a Fullstack Project**
 
 ```bash
 ./init.sh new
+# Select: Fullstack project (option 2)
+# Backend: Python with FastAPI
+# Frontend: TypeScript with React
+# Agents: poa,sma,deva_python,deva_typescript,qaa,saa
+```
+
+#### **Creating a Single Language React Project**
+
+```bash
+./init.sh new
+# Select: Single language project (option 1)
 # Select: TypeScript (option 3)
 # Select: React framework (option 2)
-# Agents: poa,sma,deva_javascript,qaa,saa
+# Agents: poa,sma,deva_typescript,qaa,saa
 ```
 
 #### **Creating an Electron Desktop App**
@@ -258,6 +280,34 @@ The `init.sh` helper script provides several convenient ways to create AgenticSc
 # - Custom output directory
 # - Specific model configurations
 # - Advanced agent selections
+```
+
+#### **Direct CLI for Fullstack Projects**
+
+```bash
+# Java Spring Boot backend with React frontend
+agentic-scrum-setup init \
+  --project-name "EnterpriseApp" \
+  --project-type fullstack \
+  --language java \
+  --backend-framework spring \
+  --frontend-language typescript \
+  --frontend-framework react \
+  --agents poa,sma,deva_java,deva_typescript,qaa,saa \
+  --llm-provider openai \
+  --default-model gpt-4-turbo-preview
+
+# Node.js Express backend with Vue frontend
+agentic-scrum-setup init \
+  --project-name "ModernWebApp" \
+  --project-type fullstack \
+  --language typescript \
+  --backend-framework express \
+  --frontend-language typescript \
+  --frontend-framework vue \
+  --agents poa,sma,deva_typescript,qaa,saa \
+  --llm-provider anthropic \
+  --default-model claude-3-opus-20240229
 ```
 
 #### **Viewing Available Options**

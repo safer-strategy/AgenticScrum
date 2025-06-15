@@ -55,14 +55,19 @@ show_help() {
     echo -e "  python, javascript, typescript, java, go, rust, csharp, php, ruby"
     echo
     echo -e "${BOLD}Supported Frameworks:${NC}"
-    echo -e "  ${BLUE}Python:${NC} fastapi"
-    echo -e "  ${BLUE}JavaScript/TypeScript:${NC} react, nodejs, electron"
+    echo -e "  ${BLUE}Single Language Projects:${NC}"
+    echo -e "    Python: fastapi"
+    echo -e "    JavaScript/TypeScript: react, nodejs, electron"
+    echo -e "  ${BLUE}Fullstack Projects:${NC}"
+    echo -e "    Backend: fastapi, express, spring, gin, actix, aspnet"
+    echo -e "    Frontend: react, vue, angular, svelte"
     echo
     echo -e "${BOLD}Available Agents:${NC}"
     echo -e "  ${MAGENTA}poa${NC}                 Product Owner Agent"
     echo -e "  ${MAGENTA}sma${NC}                 Scrum Master Agent"
     echo -e "  ${MAGENTA}deva_python${NC}         Python Developer Agent"
     echo -e "  ${MAGENTA}deva_javascript${NC}     JavaScript Developer Agent"
+    echo -e "  ${MAGENTA}deva_typescript${NC}     TypeScript Developer Agent"
     echo -e "  ${MAGENTA}deva_claude_python${NC}  Claude-powered Python Developer Agent"
     echo -e "  ${MAGENTA}qaa${NC}                 QA Agent"
     echo -e "  ${MAGENTA}saa${NC}                 Security Audit Agent"
@@ -110,70 +115,183 @@ create_new_project() {
         exit 1
     fi
     
-    # Language selection
+    # Project type selection
     echo
-    echo -e "${BOLD}Select Language:${NC}"
-    echo "1) Python"
-    echo "2) JavaScript"
-    echo "3) TypeScript"
-    echo "4) Java"
-    echo "5) Go"
-    echo "6) Rust"
-    echo "7) C#"
-    echo "8) PHP"
-    echo "9) Ruby"
-    read -p "$(echo -e ${BOLD}Choice [1-9]:${NC} )" lang_choice
+    echo -e "${BOLD}Project Type:${NC}"
+    echo "1) Single language project"
+    echo "2) Fullstack project (backend + frontend)"
+    read -p "$(echo -e ${BOLD}Choice [1-2]:${NC} )" type_choice
     
-    case $lang_choice in
-        1) language="python";;
-        2) language="javascript";;
-        3) language="typescript";;
-        4) language="java";;
-        5) language="go";;
-        6) language="rust";;
-        7) language="csharp";;
-        8) language="php";;
-        9) language="ruby";;
-        *) language="python";;
-    esac
+    if [ "$type_choice" = "2" ]; then
+        # Fullstack project
+        project_type="fullstack"
+        
+        # Backend language selection
+        echo
+        echo -e "${BOLD}=== Backend Configuration ===${NC}"
+        echo -e "${BOLD}Select Backend Language:${NC}"
+        echo "1) Python"
+        echo "2) JavaScript"
+        echo "3) TypeScript"
+        echo "4) Java"
+        echo "5) Go"
+        echo "6) Rust"
+        echo "7) C#"
+        read -p "$(echo -e ${BOLD}Choice [1-7]:${NC} )" backend_lang_choice
+        
+        case $backend_lang_choice in
+            1) language="python";;
+            2) language="javascript";;
+            3) language="typescript";;
+            4) language="java";;
+            5) language="go";;
+            6) language="rust";;
+            7) language="csharp";;
+            *) language="python";;
+        esac
+        
+        # Backend framework selection
+        echo
+        echo -e "${BOLD}Select Backend Framework (optional):${NC}"
+        case $language in
+            "python") 
+                echo "1) None"
+                echo "2) FastAPI"
+                read -p "$(echo -e ${BOLD}Choice [1-2]:${NC} )" fw_choice
+                [ "$fw_choice" = "2" ] && backend_framework="--backend-framework fastapi"
+                ;;
+            "javascript"|"typescript")
+                echo "1) None"
+                echo "2) Express"
+                read -p "$(echo -e ${BOLD}Choice [1-2]:${NC} )" fw_choice
+                [ "$fw_choice" = "2" ] && backend_framework="--backend-framework express"
+                ;;
+            "java")
+                echo "1) None"
+                echo "2) Spring Boot"
+                read -p "$(echo -e ${BOLD}Choice [1-2]:${NC} )" fw_choice
+                [ "$fw_choice" = "2" ] && backend_framework="--backend-framework spring"
+                ;;
+            "go")
+                echo "1) None"
+                echo "2) Gin"
+                read -p "$(echo -e ${BOLD}Choice [1-2]:${NC} )" fw_choice
+                [ "$fw_choice" = "2" ] && backend_framework="--backend-framework gin"
+                ;;
+            "rust")
+                echo "1) None"
+                echo "2) Actix"
+                read -p "$(echo -e ${BOLD}Choice [1-2]:${NC} )" fw_choice
+                [ "$fw_choice" = "2" ] && backend_framework="--backend-framework actix"
+                ;;
+            "csharp")
+                echo "1) None"
+                echo "2) ASP.NET"
+                read -p "$(echo -e ${BOLD}Choice [1-2]:${NC} )" fw_choice
+                [ "$fw_choice" = "2" ] && backend_framework="--backend-framework aspnet"
+                ;;
+        esac
+        
+        # Frontend configuration
+        echo
+        echo -e "${BOLD}=== Frontend Configuration ===${NC}"
+        echo -e "${BOLD}Select Frontend Language:${NC}"
+        echo "1) JavaScript"
+        echo "2) TypeScript"
+        read -p "$(echo -e ${BOLD}Choice [1-2]:${NC} )" frontend_lang_choice
+        
+        frontend_language=$( [ "$frontend_lang_choice" = "2" ] && echo "typescript" || echo "javascript" )
+        
+        # Frontend framework
+        echo
+        echo -e "${BOLD}Select Frontend Framework:${NC}"
+        echo "1) React"
+        echo "2) Vue"
+        echo "3) Angular"
+        echo "4) Svelte"
+        read -p "$(echo -e ${BOLD}Choice [1-4]:${NC} )" frontend_fw_choice
+        
+        case $frontend_fw_choice in
+            1) frontend_framework="react";;
+            2) frontend_framework="vue";;
+            3) frontend_framework="angular";;
+            4) frontend_framework="svelte";;
+            *) frontend_framework="react";;
+        esac
+        
+        # Default agents for fullstack
+        default_agents="poa,sma,deva_${language},deva_${frontend_language},qaa,saa"
+        
+    else
+        # Single language project
+        project_type="single"
+        
+        # Language selection
+        echo
+        echo -e "${BOLD}Select Language:${NC}"
+        echo "1) Python"
+        echo "2) JavaScript"
+        echo "3) TypeScript"
+        echo "4) Java"
+        echo "5) Go"
+        echo "6) Rust"
+        echo "7) C#"
+        echo "8) PHP"
+        echo "9) Ruby"
+        read -p "$(echo -e ${BOLD}Choice [1-9]:${NC} )" lang_choice
+        
+        case $lang_choice in
+            1) language="python";;
+            2) language="javascript";;
+            3) language="typescript";;
+            4) language="java";;
+            5) language="go";;
+            6) language="rust";;
+            7) language="csharp";;
+            8) language="php";;
+            9) language="ruby";;
+            *) language="python";;
+        esac
+        
+        # Default agents for single language
+        default_agents="poa,sma,deva_${language},qaa"
+    fi
     
-    # Framework selection (if applicable)
+    # Framework selection for single language projects
     framework=""
-    if [ "$language" = "python" ]; then
-        echo
-        echo -e "${BOLD}Select Python Framework (optional):${NC}"
-        echo "1) None (standard Python)"
-        echo "2) FastAPI"
-        read -p "$(echo -e ${BOLD}Choice [1-2]:${NC} )" framework_choice
-        case $framework_choice in
-            2) framework="--framework fastapi";;
-        esac
-    elif [ "$language" = "javascript" ] || [ "$language" = "typescript" ]; then
-        echo
-        echo -e "${BOLD}Select JavaScript/TypeScript Framework (optional):${NC}"
-        echo "1) None (vanilla)"
-        echo "2) React"
-        echo "3) Node.js"
-        echo "4) Electron"
-        read -p "$(echo -e ${BOLD}Choice [1-4]:${NC} )" framework_choice
-        case $framework_choice in
-            2) framework="--framework react";;
-            3) framework="--framework nodejs";;
-            4) framework="--framework electron";;
-        esac
+    if [ "$project_type" = "single" ]; then
+        if [ "$language" = "python" ]; then
+            echo
+            echo -e "${BOLD}Select Python Framework (optional):${NC}"
+            echo "1) None (standard Python)"
+            echo "2) FastAPI"
+            read -p "$(echo -e ${BOLD}Choice [1-2]:${NC} )" framework_choice
+            case $framework_choice in
+                2) framework="--framework fastapi";;
+            esac
+        elif [ "$language" = "javascript" ] || [ "$language" = "typescript" ]; then
+            echo
+            echo -e "${BOLD}Select JavaScript/TypeScript Framework (optional):${NC}"
+            echo "1) None (vanilla)"
+            echo "2) React"
+            echo "3) Node.js"
+            echo "4) Electron"
+            read -p "$(echo -e ${BOLD}Choice [1-4]:${NC} )" framework_choice
+            case $framework_choice in
+                2) framework="--framework react";;
+                3) framework="--framework nodejs";;
+                4) framework="--framework electron";;
+            esac
+        fi
     fi
     
     # Agent selection
     echo
     echo -e "${BOLD}Select Agents (comma-separated):${NC}"
-    echo -e "${CYAN}Available: poa, sma, deva_python, deva_javascript, deva_claude_python, qaa, saa${NC}"
-    read -p "$(echo -e ${BOLD}Agents [default: poa,sma,deva_${language},qaa]:${NC} )" agents
+    echo -e "${CYAN}Available: poa, sma, deva_python, deva_javascript, deva_typescript, deva_claude_python, qaa, saa${NC}"
+    read -p "$(echo -e ${BOLD}Agents [default: ${default_agents}]:${NC} )" agents
     if [ -z "$agents" ]; then
-        if [ "$language" = "javascript" ] || [ "$language" = "typescript" ]; then
-            agents="poa,sma,deva_javascript,qaa"
-        else
-            agents="poa,sma,deva_python,qaa"
-        fi
+        agents="$default_agents"
     fi
     
     # LLM Provider
@@ -196,13 +314,25 @@ create_new_project() {
     # Build command
     cmd="agentic-scrum-setup init"
     cmd="$cmd --project-name \"$project_name\""
-    cmd="$cmd --language $language"
+    
+    if [ "$project_type" = "fullstack" ]; then
+        cmd="$cmd --project-type fullstack"
+        cmd="$cmd --language $language"
+        cmd="$cmd --frontend-language $frontend_language"
+        cmd="$cmd --frontend-framework $frontend_framework"
+        if [ -n "$backend_framework" ]; then
+            cmd="$cmd $backend_framework"
+        fi
+    else
+        cmd="$cmd --language $language"
+        if [ -n "$framework" ]; then
+            cmd="$cmd $framework"
+        fi
+    fi
+    
     cmd="$cmd --agents $agents"
     cmd="$cmd --llm-provider $llm_provider"
     cmd="$cmd --default-model $default_model"
-    if [ -n "$framework" ]; then
-        cmd="$cmd $framework"
-    fi
     
     # Show command and confirm
     echo
@@ -265,15 +395,29 @@ custom_setup() {
     
     # Collect all parameters
     read -p "$(echo -e ${BOLD}Project Name:${NC} )" project_name
-    read -p "$(echo -e ${BOLD}Language [python]:${NC} )" language
-    read -p "$(echo -e ${BOLD}Framework (optional):${NC} )" framework
-    read -p "$(echo -e ${BOLD}Agents [poa,sma,deva_python,qaa,saa]:${NC} )" agents
+    read -p "$(echo -e ${BOLD}Project Type [single/fullstack]:${NC} )" project_type
+    
+    if [ "$project_type" = "fullstack" ]; then
+        read -p "$(echo -e ${BOLD}Backend Language [python]:${NC} )" language
+        read -p "$(echo -e ${BOLD}Backend Framework (optional):${NC} )" backend_framework
+        read -p "$(echo -e ${BOLD}Frontend Language [typescript]:${NC} )" frontend_language
+        read -p "$(echo -e ${BOLD}Frontend Framework [react]:${NC} )" frontend_framework
+        read -p "$(echo -e ${BOLD}Agents [poa,sma,deva_python,deva_typescript,qaa,saa]:${NC} )" agents
+    else
+        read -p "$(echo -e ${BOLD}Language [python]:${NC} )" language
+        read -p "$(echo -e ${BOLD}Framework (optional):${NC} )" framework
+        read -p "$(echo -e ${BOLD}Agents [poa,sma,deva_python,qaa,saa]:${NC} )" agents
+    fi
+    
     read -p "$(echo -e ${BOLD}LLM Provider [openai]:${NC} )" llm_provider
     read -p "$(echo -e ${BOLD}Default Model [gpt-4-turbo-preview]:${NC} )" default_model
     read -p "$(echo -e ${BOLD}Output Directory [.]:${NC} )" output_dir
     
     # Set defaults
+    project_type=${project_type:-single}
     language=${language:-python}
+    frontend_language=${frontend_language:-typescript}
+    frontend_framework=${frontend_framework:-react}
     agents=${agents:-poa,sma,deva_python,qaa}
     llm_provider=${llm_provider:-openai}
     default_model=${default_model:-gpt-4-turbo-preview}
@@ -282,15 +426,26 @@ custom_setup() {
     # Build command
     cmd="agentic-scrum-setup init"
     cmd="$cmd --project-name \"$project_name\""
-    cmd="$cmd --language $language"
+    
+    if [ "$project_type" = "fullstack" ]; then
+        cmd="$cmd --project-type fullstack"
+        cmd="$cmd --language $language"
+        cmd="$cmd --frontend-language $frontend_language"
+        cmd="$cmd --frontend-framework $frontend_framework"
+        if [ -n "$backend_framework" ]; then
+            cmd="$cmd --backend-framework $backend_framework"
+        fi
+    else
+        cmd="$cmd --language $language"
+        if [ -n "$framework" ]; then
+            cmd="$cmd --framework $framework"
+        fi
+    fi
+    
     cmd="$cmd --agents $agents"
     cmd="$cmd --llm-provider $llm_provider"
     cmd="$cmd --default-model $default_model"
     cmd="$cmd --output-dir $output_dir"
-    
-    if [ -n "$framework" ]; then
-        cmd="$cmd --framework $framework"
-    fi
     
     # Show and execute
     echo

@@ -57,9 +57,11 @@ AgenticScrum is built upon the following foundational principles:
 ## **Key Features**
 
 * **Automated Project Scaffolding:** CLI utility to instantly set up a standardized project.  
+* **Fullstack Support:** Create projects with multiple languages and frameworks in a single command.
 * **Defined AI Agent Roles:** Pre-defined personas (ProductOwnerAgent, ScrumMasterAgent, DeveloperAgent, QAAgent, SecurityAuditAgent) with customizable rules.  
 * **Scrum-Inspired Workflow:** Structured sprints, task decomposition, and agent collaboration mimicking agile practices.  
 * **Integrated Coding Standards:** Mechanisms for defining and enforcing project-specific coding conventions and quality.  
+* **Framework-Specific Templates:** Built-in support for FastAPI, Express, React, Spring Boot, and more.
 * **Priming Scripts:** Contextual initialization for agents to guide their behavior effectively.  
 * **Human-in-the-Loop Design:** Critical human oversight integrated into the workflow for validation and decision-making.  
 * **Multi-Stack & Multi-Repo Adaptability:** Flexible structure to support diverse technology stacks and complex project organizations.  
@@ -86,11 +88,27 @@ The primary way to start an AgenticScrum project is by using the agentic-scrum-s
 
 **Direct CLI Usage:**
 
+Single language project:
 ```bash
 agentic-scrum-setup init \
   --project-name MyNewWebApp \
   --language python \
+  --framework fastapi \
   --agents poa,sma,deva_python,qaa,saa \
+  --llm-provider openai \
+  --default-model gpt-4-turbo-preview
+```
+
+Fullstack project:
+```bash
+agentic-scrum-setup init \
+  --project-name MyFullstackApp \
+  --project-type fullstack \
+  --language python \
+  --backend-framework fastapi \
+  --frontend-language typescript \
+  --frontend-framework react \
+  --agents poa,sma,deva_python,deva_typescript,qaa,saa \
   --llm-provider openai \
   --default-model gpt-4-turbo-preview
 ```
@@ -231,11 +249,18 @@ Human oversight is critical [9]. Responsibilities include:
 
 AgenticScrum is designed for flexibility:
 
+* **Fullstack Projects:**
+  * Use `--project-type fullstack` to create projects with separate backend and frontend
+  * Automatically creates `/backend` and `/frontend` directories with appropriate structures
+  * Generates multiple DeveloperAgents for different languages (e.g., `deva_python` for backend, `deva_typescript` for frontend)
+  * Separate standards and linter configurations for each stack in `/standards/backend/` and `/standards/frontend/`
+  
 * **Multiple Tech Stacks (Monorepo):**  
   * The /standards directory can house separate coding_standards.md and linter_configs/ for each technology (e.g., /standards/python/, /standards/javascript/).  
   * The /src and /tests directories can be subdivided (e.g., /src/backend/, /src/frontend/).  
   * DeveloperAgents are specialized (e.g., PythonDeveloperAgent, ReactDeveloperAgent), with their persona_rules.yaml pointing to the relevant stack-specific standards and source directories.  
   * Tools like Nx, Lerna, or Rush can complement AgenticScrum for managing complex monorepos.  
+  
 * **Multiple Repositories (Polyrepo):**  
   * Each repository can have its own lightweight AgenticScrum configuration (relevant standards, agent personas).  
   * Cross-repository orchestration requires higher-level coordination (e.g., a "ProjectCoordinatorAgent" or human oversight) and potentially tools like mani or gita.

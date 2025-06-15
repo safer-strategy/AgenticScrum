@@ -1,6 +1,10 @@
 # {{ project_name }}
 
+{% if project_type == 'fullstack' %}
+An AgenticScrum-powered fullstack project with {{ language }} backend and {{ frontend_language }} frontend.
+{% else %}
 An AgenticScrum-powered {{ language }} project utilizing AI agents for structured development.
+{% endif %}
 
 ## Overview
 
@@ -8,7 +12,28 @@ This project follows the AgenticScrum framework, combining Scrum methodologies w
 
 ## Project Structure
 
-{% if framework == 'fastapi' %}
+{% if project_type == 'fullstack' %}
+```
+{{ project_name }}/
+├── backend/                  # {{ language }}{% if backend_framework %} ({{ backend_framework }}){% endif %} backend
+│   ├── src/                  # Backend source code
+│   ├── tests/                # Backend tests
+│   └── requirements.txt      # Backend dependencies
+├── frontend/                 # {{ frontend_language }}{% if frontend_framework %} ({{ frontend_framework }}){% endif %} frontend
+│   ├── src/                  # Frontend source code
+│   ├── tests/                # Frontend tests
+│   └── package.json          # Frontend dependencies
+├── agents/                   # AI agent configurations
+├── docs/                     # Documentation
+├── standards/                # Coding standards
+│   ├── backend/              # Backend standards
+│   └── frontend/             # Frontend standards
+├── checklists/              # Quality checklists
+├── scripts/                 # Utility scripts
+├── docker-compose.yml       # Docker services configuration
+└── agentic_config.yaml      # AgenticScrum configuration
+```
+{% elif framework == 'fastapi' %}
 ```
 {{ project_name }}/
 ├── app/                      # FastAPI application
@@ -52,6 +77,23 @@ This project follows the AgenticScrum framework, combining Scrum methodologies w
 ### Prerequisites
 
 - Docker and Docker Compose
+{% if project_type == 'fullstack' %}
+- {{ language }} development environment (backend)
+- Node.js 16+ (frontend)
+{% if language == 'python' %}
+- Python 3.8+
+{% elif language in ['javascript', 'typescript'] %}
+- Node.js 16+ (for both backend and frontend)
+{% elif language == 'java' %}
+- Java 11+
+{% elif language == 'go' %}
+- Go 1.19+
+{% elif language == 'rust' %}
+- Rust 1.70+
+{% elif language == 'csharp' %}
+- .NET 6.0+
+{% endif %}
+{% else %}
 - {{ language }} development environment
 {% if language == 'python' %}
 - Python 3.8+
@@ -63,6 +105,7 @@ This project follows the AgenticScrum framework, combining Scrum methodologies w
 - Go 1.19+
 {% elif language == 'rust' %}
 - Rust 1.70+
+{% endif %}
 {% endif %}
 
 ### Setup
@@ -80,6 +123,39 @@ This project follows the AgenticScrum framework, combining Scrum methodologies w
    ```
 
 3. **Install dependencies:**
+{% if project_type == 'fullstack' %}
+   Backend:
+   {% if language == 'python' %}
+   ```bash
+   cd backend && pip install -r requirements.txt
+   ```
+   {% elif language in ['javascript', 'typescript'] %}
+   ```bash
+   cd backend && npm install
+   ```
+   {% elif language == 'java' %}
+   ```bash
+   cd backend && mvn install
+   ```
+   {% elif language == 'go' %}
+   ```bash
+   cd backend && go mod download
+   ```
+   {% elif language == 'rust' %}
+   ```bash
+   cd backend && cargo build
+   ```
+   {% elif language == 'csharp' %}
+   ```bash
+   cd backend && dotnet restore
+   ```
+   {% endif %}
+
+   Frontend:
+   ```bash
+   cd frontend && npm install
+   ```
+{% else %}
 {% if language == 'python' %}
    ```bash
    pip install -r requirements.txt
@@ -101,6 +177,7 @@ This project follows the AgenticScrum framework, combining Scrum methodologies w
    cargo build
    ```
 {% endif %}
+{% endif %}
 
 3. **Run tests:**
    ```bash
@@ -120,10 +197,14 @@ This project uses the following AI agents:
 - **PythonDeveloperAgent**: Generates Python code and unit tests
 {% elif agent == 'deva_javascript' %}
 - **JavaScriptDeveloperAgent**: Generates JavaScript code and unit tests
+{% elif agent == 'deva_typescript' %}
+- **TypeScriptDeveloperAgent**: Generates TypeScript code and unit tests
 {% elif agent == 'deva_claude_python' %}
 - **ClaudePythonDeveloperAgent**: Claude-specialized Python development agent
 {% elif agent == 'qaa' %}
 - **QAAgent (QAA)**: Reviews code and ensures quality standards
+{% elif agent == 'saa' %}
+- **SecurityAuditAgent (SAA)**: Conducts security audits and identifies vulnerabilities
 {% endif %}
 {% endfor %}
 

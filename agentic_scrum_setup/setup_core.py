@@ -19,13 +19,17 @@ class SetupCore:
         """
         self.config = config
         self.project_name = config['project_name']
+        self.project_type = config.get('project_type', 'single')
         self.language = config['language']
+        self.frontend_language = config.get('frontend_language', None)
         self.agents = config['agents'].split(',')
         self.llm_provider = config['llm_provider']
         self.default_model = config['default_model']
         self.output_dir = Path(config['output_dir'])
         self.project_path = self.output_dir / self.project_name
-        self.framework = config.get('framework', None)  # Optional framework selection
+        self.framework = config.get('framework', None)  # For single projects
+        self.backend_framework = config.get('backend_framework', None)  # For fullstack
+        self.frontend_framework = config.get('frontend_framework', None)  # For fullstack
         
         # Setup Jinja2 environment
         template_dir = Path(__file__).parent / 'templates'
@@ -60,17 +64,35 @@ class SetupCore:
     
     def _create_directory_structure(self):
         """Create the standard AgenticScrum directory structure."""
-        directories = [
-            'agents',
-            'src',
-            'tests',
-            'docs/requirements/user_stories',
-            'docs/architecture',
-            'docs/sprint_reports',
-            'standards/linter_configs',
-            'checklists',
-            'scripts'
-        ]
+        if self.project_type == 'fullstack':
+            # Fullstack project structure
+            directories = [
+                'agents',
+                'backend/src',
+                'backend/tests',
+                'frontend/src',
+                'frontend/tests',
+                'docs/requirements/user_stories',
+                'docs/architecture',
+                'docs/sprint_reports',
+                'standards/backend/linter_configs',
+                'standards/frontend/linter_configs',
+                'checklists',
+                'scripts'
+            ]
+        else:
+            # Single language project structure
+            directories = [
+                'agents',
+                'src',
+                'tests',
+                'docs/requirements/user_stories',
+                'docs/architecture',
+                'docs/sprint_reports',
+                'standards/linter_configs',
+                'checklists',
+                'scripts'
+            ]
         
         for directory in directories:
             (self.project_path / directory).mkdir(parents=True, exist_ok=True)
@@ -115,6 +137,11 @@ class SetupCore:
             'sma': 'scrum_master_agent',
             'deva_python': 'developer_agent/python_expert',
             'deva_javascript': 'developer_agent/javascript_expert',
+            'deva_typescript': 'developer_agent/typescript_expert',
+            'deva_java': 'developer_agent/java_expert',
+            'deva_go': 'developer_agent/go_expert',
+            'deva_rust': 'developer_agent/rust_expert',
+            'deva_csharp': 'developer_agent/csharp_expert',
             'deva_claude_python': 'developer_agent/claude_python_expert',
             'qaa': 'qa_agent',
             'saa': 'security_audit_agent'
@@ -208,6 +235,13 @@ class SetupCore:
     
     def _generate_language_files(self):
         """Generate language-specific files."""
+        if self.project_type == 'fullstack':
+            self._generate_fullstack_files()
+        else:
+            self._generate_single_language_files()
+    
+    def _generate_single_language_files(self):
+        """Generate files for single language projects."""
         if self.language == 'python':
             # Check if using FastAPI framework
             if self.framework == 'fastapi':
@@ -288,13 +322,95 @@ class SetupCore:
             )
             (self.project_path / 'Gemfile').write_text(gemfile)
     
+    def _generate_fullstack_files(self):
+        """Generate files for fullstack projects."""
+        # Backend files
+        backend_path = self.project_path / 'backend'
+        
+        if self.language == 'python':
+            if self.backend_framework == 'fastapi':
+                requirements = self.jinja_env.get_template('python/fastapi_requirements.txt.j2').render()
+                (backend_path / 'requirements.txt').write_text(requirements)
+                
+                # Create FastAPI structure
+                (backend_path / 'app').mkdir(exist_ok=True)
+                (backend_path / 'app' / '__init__.py').touch()
+                (backend_path / 'app' / 'api').mkdir(exist_ok=True)
+                (backend_path / 'app' / 'api' / '__init__.py').touch()
+                (backend_path / 'app' / 'core').mkdir(exist_ok=True)
+                (backend_path / 'app' / 'core' / '__init__.py').touch()
+                (backend_path / 'app' / 'models').mkdir(exist_ok=True)
+                (backend_path / 'app' / 'models' / '__init__.py').touch()
+                (backend_path / 'app' / 'schemas').mkdir(exist_ok=True)
+                (backend_path / 'app' / 'schemas' / '__init__.py').touch()
+                (backend_path / 'app' / 'services').mkdir(exist_ok=True)
+                (backend_path / 'app' / 'services' / '__init__.py').touch()
+            else:
+                requirements = self.jinja_env.get_template('python/requirements.txt.j2').render()
+                (backend_path / 'requirements.txt').write_text(requirements)
+            
+            # Python __init__ files
+            (backend_path / 'src' / '__init__.py').touch()
+            (backend_path / 'tests' / '__init__.py').touch()
+        
+        elif self.language in ['javascript', 'typescript']:
+            if self.backend_framework == 'express':
+                package_json = self.jinja_env.get_template('javascript/express_package.json.j2').render(
+                    project_name=f"{self.project_name}-backend",
+                    is_typescript=self.language == 'typescript'
+                )
+                (backend_path / 'package.json').write_text(package_json)
+        
+        elif self.language == 'java' and self.backend_framework == 'spring':
+            pom_xml = self.jinja_env.get_template('java/spring_pom.xml.j2').render(
+                project_name=f"{self.project_name}-backend"
+            )
+            (backend_path / 'pom.xml').write_text(pom_xml)
+            
+            # Create Java structure
+            java_path = backend_path / 'src' / 'main' / 'java' / 'com' / 'example'
+            java_path.mkdir(parents=True, exist_ok=True)
+            test_path = backend_path / 'src' / 'test' / 'java' / 'com' / 'example'
+            test_path.mkdir(parents=True, exist_ok=True)
+        
+        # Frontend files
+        frontend_path = self.project_path / 'frontend'
+        
+        if self.frontend_language in ['javascript', 'typescript']:
+            if self.frontend_framework == 'react':
+                package_json = self.jinja_env.get_template('javascript/react_package.json.j2').render(
+                    project_name=f"{self.project_name}-frontend",
+                    is_typescript=self.frontend_language == 'typescript'
+                )
+                (frontend_path / 'package.json').write_text(package_json)
+                
+                # Create React structure
+                (frontend_path / 'src').mkdir(exist_ok=True)
+                (frontend_path / 'public').mkdir(exist_ok=True)
+                
+                if self.frontend_language == 'typescript':
+                    tsconfig = self.jinja_env.get_template('typescript/tsconfig.json.j2').render()
+                    (frontend_path / 'tsconfig.json').write_text(tsconfig)
+            
+            elif self.frontend_framework in ['vue', 'angular', 'svelte']:
+                # Basic package.json for other frameworks
+                package_json = self.jinja_env.get_template('javascript/package.json.j2').render(
+                    project_name=f"{self.project_name}-frontend",
+                    is_typescript=self.frontend_language == 'typescript'
+                )
+                (frontend_path / 'package.json').write_text(package_json)
+    
     def _generate_documentation(self):
         """Generate documentation files."""
         # Generate README.md
         readme = self.jinja_env.get_template('README.md.j2').render(
             project_name=self.project_name,
+            project_type=self.project_type,
             language=self.language,
+            frontend_language=self.frontend_language,
             framework=self.framework,
+            backend_framework=self.backend_framework,
+            frontend_framework=self.frontend_framework,
             agents=self.agents,
             has_claude_agent=any('claude' in agent for agent in self.agents)
         )
@@ -315,22 +431,37 @@ class SetupCore:
         (self.project_path / 'standards' / 'coding_standards.md').write_text(coding_standards)
         
         # Generate linter configurations
-        linter_configs_dir = self.project_path / 'standards' / 'linter_configs'
-        linter_configs_dir.mkdir(parents=True, exist_ok=True)
+        if self.project_type == 'fullstack':
+            # Backend linter configs
+            backend_linter_dir = self.project_path / 'standards' / 'backend' / 'linter_configs'
+            self._generate_linter_configs(self.language, backend_linter_dir, self.backend_framework)
+            
+            # Frontend linter configs
+            frontend_linter_dir = self.project_path / 'standards' / 'frontend' / 'linter_configs'
+            self._generate_linter_configs(self.frontend_language, frontend_linter_dir, self.frontend_framework)
+        else:
+            # Single language linter configs
+            linter_configs_dir = self.project_path / 'standards' / 'linter_configs'
+            linter_configs_dir.mkdir(parents=True, exist_ok=True)
+            self._generate_linter_configs(self.language, linter_configs_dir, self.framework)
+    
+    def _generate_linter_configs(self, language, linter_dir, framework=None):
+        """Generate linter configurations for a specific language."""
+        linter_dir.mkdir(parents=True, exist_ok=True)
         
-        if self.language == 'python':
+        if language == 'python':
             # Generate .flake8
             flake8_config = self.jinja_env.get_template('python/.flake8.j2').render()
-            (linter_configs_dir / '.flake8').write_text(flake8_config)
+            (linter_dir / '.flake8').write_text(flake8_config)
             
             # Generate pyproject.toml
             pyproject_config = self.jinja_env.get_template('python/pyproject.toml.j2').render()
-            (linter_configs_dir / 'pyproject.toml').write_text(pyproject_config)
+            (linter_dir / 'pyproject.toml').write_text(pyproject_config)
             
-        elif self.language in ['javascript', 'typescript']:
+        elif language in ['javascript', 'typescript']:
             # Check if using React framework
-            if self.framework == 'react':
-                if self.language == 'typescript':
+            if framework == 'react':
+                if language == 'typescript':
                     eslint_config = self.jinja_env.get_template('typescript/.eslintrc.react.json.j2').render()
                     # Also generate tsconfig.json
                     tsconfig = self.jinja_env.get_template('typescript/tsconfig.json.j2').render()
@@ -341,11 +472,11 @@ class SetupCore:
                 # Generate standard .eslintrc.json
                 eslint_config = self.jinja_env.get_template('javascript/.eslintrc.json.j2').render()
             
-            (linter_configs_dir / '.eslintrc.json').write_text(eslint_config)
+            (linter_dir / '.eslintrc.json').write_text(eslint_config)
             
             # Generate .prettierrc.json
             prettier_config = self.jinja_env.get_template('javascript/.prettierrc.json.j2').render()
-            (linter_configs_dir / '.prettierrc.json').write_text(prettier_config)
+            (linter_dir / '.prettierrc.json').write_text(prettier_config)
         
         # Generate checklists
         checklists = [
