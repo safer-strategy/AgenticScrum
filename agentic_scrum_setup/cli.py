@@ -122,6 +122,7 @@ def interactive_mode():
     print("  - deva_javascript (JavaScript DeveloperAgent)")
     print("  - deva_claude_python (Claude-specialized Python DeveloperAgent)")
     print("  - qaa (QAAgent)")
+    print("  - saa (SecurityAuditAgent)")
     
     agents_input = input("Enter agents (comma-separated, e.g., poa,sma,deva_python,qaa): ").strip()
     agents = agents_input if agents_input else "poa,sma,deva_python,qaa"

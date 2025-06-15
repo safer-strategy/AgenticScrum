@@ -57,7 +57,7 @@ AgenticScrum is built upon the following foundational principles:
 ## **Key Features**
 
 * **Automated Project Scaffolding:** CLI utility to instantly set up a standardized project.  
-* **Defined AI Agent Roles:** Pre-defined personas (ProductOwnerAgent, ScrumMasterAgent, DeveloperAgent, QAAgent) with customizable rules.  
+* **Defined AI Agent Roles:** Pre-defined personas (ProductOwnerAgent, ScrumMasterAgent, DeveloperAgent, QAAgent, SecurityAuditAgent) with customizable rules.  
 * **Scrum-Inspired Workflow:** Structured sprints, task decomposition, and agent collaboration mimicking agile practices.  
 * **Integrated Coding Standards:** Mechanisms for defining and enforcing project-specific coding conventions and quality.  
 * **Priming Scripts:** Contextual initialization for agents to guide their behavior effectively.  
@@ -167,6 +167,7 @@ Effective agentic systems rely on well-defined "persona engineering."
   * **ScrumMasterAgent (SMA):** Facilitates the process, monitors interactions, flags impediments.  
   * **DeveloperAgent (DevA):** Generates code and unit tests based on user stories. Can be specialized (e.g., PythonDeveloperAgent).  
   * **QAAgent (QAA):** Reviews code, runs tests, ensures adherence to Definition of Done.  
+  * **SecurityAuditAgent (SAA):** Conducts comprehensive security audits, identifies vulnerabilities, ensures secure coding practices.  
 * **persona_rules.yaml:** Located in each agent's directory (e.g., /agents/developer_agent/persona_rules.yaml), this file defines:  
   * role: The agent's primary function.  
   * goal: The agent's main objective.  

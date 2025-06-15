@@ -1,0 +1,218 @@
+# Security Audit Checklist for {{ project_name }}
+
+This checklist guides the SecurityAuditAgent through a comprehensive security review of the codebase.
+
+## 1. Input Validation and Sanitization
+
+### Frontend Validation
+- [ ] All form inputs have client-side validation
+- [ ] Input length limits are enforced
+- [ ] Special characters are properly escaped
+- [ ] File upload restrictions are in place (type, size)
+- [ ] Rich text editors sanitize HTML input
+- [ ] URLs are validated before use
+- [ ] Email addresses are properly validated
+
+### Backend Validation
+- [ ] All inputs are re-validated on the server
+- [ ] SQL queries use parameterized statements
+- [ ] NoSQL queries are properly sanitized
+- [ ] Command injection is prevented
+- [ ] Path traversal attacks are blocked
+- [ ] XML/JSON parsing is secure
+- [ ] Regular expressions are not vulnerable to ReDoS
+
+## 2. Authentication and Authorization
+
+### Authentication
+- [ ] Passwords meet complexity requirements
+- [ ] Passwords are hashed with bcrypt/scrypt/Argon2
+- [ ] Salt is used for password hashing
+- [ ] Account lockout after failed attempts
+- [ ] Multi-factor authentication is available
+- [ ] Password reset is secure
+- [ ] Session tokens are cryptographically secure
+- [ ] Login attempts are rate-limited
+
+### Authorization
+- [ ] All endpoints check user permissions
+- [ ] Direct object references are secured
+- [ ] Privilege escalation is prevented
+- [ ] Role-based access control is implemented
+- [ ] API endpoints verify authorization
+- [ ] Admin functions are properly protected
+- [ ] Resource access is logged
+
+## 3. Data Protection
+
+### Encryption
+- [ ] HTTPS is enforced for all communications
+- [ ] Sensitive data is encrypted at rest
+- [ ] Encryption keys are properly managed
+- [ ] TLS version 1.2 or higher is used
+- [ ] Weak ciphers are disabled
+- [ ] HSTS header is implemented
+
+### Data Handling
+- [ ] PII is identified and protected
+- [ ] Credit card data complies with PCI-DSS
+- [ ] Sensitive data is not logged
+- [ ] Data retention policies are implemented
+- [ ] Secure data deletion is used
+- [ ] Backups are encrypted
+
+## 4. Session Management
+
+- [ ] Session IDs are random and unique
+- [ ] Sessions expire after inactivity
+- [ ] Session fixation is prevented
+- [ ] Sessions are invalidated on logout
+- [ ] Concurrent sessions are limited
+- [ ] Session data is stored securely
+- [ ] Cookie flags are set (HttpOnly, Secure, SameSite)
+
+## 5. Cross-Site Scripting (XSS) Prevention
+
+- [ ] Output encoding is used for all dynamic content
+- [ ] Content Security Policy (CSP) is implemented
+- [ ] User input is never directly inserted into HTML
+- [ ] JavaScript encoding for dynamic JS content
+- [ ] URL encoding for dynamic URLs
+- [ ] CSS encoding for dynamic styles
+- [ ] Template engines auto-escape by default
+
+## 6. Cross-Site Request Forgery (CSRF) Protection
+
+- [ ] CSRF tokens are used for state-changing operations
+- [ ] Same-Site cookie attribute is set
+- [ ] Referrer header is validated
+- [ ] Custom headers are required for API calls
+- [ ] GET requests don't perform state changes
+- [ ] Double-submit cookie pattern where applicable
+
+## 7. Security Headers
+
+- [ ] X-Frame-Options prevents clickjacking
+- [ ] X-Content-Type-Options prevents MIME sniffing
+- [ ] X-XSS-Protection is configured
+- [ ] Strict-Transport-Security (HSTS) is set
+- [ ] Content-Security-Policy is implemented
+- [ ] Referrer-Policy is configured
+- [ ] Feature-Policy/Permissions-Policy is set
+
+## 8. API Security
+
+- [ ] API authentication is required
+- [ ] API rate limiting is implemented
+- [ ] API versioning doesn't expose internal info
+- [ ] Error messages are generic
+- [ ] CORS is properly configured
+- [ ] API input validation is strict
+- [ ] API documentation doesn't reveal sensitive info
+
+## 9. Error Handling and Logging
+
+### Error Handling
+- [ ] Error messages don't reveal system details
+- [ ] Stack traces are not shown to users
+- [ ] Custom error pages are used
+- [ ] Errors are logged securely
+- [ ] Database errors are handled gracefully
+
+### Logging
+- [ ] Security events are logged
+- [ ] Logs don't contain sensitive data
+- [ ] Log injection is prevented
+- [ ] Logs are stored securely
+- [ ] Log retention policy exists
+- [ ] Monitoring alerts for security events
+
+## 10. Dependencies and Third-Party Code
+
+- [ ] Dependencies are up to date
+- [ ] Known vulnerabilities are patched
+- [ ] Dependency scanning is automated
+- [ ] Third-party code is reviewed
+- [ ] CDN resources use SRI
+- [ ] npm/pip audit shows no vulnerabilities
+
+## 11. Secret Management
+
+- [ ] No hardcoded passwords or API keys
+- [ ] Environment variables are used for secrets
+- [ ] Secrets are not in version control
+- [ ] `.env` files are gitignored
+- [ ] Key rotation is possible
+- [ ] Default credentials are changed
+- [ ] Service accounts have minimal permissions
+
+## 12. Infrastructure Security
+
+- [ ] Unnecessary services are disabled
+- [ ] Firewall rules are restrictive
+- [ ] Database is not publicly accessible
+- [ ] Admin interfaces are IP-restricted
+- [ ] Security updates are applied
+- [ ] Monitoring is in place
+- [ ] Backup security is verified
+
+## 13. Specific Vulnerabilities Check
+
+### Common Attack Vectors
+- [ ] SQL Injection
+- [ ] NoSQL Injection
+- [ ] LDAP Injection
+- [ ] Command Injection
+- [ ] XML External Entity (XXE)
+- [ ] Server-Side Request Forgery (SSRF)
+- [ ] Insecure Deserialization
+
+### Business Logic
+- [ ] Race conditions are handled
+- [ ] Time-of-check/Time-of-use issues
+- [ ] Price manipulation is prevented
+- [ ] Quantity limits are enforced
+- [ ] Workflow bypass is prevented
+
+## 14. Compliance and Standards
+
+- [ ] OWASP Top 10 compliance
+- [ ] GDPR compliance (if applicable)
+- [ ] HIPAA compliance (if applicable)
+- [ ] PCI-DSS compliance (if applicable)
+- [ ] Industry-specific standards met
+
+## 15. Security Testing
+
+- [ ] Penetration testing performed
+- [ ] Security code review completed
+- [ ] Automated security scanning
+- [ ] Vulnerability assessment done
+- [ ] Security test cases exist
+- [ ] Security regression tests
+
+## Report Format
+
+After completing this checklist, prepare a report with:
+
+1. **Severity Classification**:
+   - Critical: Immediate exploitation possible
+   - High: Exploitation likely with moderate effort
+   - Medium: Exploitation possible under specific conditions
+   - Low: Minor security improvements
+
+2. **For Each Finding Include**:
+   - Description of the vulnerability
+   - Location (file, line number)
+   - Proof of concept (if applicable)
+   - Business impact
+   - Remediation steps
+   - Code examples for fixes
+
+3. **Executive Summary**:
+   - Overall security score
+   - Number of findings by severity
+   - Top 3 critical issues
+   - General recommendations
+
+Remember: The goal is to improve security, not to find fault. Provide constructive feedback with clear, actionable solutions.

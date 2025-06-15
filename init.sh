@@ -65,6 +65,7 @@ show_help() {
     echo -e "  ${MAGENTA}deva_javascript${NC}     JavaScript Developer Agent"
     echo -e "  ${MAGENTA}deva_claude_python${NC}  Claude-powered Python Developer Agent"
     echo -e "  ${MAGENTA}qaa${NC}                 QA Agent"
+    echo -e "  ${MAGENTA}saa${NC}                 Security Audit Agent"
     echo
 }
 
@@ -165,7 +166,7 @@ create_new_project() {
     # Agent selection
     echo
     echo -e "${BOLD}Select Agents (comma-separated):${NC}"
-    echo -e "${CYAN}Available: poa, sma, deva_python, deva_javascript, deva_claude_python, qaa${NC}"
+    echo -e "${CYAN}Available: poa, sma, deva_python, deva_javascript, deva_claude_python, qaa, saa${NC}"
     read -p "$(echo -e ${BOLD}Agents [default: poa,sma,deva_${language},qaa]:${NC} )" agents
     if [ -z "$agents" ]; then
         if [ "$language" = "javascript" ] || [ "$language" = "typescript" ]; then
@@ -266,7 +267,7 @@ custom_setup() {
     read -p "$(echo -e ${BOLD}Project Name:${NC} )" project_name
     read -p "$(echo -e ${BOLD}Language [python]:${NC} )" language
     read -p "$(echo -e ${BOLD}Framework (optional):${NC} )" framework
-    read -p "$(echo -e ${BOLD}Agents [poa,sma,deva_python,qaa]:${NC} )" agents
+    read -p "$(echo -e ${BOLD}Agents [poa,sma,deva_python,qaa,saa]:${NC} )" agents
     read -p "$(echo -e ${BOLD}LLM Provider [openai]:${NC} )" llm_provider
     read -p "$(echo -e ${BOLD}Default Model [gpt-4-turbo-preview]:${NC} )" default_model
     read -p "$(echo -e ${BOLD}Output Directory [.]:${NC} )" output_dir

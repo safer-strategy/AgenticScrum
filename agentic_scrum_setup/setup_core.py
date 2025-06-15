@@ -116,7 +116,8 @@ class SetupCore:
             'deva_python': 'developer_agent/python_expert',
             'deva_javascript': 'developer_agent/javascript_expert',
             'deva_claude_python': 'developer_agent/claude_python_expert',
-            'qaa': 'qa_agent'
+            'qaa': 'qa_agent',
+            'saa': 'security_audit_agent'
         }
         
         for agent in self.agents:
@@ -135,7 +136,8 @@ class SetupCore:
                         project_name=self.project_name,
                         language=self.language,
                         default_model=self.default_model,
-                        llm_provider=self.llm_provider
+                        llm_provider=self.llm_provider,
+                        framework=self.framework
                     )
                 except:
                     # Use generic template if specific one doesn't exist
@@ -150,10 +152,25 @@ class SetupCore:
                 (agent_dir / 'persona_rules.yaml').write_text(persona_rules)
                 
                 # Generate priming_script.md
-                priming_script = self.jinja_env.get_template('generic_priming_script.md.j2').render(
-                    agent_type=agent,
-                    project_name=self.project_name
-                )
+                if agent == 'saa':
+                    priming_template_name = 'saa/priming_script.md.j2'
+                else:
+                    priming_template_name = 'generic_priming_script.md.j2'
+                
+                try:
+                    priming_script = self.jinja_env.get_template(priming_template_name).render(
+                        agent_type=agent,
+                        project_name=self.project_name,
+                        language=self.language,
+                        framework=self.framework
+                    )
+                except:
+                    # Fallback to generic template
+                    priming_script = self.jinja_env.get_template('generic_priming_script.md.j2').render(
+                        agent_type=agent,
+                        project_name=self.project_name
+                    )
+                
                 (agent_dir / 'priming_script.md').write_text(priming_script)
     
     def _generate_common_files(self):
@@ -334,7 +351,8 @@ class SetupCore:
         checklists = [
             'definition_of_done.md',
             'code_review_checklist.md',
-            'sprint_planning_checklist.md'
+            'sprint_planning_checklist.md',
+            'security_audit_checklist.md'
         ]
         
         for checklist in checklists:
