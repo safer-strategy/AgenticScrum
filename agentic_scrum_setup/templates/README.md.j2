@@ -67,13 +67,19 @@ This project follows the AgenticScrum framework, combining Scrum methodologies w
 
 ### Setup
 
-1. **Initialize the environment:**
+1. **Configure API Keys:**
+   - Copy `agentic_config.yaml.sample` to `agentic_config.yaml`
+   - Set your API keys as environment variables or update the config file
+   - See [docs/SECURITY.md](docs/SECURITY.md) for security best practices
+   - **IMPORTANT**: Never commit `agentic_config.yaml` to version control
+
+2. **Initialize the environment:**
    ```bash
    ./init.sh help  # See available commands
    ./init.sh up    # Start Docker services
    ```
 
-2. **Install dependencies:**
+3. **Install dependencies:**
 {% if language == 'python' %}
    ```bash
    pip install -r requirements.txt

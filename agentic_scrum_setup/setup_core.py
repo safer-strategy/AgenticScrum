@@ -78,14 +78,29 @@ class SetupCore:
     def _generate_config_files(self):
         """Generate global configuration files."""
         # Generate agentic_config.yaml
+        from datetime import datetime
+        created_date = datetime.now().strftime('%Y-%m-%d')
+        
         agentic_config = self.jinja_env.get_template('agentic_config.yaml.j2').render(
             project_name=self.project_name,
             language=self.language,
             llm_provider=self.llm_provider,
             default_model=self.default_model,
-            agents=self.agents
+            agents=self.agents,
+            created_date=created_date
         )
         (self.project_path / 'agentic_config.yaml').write_text(agentic_config)
+        
+        # Generate agentic_config.yaml.sample
+        agentic_config_sample = self.jinja_env.get_template('agentic_config.yaml.sample.j2').render(
+            project_name=self.project_name,
+            language=self.language,
+            llm_provider=self.llm_provider,
+            default_model=self.default_model,
+            agents=self.agents,
+            created_date=created_date
+        )
+        (self.project_path / 'agentic_config.yaml.sample').write_text(agentic_config_sample)
         
         # Generate .gitignore
         gitignore = self.jinja_env.get_template('.gitignore.j2').render(
@@ -267,6 +282,14 @@ class SetupCore:
             has_claude_agent=any('claude' in agent for agent in self.agents)
         )
         (self.project_path / 'README.md').write_text(readme)
+        
+        # Generate SECURITY.md
+        security_doc = self.jinja_env.get_template('docs/SECURITY.md.j2').render(
+            project_name=self.project_name,
+            language=self.language,
+            llm_provider=self.llm_provider
+        )
+        (self.project_path / 'docs' / 'SECURITY.md').write_text(security_doc)
         
         # Generate coding standards
         coding_standards = self.jinja_env.get_template('standards/coding_standards.md.j2').render(

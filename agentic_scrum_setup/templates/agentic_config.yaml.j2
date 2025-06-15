@@ -2,12 +2,12 @@
 project:
   name: "{{ project_name }}"
   language: "{{ language }}"
-  created: "{{ now().strftime('%Y-%m-%d') }}"
+  created: "{{ created_date }}"
 
 llm:
   provider: "{{ llm_provider }}"
   default_model: "{{ default_model }}"
-  api_key: "${{{ llm_provider|upper }}_API_KEY}"  # Set as environment variable
+  api_key: "${{ '{' }}{{ llm_provider|upper }}_API_KEY{{ '}' }}"  # Set as environment variable
 
 agents:
 {% for agent in agents %}

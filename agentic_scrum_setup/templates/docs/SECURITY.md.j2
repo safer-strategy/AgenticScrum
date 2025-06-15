@@ -1,0 +1,87 @@
+# Security Best Practices for {{ project_name }}
+
+## API Key Management
+
+### CRITICAL: Never Commit API Keys
+
+The `agentic_config.yaml` file contains sensitive API keys and is automatically added to `.gitignore`. This file should **NEVER** be committed to version control.
+
+### Recommended Practices
+
+1. **Use Environment Variables** (Recommended)
+   ```bash
+   export {{ llm_provider|upper }}_API_KEY="your-api-key-here"
+   ```
+
+2. **Use a `.env` file** (Also gitignored)
+   ```bash
+   {{ llm_provider|upper }}_API_KEY=your-api-key-here
+   ```
+
+3. **For CI/CD**: Use your platform's secret management:
+   - GitHub Actions: Repository Secrets
+   - GitLab CI: CI/CD Variables
+   - Jenkins: Credentials Plugin
+   - AWS: Secrets Manager or Parameter Store
+   - Azure: Key Vault
+   - Google Cloud: Secret Manager
+
+### Configuration Files
+
+- `agentic_config.yaml` - Your actual configuration (gitignored)
+- `agentic_config.yaml.sample` - Sample configuration for reference (safe to commit)
+
+### Sharing Your Project
+
+When sharing your project:
+1. Ensure `.gitignore` is committed and includes `agentic_config.yaml`
+2. Share only the `agentic_config.yaml.sample` file
+3. Document required environment variables in your README
+4. Never share screenshots containing API keys
+
+### Security Checklist
+
+Before committing:
+- [ ] Verify `agentic_config.yaml` is in `.gitignore`
+- [ ] Check that no API keys appear in any committed files
+- [ ] Review all configuration files for sensitive data
+- [ ] Ensure environment variables are documented (but not their values)
+- [ ] Scan your commit history for accidentally committed secrets
+
+### If You Accidentally Commit Secrets
+
+1. Immediately revoke and regenerate the compromised API keys
+2. Remove the secret from your repository history:
+   ```bash
+   git filter-branch --index-filter \
+     'git rm --cached --ignore-unmatch agentic_config.yaml' \
+     --prune-empty --tag-name-filter cat -- --all
+   ```
+3. Force push to update remote: `git push --force --all`
+4. Contact your team to ensure they update their local repositories
+
+### Additional Security Measures
+
+1. **Rotate API Keys Regularly**: Set a schedule to update API keys
+2. **Use Least Privilege**: Only grant the minimum required permissions
+3. **Monitor Usage**: Regularly check your API usage for anomalies
+4. **Enable MFA**: Use multi-factor authentication on all service accounts
+5. **Audit Logs**: Keep logs of who accesses what and when
+
+## Framework-Specific Security
+
+{% if language == 'python' %}
+### Python Security
+- Keep dependencies updated: `pip list --outdated`
+- Use virtual environments to isolate dependencies
+- Scan for vulnerabilities: `pip audit`
+{% elif language in ['javascript', 'typescript'] %}
+### JavaScript/TypeScript Security
+- Audit dependencies: `npm audit` or `yarn audit`
+- Keep dependencies updated: `npm update` or `yarn upgrade`
+- Use lockfiles (`package-lock.json` or `yarn.lock`)
+{% endif %}
+
+## Questions or Concerns?
+
+If you have security concerns or discover a vulnerability, please contact your security team immediately.

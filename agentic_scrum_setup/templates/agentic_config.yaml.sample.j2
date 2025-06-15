@@ -1,0 +1,66 @@
+# AgenticScrum Configuration Sample
+# 
+# IMPORTANT: This is a sample configuration file. 
+# Copy this to 'agentic_config.yaml' and update with your actual values.
+# The actual 'agentic_config.yaml' file is gitignored for security.
+#
+# For API keys, you can either:
+# 1. Set them as environment variables (recommended)
+# 2. Replace the ${VAR_NAME} with actual values (be careful not to commit!)
+
+project:
+  name: "{{ project_name }}"
+  language: "{{ language }}"
+  created: "{{ created_date }}"
+
+llm:
+  provider: "{{ llm_provider }}"
+  default_model: "{{ default_model }}"
+  
+  # API Key Configuration
+  # Option 1 (Recommended): Use environment variables
+  api_key: "${{ '{' }}{{ llm_provider|upper }}_API_KEY{{ '}' }}"
+  
+  # Option 2: Direct value (NEVER commit this!)
+  # api_key: "your-actual-api-key-here"
+  
+  # Additional provider-specific settings
+  {% if llm_provider == 'openai' %}
+  organization_id: "${{ '{' }}OPENAI_ORG_ID{{ '}' }}"  # Optional
+  {% elif llm_provider == 'anthropic' %}
+  anthropic_version: "2023-06-01"
+  {% elif llm_provider == 'google' %}
+  project_id: "${{ '{' }}GOOGLE_CLOUD_PROJECT{{ '}' }}"
+  {% elif llm_provider == 'local' %}
+  base_url: "http://localhost:11434"  # Ollama default
+  {% endif %}
+
+agents:
+  # Active agents for this project
+{% for agent in agents %}
+  - {{ agent }}
+{% endfor %}
+
+settings:
+  # Development settings
+  auto_save: true
+  verbose_logging: false
+  test_before_commit: true
+  
+  # Agent behavior settings
+  agent_temperature: 0.7
+  max_tokens: 4000
+  retry_attempts: 3
+  timeout_seconds: 30
+  
+directories:
+  source: "src"
+  tests: "tests"
+  docs: "docs"
+  agents: "agents"
+  
+# Security reminders:
+# - NEVER commit API keys or secrets to version control
+# - Use environment variables for all sensitive data
+# - Keep your agentic_config.yaml file local only
+# - Share only the agentic_config.yaml.sample file
