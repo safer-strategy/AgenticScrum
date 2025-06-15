@@ -45,7 +45,7 @@ When prompted, enter the following:
 - **Project Name:** RanchHand
 - **Language:** Python (option 1)
 - **Framework:** FastAPI (option 2)
-- **Agents:** poa,sma,deva_claude_python,qaa (or just press Enter for smart defaults)
+- **Agents:** poa,sma,deva_claude_python,qaa,saa (or just press Enter for smart defaults)
 - **LLM Provider:** Choose based on your API keys (OpenAI, Anthropic, etc.)
 
 **Alternative: Quick Setup**
@@ -63,7 +63,7 @@ agentic-scrum-setup init \
   --project-name "RanchHand" \
   --language "python" \
   --framework "fastapi" \
-  --agents "poa,sma,deva_claude_python,qaa" \
+  --agents "poa,sma,deva_claude_python,qaa,saa" \
   --llm-provider "openai" \
   --default-model "gpt-4-turbo-preview"
 ```
@@ -220,6 +220,11 @@ From here, you would use the AgenticScrum framework to add new features.
 * A **ProductOwnerAgent** would manage the `product_backlog.md`.
 * You would create a new user story for a feature, like "Add a form to register a new cow."
 * The **DeveloperAgent** (our Claude persona) would be prompted to write the new FastAPI endpoint and React form components, using the `CLAUDE.md` file for context on project standards.
+* The **SecurityAuditAgent** would perform a comprehensive security review, checking for vulnerabilities like:
+  - Input validation issues in the cow registration form
+  - SQL injection vulnerabilities in database queries
+  - Proper authentication and authorization
+  - Secure handling of sensitive data
 * The **QAAgent** would use the `code_review_checklist.md` to ensure the new code meets quality standards.
 
 ---
@@ -234,7 +239,7 @@ The `init.sh` helper script provides several convenient ways to create AgenticSc
 ./init.sh new
 # Select: TypeScript (option 3)
 # Select: React framework (option 2)
-# Agents: poa,sma,deva_javascript,qaa
+# Agents: poa,sma,deva_javascript,qaa,saa
 ```
 
 #### **Creating an Electron Desktop App**
@@ -278,5 +283,60 @@ This displays:
 4. **LLM Configuration**: Have your API keys ready when selecting your LLM provider.
 
 5. **Project Location**: By default, projects are created in the current directory. Use the custom mode to specify a different location.
+
+---
+
+### **Security Considerations with SecurityAuditAgent**
+
+When including the SecurityAuditAgent (SAA) in your project, you get automated security reviews throughout development:
+
+#### **What SAA Checks**
+
+1. **Input Validation**
+   - Form inputs are properly validated
+   - SQL injection prevention
+   - XSS protection
+   - File upload security
+
+2. **Authentication & Authorization**
+   - Secure password storage
+   - Session management
+   - API endpoint protection
+   - Role-based access control
+
+3. **Data Protection**
+   - Encryption in transit (HTTPS)
+   - Secure data storage
+   - Protection of sensitive information
+   - Secure API key management
+
+4. **Security Headers & Configuration**
+   - CORS settings
+   - Security headers (CSP, HSTS, etc.)
+   - Error handling that doesn't leak information
+   - Secure cookie settings
+
+#### **Using SAA Effectively**
+
+1. **Run Security Audits After Major Changes**
+   ```bash
+   # After implementing new features, prompt SAA to review
+   "Please conduct a security audit of the new user registration feature"
+   ```
+
+2. **Review the Security Checklist**
+   - Check `/checklists/security_audit_checklist.md`
+   - Use it as a guide for manual reviews
+   - Ensure all items are addressed before deployment
+
+3. **Act on SAA Recommendations**
+   - SAA provides severity levels (Critical, High, Medium, Low)
+   - Address Critical and High issues immediately
+   - Include security fixes in your Definition of Done
+
+4. **Integrate with Development Workflow**
+   - Run SAA after DeveloperAgent completes code
+   - Run SAA before QAAgent final review
+   - Include security findings in sprint retrospectives
 
 Happy coding with AgenticScrum! 🚀
