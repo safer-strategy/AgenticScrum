@@ -336,6 +336,93 @@ This displays:
 
 ---
 
+### **Optimizing Agent Performance**
+
+AgenticScrum includes powerful tools for continuously improving agent performance through feedback loops. Here's how to use them:
+
+#### **Step 1: Collect Performance Metrics**
+
+After your agents generate code, collect metrics:
+
+```bash
+# Collect metrics for a specific file
+python scripts/collect_agent_metrics.py \
+  --agent deva_python \
+  --file backend/app/api/cattle.py \
+  --save
+
+# View the metrics
+cat metrics/agent_performance/deva_python_*.json
+```
+
+#### **Step 2: Provide Feedback**
+
+When reviewing agent-generated code, fill out the feedback form:
+
+```bash
+# Copy and fill out the feedback form
+cp checklists/agent_feedback_form.md feedback/deva_python_sprint15.md
+# Edit with your feedback
+```
+
+#### **Step 3: Analyze Performance**
+
+Run the feedback analyzer to identify patterns:
+
+```bash
+# Generate performance report
+python scripts/feedback_analyzer.py \
+  --agent deva_python \
+  --output reports/
+
+# View the report
+cat reports/deva_python_performance_report.md
+```
+
+#### **Step 4: Apply Improvements**
+
+Based on the analysis, update agent configurations:
+
+```bash
+# Get recommendations
+python scripts/update_agent_config.py recommend --agent deva_python
+
+# Review and apply updates
+python scripts/update_agent_config.py apply --agent deva_python --dry-run
+python scripts/update_agent_config.py apply --agent deva_python --confirm
+```
+
+#### **Example: Improving Error Handling**
+
+If feedback shows the agent frequently misses error handling:
+
+1. **Update persona_rules.yaml**:
+```yaml
+rules:
+  - "ALWAYS wrap database operations in try-except blocks"
+  - "ALWAYS provide specific error messages"
+  - "ALWAYS log errors with context"
+```
+
+2. **Update priming_script.md**:
+```markdown
+## Error Handling Pattern
+Always follow this pattern:
+\```python
+try:
+    result = perform_operation()
+except SpecificException as e:
+    logger.error(f"Operation failed: {e}")
+    raise HTTPException(status_code=400, detail=str(e))
+\```
+```
+
+3. **Test the improvements**:
+```bash
+# Have the agent generate similar code
+# Check if error handling is now included
+```
+
 ### **Security Considerations with SecurityAuditAgent**
 
 When including the SecurityAuditAgent (SAA) in your project, you get automated security reviews throughout development:

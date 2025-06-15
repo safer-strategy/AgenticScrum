@@ -288,10 +288,38 @@ AgenticScrum draws inspiration from pioneering open-source frameworks, adapting 
 * **Structured Agentic Development:** Methodical process for AI-assisted projects.  
 * **Knowledge Centralization:** Explicit definition of personas, rules, and standards.
 
+## **Agent Optimization and Feedback Loops**
+
+AgenticScrum includes a comprehensive system for continuously improving agent performance through feedback loops and automated optimization. This addresses one of the key limitations - the dependence on well-crafted configurations.
+
+### **Key Components:**
+
+* **Performance Metrics Collection**: Automated tracking of code quality, complexity, coverage, and other metrics
+* **Feedback Forms**: Structured templates for collecting human feedback on agent performance
+* **Automated Analysis**: Scripts that identify patterns in feedback and suggest configuration improvements
+* **Configuration Updates**: Tools to apply improvements to persona_rules.yaml and priming_script.md
+
+### **Documentation:**
+- [Agent Optimization Guide](docs/AGENT_OPTIMIZATION.md) - Comprehensive guide to crafting effective personas and priming scripts
+- [Feedback Workflow](docs/FEEDBACK_WORKFLOW.md) - Step-by-step process for implementing feedback loops
+- [Agent Feedback Form](checklists/agent_feedback_form.md) - Template for collecting structured feedback
+
+### **Quick Start:**
+```bash
+# Collect metrics for agent-generated code
+python scripts/collect_agent_metrics.py --agent deva_python --file src/api/users.py --save
+
+# Analyze feedback and generate recommendations
+python scripts/update_agent_config.py recommend --agent deva_python
+
+# Apply recommended updates (dry run)
+python scripts/update_agent_config.py apply --agent deva_python --dry-run
+```
+
 ## **Limitations**
 
 * **LLM "Hallucinations":** Requires robust QA and human oversight.  
-* **Dependence on Prompt Quality:** Effectiveness hinges on well-crafted persona_rules.yaml and priming_script.md.  
+* **Dependence on Prompt Quality:** Effectiveness hinges on well-crafted persona_rules.yaml and priming_script.md. *(Mitigated by feedback loops and optimization system)*  
 * **Agent Management Overhead:** Coordinating multiple agents can be complex.  
 * **Current LLM Reasoning Limits:** May struggle with highly novel or abstract problems.  
 * **Cost of LLM API Usage:** Can be significant for cloud-based LLMs.  
