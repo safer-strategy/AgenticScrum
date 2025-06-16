@@ -334,6 +334,62 @@ def generate_block_text(text: str, style: str = 'blocks') -> List[str]:
     return styled_lines
 
 
+def generate_3d_text(text: str, depth: int = 2) -> List[str]:
+    """Generate 3D-style ASCII art with shadow effect"""
+    text = text.upper()
+    
+    # First, get the basic text
+    base_lines = []
+    for char in text:
+        if char in BLOCK_FONT:
+            if not base_lines:
+                base_lines = [''] * 5
+            char_pattern = BLOCK_FONT[char]
+            for i in range(5):
+                base_lines[i] += char_pattern[i] + ' '
+        else:
+            if not base_lines:
+                base_lines = [''] * 5
+            for i in range(5):
+                base_lines[i] += '       ' + ' '
+    
+    # Calculate dimensions
+    height = len(base_lines)
+    width = max(len(line) for line in base_lines) if base_lines else 0
+    
+    # Create a 2D grid for the 3D effect
+    grid = [[' ' for _ in range(width + depth * 2)] for _ in range(height + depth)]
+    
+    # Place the main text
+    for y, line in enumerate(base_lines):
+        for x, char in enumerate(line):
+            if char == '█':
+                grid[y][x] = FULL_BLOCK
+                
+                # Add 3D depth effect - diagonal shadows
+                for d in range(1, depth + 1):
+                    if y + d < height + depth and x + d < width + depth * 2:
+                        if grid[y + d][x + d] == ' ':
+                            # Use different shades for depth
+                            if d == 1:
+                                grid[y + d][x + d] = MEDIUM_SHADE
+                            else:
+                                grid[y + d][x + d] = LIGHT_SHADE
+                
+                # Add side shadows for more 3D effect
+                if x + 1 < width + depth * 2 and grid[y][x + 1] == ' ':
+                    grid[y][x + 1] = '▐'  # Right half block for edge
+            elif char != ' ':
+                grid[y][x] = char
+    
+    # Convert grid back to lines
+    lines_3d = []
+    for row in grid:
+        lines_3d.append(''.join(row))
+    
+    return lines_3d
+
+
 def add_border(lines: List[str], border_style: str = 'simple') -> List[str]:
     """Add a decorative border around the text"""
     if not lines:
@@ -366,10 +422,17 @@ def colorize(lines: List[str], color_scheme: str = 'neon') -> List[str]:
     if color_scheme == 'neon':
         # Neon yellow with variations
         for i, line in enumerate(lines):
-            if i % 2 == 0:
-                colored_lines.append(f"{NEON_YELLOW}{BOLD}{line}{RESET}")
-            else:
-                colored_lines.append(f"{BRIGHT_YELLOW}{line}{RESET}")
+            colored_line = ''
+            for char in line:
+                if char == FULL_BLOCK:
+                    colored_line += f"{NEON_YELLOW}{BOLD}{char}{RESET}"
+                elif char in [MEDIUM_SHADE, '▐']:
+                    colored_line += f"{BRIGHT_YELLOW}{char}{RESET}"
+                elif char == LIGHT_SHADE:
+                    colored_line += f"{DIM_YELLOW}{char}{RESET}"
+                else:
+                    colored_line += char
+            colored_lines.append(colored_line)
     elif color_scheme == 'gradient':
         # Create a gradient effect
         colors = [DIM_YELLOW, BRIGHT_YELLOW, NEON_YELLOW, BRIGHT_YELLOW, DIM_YELLOW]
@@ -385,10 +448,13 @@ def colorize(lines: List[str], color_scheme: str = 'neon') -> List[str]:
 
 
 def generate_title(text: str, style: str = 'blocks', border: str = 'simple', 
-                  color_scheme: str = 'neon', subtitle: str = '') -> str:
+                  color_scheme: str = 'neon', subtitle: str = '', depth: int = 2) -> str:
     """Generate a complete title screen"""
-    # Generate main title
-    title_lines = generate_block_text(text, style)
+    # Generate main title based on style
+    if style == '3d':
+        title_lines = generate_3d_text(text, depth)
+    else:
+        title_lines = generate_block_text(text, style)
     
     # Add border if requested
     if border != 'none':
@@ -413,19 +479,20 @@ def main():
     
     parser = argparse.ArgumentParser(description='Generate ASCII art titles')
     parser.add_argument('text', help='Text to convert to ASCII art')
-    parser.add_argument('--style', choices=['blocks', 'shade', 'outline'], 
-                       default='blocks', help='Art style')
+    parser.add_argument('--style', choices=['blocks', 'shade', 'outline', '3d'], 
+                       default='blocks', help='Art style (blocks, shade, outline, 3d)')
     parser.add_argument('--border', choices=['none', 'simple', 'double'], 
                        default='simple', help='Border style')
     parser.add_argument('--color', choices=['neon', 'gradient', 'plain'], 
                        default='neon', help='Color scheme')
     parser.add_argument('--subtitle', default='', help='Optional subtitle')
+    parser.add_argument('--depth', type=int, default=2, help='3D depth (for 3d style)')
     
     args = parser.parse_args()
     
     # Generate and print the title
     title = generate_title(args.text, args.style, args.border, 
-                          args.color, args.subtitle)
+                          args.color, args.subtitle, args.depth)
     print(title)
 
 

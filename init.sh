@@ -56,8 +56,8 @@ show_header() {
         python scripts/animated_ascii_art.py "AGENTIC" --effect scan
         echo
     elif [ -f "scripts/generate_ascii_art.py" ]; then
-        # Use static ASCII art normally
-        python scripts/generate_ascii_art.py "AGENTIC" --subtitle "AI-Driven Development Framework" --color neon
+        # Use static ASCII art with 3D effect
+        python scripts/generate_ascii_art.py "AGENTIC" --style 3d --subtitle "AI-Driven Development Framework" --color neon --border none
         echo
     else
         # Fallback to simple header if scripts not available

@@ -8,7 +8,7 @@ import sys
 import time
 import random
 from typing import List
-from generate_ascii_art import BLOCK_FONT, FULL_BLOCK, generate_block_text, colorize
+from generate_ascii_art import BLOCK_FONT, FULL_BLOCK, generate_block_text, generate_3d_text, colorize
 
 # ANSI codes for animation
 CLEAR_LINE = '\033[2K'
@@ -196,9 +196,12 @@ def glitch_effect(text: str, duration: float = 1.0):
     print(SHOW_CURSOR, end='', flush=True)
 
 
-def scan_effect(text: str):
+def scan_effect(text: str, use_3d: bool = True):
     """Create a scanning effect that reveals the text"""
-    lines = generate_block_text(text, 'blocks')
+    if use_3d:
+        lines = generate_3d_text(text, depth=2)
+    else:
+        lines = generate_block_text(text, 'blocks')
     height = len(lines)
     width = max(len(line) for line in lines) if lines else 0
     
@@ -216,8 +219,14 @@ def scan_effect(text: str):
             output = ''
             for i, char in enumerate(line):
                 if i < x:
-                    # Already scanned - show in stable color
-                    if char != ' ':
+                    # Already scanned - show with proper coloring for 3D
+                    if char == FULL_BLOCK or char == '█':
+                        output += f"{NEON_COLORS[2]}{char}{RESET}"
+                    elif char in ['▒', '▐']:
+                        output += f"{NEON_COLORS[1]}{char}{RESET}"
+                    elif char == '░':
+                        output += f"{NEON_COLORS[0]}{char}{RESET}"
+                    elif char != ' ':
                         output += f"{NEON_COLORS[2]}{char}{RESET}"
                     else:
                         output += char
