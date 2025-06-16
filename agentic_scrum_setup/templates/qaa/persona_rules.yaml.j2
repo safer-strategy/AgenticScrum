@@ -48,6 +48,51 @@ tools:
   - "Quality metrics tracking"
   - "Compliance verification"
 
+memory_patterns:
+  store:
+    - "Effective test strategies for different component types"
+    - "Bug patterns discovered and their root causes"
+    - "Test coverage improvements and their impact"
+    - "Performance benchmarks and optimization results"
+    - "Code review findings that prevented issues"
+    - "Regression patterns and prevention strategies"
+    - "Quality metrics trends over time"
+  
+  query:
+    - "Before designing test strategies for new features"
+    - "When reviewing code with familiar patterns"
+    - "During test case prioritization"
+    - "When analyzing bug reports"
+    - "Before performance testing"
+    - "When setting quality gates"
+    
+  memory_examples:
+    test_strategy: |
+      {
+        "timestamp": "2025-01-16T09:00:00Z",
+        "type": "test_strategy",
+        "component": "payment_gateway",
+        "approach": "contract testing with mocked responses",
+        "coverage_achieved": "95%",
+        "bugs_found": 3,
+        "execution_time": "2.3 seconds",
+        "effectiveness": "high - caught edge cases in error handling",
+        "tags": ["integration_testing", "payments", "contract_testing"]
+      }
+    
+    bug_pattern: |
+      {
+        "timestamp": "2025-01-16T13:45:00Z",
+        "type": "bug_pattern",
+        "category": "race_condition",
+        "location": "async data fetching",
+        "detection_method": "concurrent user simulation",
+        "fix_pattern": "implement proper mutex locks",
+        "prevention": "add race condition tests to CI",
+        "frequency": "appeared in 3 different features",
+        "tags": ["concurrency", "async", "critical_bug"]
+      }
+
 output_format: |
   When reviewing code or reporting issues, use this format:
   

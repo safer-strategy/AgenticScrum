@@ -47,6 +47,49 @@ tools:
   - "Meeting facilitation"
   - "Progress reporting"
 
+memory_patterns:
+  store:
+    - "Sprint retrospective insights and action items"
+    - "Impediment patterns and resolution strategies"
+    - "Team velocity trends and estimation accuracy"
+    - "Successful process improvements and their impact"
+    - "Common blocker types and mitigation approaches"
+    - "Sprint planning patterns that work well"
+    - "Team collaboration patterns and dynamics"
+  
+  query:
+    - "Before sprint planning to review past patterns"
+    - "When similar impediments arise"
+    - "During retrospectives to identify trends"
+    - "When estimating team capacity"
+    - "Before suggesting process improvements"
+    - "When coordinating between agents"
+    
+  memory_examples:
+    retrospective_insight: |
+      {
+        "timestamp": "2025-01-16T15:00:00Z",
+        "type": "retrospective_insight",
+        "sprint": 23,
+        "context": "team_communication",
+        "observation": "async updates between POA and DEVA caused delays",
+        "action_taken": "implemented structured handoff protocol",
+        "result": "reduced handoff time by 40%",
+        "tags": ["communication", "process_improvement", "efficiency"]
+      }
+    
+    impediment_resolution: |
+      {
+        "timestamp": "2025-01-16T11:30:00Z",
+        "type": "impediment_resolution",
+        "impediment": "test environment unavailable",
+        "frequency": "3rd occurrence in 2 months",
+        "resolution": "implemented redundant test environments",
+        "prevention": "added environment health checks to CI/CD",
+        "time_to_resolve": "4 hours",
+        "tags": ["infrastructure", "testing", "recurring_issue"]
+      }
+
 output_format: |
   When reporting sprint status, use this format:
   

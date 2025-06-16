@@ -46,6 +46,49 @@ tools:
   - "Acceptance criteria writing"
   - "Stakeholder communication"
 
+memory_patterns:
+  store:
+    - "User story acceptance/rejection reasons with context"
+    - "Stakeholder preference patterns and priorities"
+    - "Requirement change patterns and their triggers"
+    - "Priority decision rationale and outcomes"
+    - "Feature success metrics and user feedback"
+    - "Common requirement clarification questions"
+    - "Estimation accuracy patterns"
+  
+  query:
+    - "Before creating similar user stories"
+    - "When prioritizing backlog items"
+    - "During stakeholder discussions"
+    - "When estimating story complexity"
+    - "Before refining acceptance criteria"
+    - "When identifying dependencies"
+    
+  memory_examples:
+    requirement_pattern: |
+      {
+        "timestamp": "2025-01-16T10:30:00Z",
+        "type": "requirement_pattern",
+        "context": "user_authentication",
+        "pattern": "multi-factor authentication requested",
+        "decision": "implement TOTP-based 2FA",
+        "rationale": "balance between security and user experience",
+        "outcome": "reduced unauthorized access by 95%",
+        "tags": ["security", "authentication", "user_experience"]
+      }
+    
+    priority_decision: |
+      {
+        "timestamp": "2025-01-16T14:00:00Z",
+        "type": "priority_decision",
+        "stories": ["AUTH-123", "PERF-456"],
+        "decision": "prioritize AUTH-123 over PERF-456",
+        "rationale": "security vulnerabilities take precedence",
+        "stakeholder": "security_team",
+        "impact": "delayed performance improvements by 1 sprint",
+        "tags": ["prioritization", "security", "trade-offs"]
+      }
+
 output_format: |
   When creating user stories, use this format:
   

@@ -91,6 +91,51 @@ output_format: |
   - [ ] Error handling
   - [ ] Logging and monitoring
 
+memory_patterns:
+  store:
+    - "Vulnerability patterns and their fixes across projects"
+    - "Security incident root causes and prevention measures"
+    - "Effective security controls for specific attack vectors"
+    - "Third-party library vulnerabilities and patches"
+    - "Compliance requirements and implementation patterns"
+    - "Security testing strategies that caught vulnerabilities"
+    - "False positive patterns to reduce noise"
+  
+  query:
+    - "Before security audits to check for known patterns"
+    - "When reviewing authentication/authorization code"
+    - "During dependency vulnerability assessment"
+    - "When implementing security controls"
+    - "Before recommending security fixes"
+    - "When assessing new attack vectors"
+    
+  memory_examples:
+    vulnerability_fix: |
+      {
+        "timestamp": "2025-01-16T10:00:00Z",
+        "type": "vulnerability_fix",
+        "vulnerability": "SQL injection in user search",
+        "severity": "critical",
+        "attack_vector": "unescaped user input in query",
+        "fix_applied": "parameterized queries with prepared statements",
+        "prevention": "added SQLi detection to CI pipeline",
+        "similar_issues_found": 3,
+        "tags": ["sql_injection", "input_validation", "critical"]
+      }
+    
+    security_pattern: |
+      {
+        "timestamp": "2025-01-16T14:30:00Z",
+        "type": "security_pattern",
+        "context": "JWT_implementation",
+        "pattern": "stateless authentication with refresh tokens",
+        "security_benefit": "reduced session hijacking risk",
+        "implementation_notes": "15-minute access token, 7-day refresh token",
+        "potential_issues": "token rotation complexity",
+        "effectiveness": "no auth-related incidents in 6 months",
+        "tags": ["authentication", "jwt", "best_practice"]
+      }
+
 llm_config:
   provider: {{ llm_provider }}
   model: {{ default_model }}

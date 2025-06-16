@@ -58,6 +58,65 @@ knowledge_sources:
   - "/checklists/"
   - "/docs/requirements/"
 
+memory_patterns:
+  store:
+{% if 'deva' in agent_type %}
+    - "Successful code patterns and implementations"
+    - "Refactoring decisions and their outcomes"
+    - "Performance optimization techniques that worked"
+    - "Bug fixes and their root causes"
+    - "Library/framework usage patterns"
+    - "Common error patterns and solutions"
+    - "Architecture decisions and rationale"
+{% elif agent_type == 'qaa' %}
+    - "Effective test strategies for different scenarios"
+    - "Common bug patterns and detection methods"
+    - "Quality metrics and improvement trends"
+    - "Test coverage insights and gaps"
+    - "Performance testing results and benchmarks"
+    - "Security vulnerability patterns"
+    - "Code review findings and resolutions"
+{% elif agent_type == 'saa' %}
+    - "Security vulnerability patterns and fixes"
+    - "Compliance requirements and implementations"
+    - "Attack vectors and mitigation strategies"
+    - "Security audit findings and resolutions"
+    - "Best practices for secure coding"
+    - "Third-party dependency vulnerabilities"
+    - "Security incident responses"
+{% else %}
+    - "Task completion patterns and learnings"
+    - "Successful approaches to common challenges"
+    - "Process improvements and outcomes"
+    - "Collaboration patterns that work well"
+{% endif %}
+  
+  query:
+{% if 'deva' in agent_type %}
+    - "Before implementing similar features"
+    - "When encountering familiar error patterns"
+    - "During code refactoring decisions"
+    - "When selecting libraries or frameworks"
+    - "Before making architecture decisions"
+{% elif agent_type == 'qaa' %}
+    - "Before creating test plans"
+    - "When reviewing similar code patterns"
+    - "During test strategy selection"
+    - "When identifying quality metrics"
+    - "Before security testing"
+{% elif agent_type == 'saa' %}
+    - "Before security audits"
+    - "When reviewing dependencies"
+    - "During threat modeling"
+    - "When implementing security controls"
+    - "Before compliance reviews"
+{% else %}
+    - "Before starting similar tasks"
+    - "When facing familiar challenges"
+    - "During planning phases"
+    - "When making decisions"
+{% endif %}
+
 output_format: |
   Structure all outputs clearly with:
   1. Task/Goal statement
