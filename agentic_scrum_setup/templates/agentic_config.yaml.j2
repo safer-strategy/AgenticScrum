@@ -5,7 +5,12 @@ project:
   created: "{{ created_date }}"
 
 llm:
+  # Provider options: anthropic, openai, google, etc.
   provider: "{{ llm_provider }}"
+  # Claude model selection guide:
+  # - claude-opus-4-0: Most capable, best for complex planning and architecture
+  # - claude-sonnet-4-0: Fast & balanced, recommended for development (default)
+  # - claude-3-5-haiku-latest: Fastest, good for simple tasks
   default_model: "{{ default_model }}"
   api_key: "${{ '{' }}{{ llm_provider|upper }}_API_KEY{{ '}' }}"  # Set as environment variable
 
