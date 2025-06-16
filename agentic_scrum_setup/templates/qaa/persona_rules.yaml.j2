@@ -9,8 +9,10 @@ backstory: |
 llm_config:
   provider: "{{ llm_provider }}"
   model: "{{ default_model }}"
-  temperature: 0.2
-  max_tokens: 4096
+  # Recommended: claude-sonnet-4-0 for thorough code review and test generation
+  # Note: Claude Code controls actual temperature and token limits
+  # temperature: 0.2  # Lower for precise bug detection
+  # max_tokens: 4096  # Sufficient for detailed test cases and reports
 
 capabilities:
   - "Code review"

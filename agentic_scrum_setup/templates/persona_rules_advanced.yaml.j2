@@ -12,15 +12,17 @@ agent:
 
 llm_config:
   model: "{{ default_model }}"
-  temperature: 0.3  # Lower for consistency, higher for creativity
-  max_tokens: 4000
-  top_p: 0.95
-  frequency_penalty: 0.1
-  presence_penalty: 0.1
+  # Note: When using Claude Code, these parameters are controlled by the IDE
+  # The following are informational and may be used by other LLM providers
+  # temperature: 0.3  # Lower for consistency, higher for creativity
+  # max_tokens: 4000
+  # top_p: 0.95
+  # frequency_penalty: 0.1
+  # presence_penalty: 0.1
   
-  # Advanced parameters for fine-tuning
-  response_format: "text"  # or "json" for structured output
-  seed: 42  # For reproducible outputs during testing
+  # Advanced parameters for fine-tuning (provider-specific)
+  # response_format: "text"  # or "json" for structured output
+  # seed: 42  # For reproducible outputs during testing
 
 capabilities:
   # Technical capabilities

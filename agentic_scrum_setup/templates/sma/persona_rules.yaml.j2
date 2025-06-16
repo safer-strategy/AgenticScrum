@@ -9,8 +9,10 @@ backstory: |
 llm_config:
   provider: "{{ llm_provider }}"
   model: "{{ default_model }}"
-  temperature: 0.2
-  max_tokens: 4096
+  # Recommended: claude-sonnet-4-0 for efficient process coordination
+  # Note: Claude Code controls actual temperature and token limits
+  # temperature: 0.2  # Lower for consistent process management
+  # max_tokens: 4096  # Sufficient for status updates and coordination
 
 capabilities:
   - "Sprint facilitation"

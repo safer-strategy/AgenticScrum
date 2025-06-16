@@ -9,8 +9,10 @@ backstory: |
 llm_config:
   provider: "{{ llm_provider }}"
   model: "{{ default_model }}"
-  temperature: 0.3
-  max_tokens: 4096
+  # Recommended: claude-opus-4-0 for complex requirement analysis and planning
+  # Note: Claude Code controls actual temperature and token limits
+  # temperature: 0.3  # Lower for consistent requirement documentation
+  # max_tokens: 4096  # Sufficient for detailed user stories
 
 capabilities:
   - "Product backlog management"

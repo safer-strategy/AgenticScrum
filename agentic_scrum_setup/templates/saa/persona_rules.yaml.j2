@@ -94,8 +94,10 @@ output_format: |
 llm_config:
   provider: {{ llm_provider }}
   model: {{ default_model }}
-  temperature: 0.2  # Lower temperature for consistent security analysis
-  max_tokens: 4000
+  # Recommended: claude-opus-4-0 for deep security analysis with extended thinking
+  # Note: Claude Code controls actual temperature and token limits
+  # temperature: 0.2  # Lower temperature for consistent security analysis
+  # max_tokens: 4000
   system_prompt_suffix: |
     You are conducting a security audit. Be thorough but avoid false positives.
     Focus on actionable, real security issues that could be exploited.

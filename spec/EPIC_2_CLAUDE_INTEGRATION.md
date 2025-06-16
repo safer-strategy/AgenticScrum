@@ -73,8 +73,8 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
 ### 🎯 Acceptance Criteria
 
 #### Product Owner Agent (POA)
-- [ ] Update `agentic_scrum_setup/templates/poa/persona_rules.yaml.j2`:
-  - [ ] Update llm_config section (lines 9-13):
+- [x] Update `agentic_scrum_setup/templates/poa/persona_rules.yaml.j2`:
+  - [x] Update llm_config section (lines 9-13):
     ```yaml
     llm_config:
       provider: "{{ llm_provider }}"
@@ -86,32 +86,30 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
     ```
 
 #### Scrum Master Agent (SMA)  
-- [ ] Update `agentic_scrum_setup/templates/sma/persona_rules.yaml.j2`:
-  - [ ] Update llm_config with recommendation:
+- [x] Update `agentic_scrum_setup/templates/sma/persona_rules.yaml.j2`:
+  - [x] Update llm_config with recommendation:
     ```yaml
     # Recommended: claude-sonnet-4-0 for efficient process coordination
     ```
 
 #### QA Agent (QAA)
-- [ ] Update `agentic_scrum_setup/templates/qaa/persona_rules.yaml.j2`:
-  - [ ] Update llm_config with recommendation:
+- [x] Update `agentic_scrum_setup/templates/qaa/persona_rules.yaml.j2`:
+  - [x] Update llm_config with recommendation:
     ```yaml
     # Recommended: claude-sonnet-4-0 for thorough code review and test generation
     ```
 
 #### Security Audit Agent (SAA)
-- [ ] Update `agentic_scrum_setup/templates/saa/persona_rules.yaml.j2`:
-  - [ ] Update llm_config with recommendation:
+- [x] Update `agentic_scrum_setup/templates/saa/persona_rules.yaml.j2`:
+  - [x] Update llm_config with recommendation:
     ```yaml
     # Recommended: claude-opus-4-0 for deep security analysis with extended thinking
     ```
 
 #### Developer Agents (DEVA)
-- [ ] Create language-specific persona templates if they don't exist:
-  - [ ] `deva_python/persona_rules.yaml.j2`
-  - [ ] `deva_javascript/persona_rules.yaml.j2`
-  - [ ] `deva_typescript/persona_rules.yaml.j2`
-- [ ] Each should include:
+- [x] Updated generic_persona_rules.yaml.j2 which is used for all DEVA agents
+- [x] Updated persona_rules_advanced.yaml.j2 for custom agent configurations
+- [x] Each includes Claude-specific comments:
     ```yaml
     # Recommended: claude-sonnet-4-0 for fast code generation with 64K output capacity
     ```
