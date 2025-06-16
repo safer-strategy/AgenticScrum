@@ -219,17 +219,20 @@ class SetupCore:
         )
         (self.project_path / 'docker-compose.yml').write_text(docker_compose)
         
-        # Generate CLAUDE.md if claude agent is included
-        if any('claude' in agent for agent in self.agents):
+        # Generate CLAUDE.md if claude agent is included or using anthropic provider
+        if any('claude' in agent for agent in self.agents) or self.config.get('llm_provider') == 'anthropic':
             claude_md = self.jinja_env.get_template('claude/CLAUDE.md.j2').render(
                 project_name=self.project_name,
-                language=self.language
+                language=self.language,
+                agents=self.agents
             )
             (self.project_path / 'CLAUDE.md').write_text(claude_md)
             
             # Generate .mcp.json
             mcp_json = self.jinja_env.get_template('claude/.mcp.json.j2').render(
-                project_name=self.project_name
+                project_name=self.project_name,
+                language=self.language,
+                agents=self.agents
             )
             (self.project_path / '.mcp.json').write_text(mcp_json)
     

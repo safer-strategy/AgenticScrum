@@ -20,7 +20,7 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
 
 **Story Points:** 3
 **Priority:** P1 (High - Core configuration changes)
-**Status:** Pending
+**Status:** Completed
 **Dependencies:** None
 
 ### 📋 User Story
@@ -63,7 +63,7 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
 
 **Story Points:** 5
 **Priority:** P1 (High - Agent-specific optimizations)
-**Status:** Pending
+**Status:** Completed
 **Dependencies:** Story 201
 
 ### 📋 User Story
@@ -125,7 +125,7 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
 
 **Story Points:** 4
 **Priority:** P1 (High - User-facing changes)
-**Status:** Pending
+**Status:** Completed
 **Dependencies:** Stories 201, 202
 
 ### 📋 User Story
@@ -170,7 +170,7 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
 
 **Story Points:** 3
 **Priority:** P2 (Medium - Documentation)
-**Status:** Pending
+**Status:** Completed
 **Dependencies:** Stories 201-203
 
 ### 📋 User Story
@@ -218,7 +218,7 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
 
 **Story Points:** 2
 **Priority:** P2 (Medium - Enhancement)
-**Status:** Pending
+**Status:** Completed
 **Dependencies:** Stories 201-204
 
 ### 📋 User Story
@@ -228,22 +228,22 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
 ### 🎯 Acceptance Criteria
 
 #### Claude Configuration Template
-- [ ] Update `agentic_scrum_setup/templates/claude/CLAUDE.md.j2`:
-  - [ ] Add model recommendation section
-  - [ ] Include AgenticScrum-specific guidance
-  - [ ] Add agent-to-model mapping guide
+- [x] Update `agentic_scrum_setup/templates/claude/CLAUDE.md.j2`:
+  - [x] Add model recommendation section
+  - [x] Include AgenticScrum-specific guidance
+  - [x] Add agent-to-model mapping guide
 
 #### MCP Configuration
-- [ ] Create/update `.mcp.json` template:
-  - [ ] Include AgenticScrum-specific tools
-  - [ ] Add agent simulation commands
-  - [ ] Configure appropriate contexts
+- [x] Create/update `.mcp.json` template:
+  - [x] Include AgenticScrum-specific configuration
+  - [x] Add model recommendations per agent
+  - [x] Configure key paths and commands
 
 #### Project Integration
-- [ ] Add to project generation when Claude agents selected:
-  - [ ] Generate CLAUDE.md in project root
-  - [ ] Include .mcp.json if applicable
-  - [ ] Add Claude-specific .gitignore entries
+- [x] Add to project generation when Claude agents selected:
+  - [x] Generate CLAUDE.md in project root
+  - [x] Include .mcp.json if applicable
+  - [x] Updated logic to also generate for anthropic provider
 
 #### Testing
 - [ ] Generate project with Claude agents

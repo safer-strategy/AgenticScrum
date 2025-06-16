@@ -16,6 +16,36 @@
     "description": "AgenticScrum-powered {{ language }} project",
     "rootPath": "/{{ project_name }}",
     "primaryLanguage": "{{ language }}",
-    "aiAgents": {{ agents | tojson }}
+    "aiAgents": {{ agents | tojson }},
+    "agenticScrum": {
+      "version": "1.0.0",
+      "modelRecommendations": {
+        "default": "claude-sonnet-4-0",
+        "planning": "claude-opus-4-0",
+        "quickTasks": "claude-3-5-haiku-latest",
+        "agentSpecific": {
+          "poa": "claude-opus-4-0",
+          "sma": "claude-sonnet-4-0",
+          "deva": "claude-sonnet-4-0",
+          "qaa": "claude-sonnet-4-0",
+          "saa": "claude-opus-4-0"
+        }
+      },
+      "keyPaths": {
+        "agentConfigs": "agents/",
+        "standards": "standards/",
+        "checklists": "checklists/",
+        "requirements": "docs/requirements/",
+        "source": "src/",
+        "tests": "tests/"
+      },
+      "commands": {
+        "environment": "./init.sh",
+        "test": "./init.sh test",
+        "lint": "./init.sh lint",
+        "up": "./init.sh up",
+        "down": "./init.sh down"
+      }
+    }
   }
 }

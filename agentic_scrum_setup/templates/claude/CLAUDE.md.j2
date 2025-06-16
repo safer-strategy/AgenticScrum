@@ -6,6 +6,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 {{ project_name }} is an AgenticScrum-powered {{ language }} project. This project uses AI agents to assist with development following Scrum methodologies.
 
+## Model Recommendations for AgenticScrum Agents
+
+When simulating different agents, consider using appropriate models:
+
+### Agent-to-Model Mapping
+- **Product Owner Agent (POA)**: Use `/model opus` for complex requirement analysis
+- **Scrum Master Agent (SMA)**: Use `/model sonnet` (default) for coordination
+- **Developer Agent (DEVA)**: Use `/model sonnet` (default) for code generation
+- **QA Agent (QAA)**: Use `/model sonnet` (default) for code review
+- **Security Audit Agent (SAA)**: Use `/model opus` for deep security analysis
+
+### General Model Selection Strategy
+- **Planning & Architecture**: `/model opus` (claude-opus-4-0)
+- **Development & Implementation**: `/model sonnet` (claude-sonnet-4-0) - RECOMMENDED DEFAULT
+- **Quick Tasks**: `/model haiku` (claude-3-5-haiku-latest)
+
 ## Key Architecture & Structure
 
 ### Directory Structure
@@ -77,3 +93,21 @@ Please refer to `standards/coding_standards.md` for detailed coding conventions 
 3. Ensure all code changes pass linting and tests before marking tasks complete
 4. Use the standardized project structure - don't create new top-level directories
 5. When implementing features, check `docs/requirements/user_stories/` for detailed requirements
+
+## Claude Code Specific Notes
+
+### Parameter Handling
+- Model parameters (temperature, max_tokens) in configuration files are informational only
+- Claude Code controls these parameters directly through the IDE
+- Focus on the model selection strategy above for optimal performance
+
+### Agent Simulation
+When working on tasks for specific agents:
+1. Review the agent's persona rules in `agents/[agent_name]/persona_rules.yaml`
+2. Switch to the recommended model for that agent type
+3. Follow the agent's specific capabilities and constraints
+
+### Performance Tips
+- Use Sonnet 4 as your default model for most tasks
+- Switch to Opus 4 only for complex planning or deep analysis
+- Leverage Sonnet 4's 64K output capacity for large code generation tasks
