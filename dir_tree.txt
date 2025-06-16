@@ -72,7 +72,7 @@
 ├── docs
 │   ├── AGENT_OPTIMIZATION.md
 │   ├── Anthropic-models.md
-│   ├── Design.md
+│   ├── CLAUDE_CODE_GUIDE.md
 │   ├── FEEDBACK_WORKFLOW.md
 │   ├── models_claude.md
 │   ├── RETROFITTING_GUIDE.md
@@ -91,7 +91,9 @@
 │   └── update_agent_config.py
 ├── setup.py
 └── spec
+    ├── Design.md
     ├── EPIC_1_STORY_123.md
-    └── EPIC_1.STORY_124-127.md
+    ├── EPIC_1.STORY_124-127.md
+    └── EPIC_2_CLAUDE_INTEGRATION.md
 
-27 directories, 68 files
+27 directories, 70 files
