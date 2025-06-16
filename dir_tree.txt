@@ -52,6 +52,8 @@
 │   │   ├── saa
 │   │   │   ├── persona_rules.yaml.j2
 │   │   │   └── priming_script.md.j2
+│   │   ├── scripts
+│   │   │   └── check-secrets.sh
 │   │   ├── sma
 │   │   │   └── persona_rules.yaml.j2
 │   │   ├── standards
@@ -98,4 +100,4 @@
     ├── EPIC_2_CLAUDE_INTEGRATION.md
     └── EPIC_3_MCP_INTEGRATION.md
 
-27 directories, 72 files
+28 directories, 73 files

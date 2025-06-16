@@ -23,6 +23,67 @@ C_WHITE='\033[0;37m'
 C_BOLD='\033[1m'
 
 # --- Helper Functions ---
+
+# Load environment variables from .env file if it exists
+function load_env() {
+  if [ -f ".env" ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+    success "Loaded environment variables from .env"
+  fi
+}
+
+# Check for required API keys
+function check_api_keys() {
+  local missing_keys=()
+  local has_mcp_config=false
+  
+  # Check if MCP configuration exists
+  if [[ -f ".mcp.json" ]] || [[ -f ".mcp-secrets.json" ]]; then
+    has_mcp_config=true
+  fi
+  
+  # Check for Perplexity API key if MCP is configured
+  if [[ "$has_mcp_config" == true ]] && [[ -f ".mcp-secrets.json" ]] && grep -q "perplexity-mcp" .mcp-secrets.json 2>/dev/null; then
+    if [[ -z "${PERPLEXITY_API_KEY}" ]]; then
+      missing_keys+=("PERPLEXITY_API_KEY")
+    fi
+  fi
+  
+  if [[ ${#missing_keys[@]} -gt 0 ]]; then
+    error "Missing required API keys:"
+    printf '  - %s\n' "${missing_keys[@]}"
+    echo ""
+    info "To fix this:"
+    echo "  1. Copy .env.sample to .env: cp .env.sample .env"
+    echo "  2. Edit .env and add your API keys"
+    echo "  3. Run this script again"
+    echo ""
+    echo "  Get your Perplexity API key from: https://www.perplexity.ai/settings/api"
+    return 1
+  fi
+  
+  success "All required API keys are configured"
+  return 0
+}
+
+# Setup MCP configuration if needed
+function setup_mcp() {
+  if [[ -f ".mcp-secrets.json.sample" ]] && [[ ! -f ".mcp-secrets.json" ]]; then
+    info "Setting up MCP configuration..."
+    
+    # Create .mcp-secrets.json from sample
+    cp .mcp-secrets.json.sample .mcp-secrets.json
+    
+    # Replace environment variables in the file
+    if command -v envsubst &> /dev/null; then
+      envsubst < .mcp-secrets.json.sample > .mcp-secrets.json
+      success "Created .mcp-secrets.json with environment variables"
+    else
+      info "envsubst not found - you'll need to manually update .mcp-secrets.json"
+    fi
+  fi
+}
+
 function header() {
   echo -e "${C_PURPLE}${C_BOLD}"
   echo "    ___    __  __   ____   _____   ____    ___    _   _ "
@@ -91,15 +152,52 @@ function show_help() {
   echo -e "  ${C_YELLOW}down${C_RESET}       - Stop and remove all Docker services."
   echo -e "  ${C_YELLOW}logs${C_RESET}       - Tail the logs from all running services."
   echo -e "  ${C_YELLOW}test${C_RESET}       - Run the test suite within the Docker container."
+  echo -e "  ${C_YELLOW}setup${C_RESET}      - Setup environment variables and MCP configuration."
   echo -e "  ${C_YELLOW}help${C_RESET}       - Show this help message."
   echo ""
 }
 
+function setup_environment() {
+  header
+  info "Setting up development environment..."
+  
+  # Check if .env exists, create from sample if not
+  if [[ ! -f ".env" ]] && [[ -f ".env.sample" ]]; then
+    info "Creating .env from .env.sample..."
+    cp .env.sample .env
+    echo ""
+    error "Please edit .env and add your API keys before continuing."
+    echo "  Get your Perplexity API key from: https://www.perplexity.ai/settings/api"
+    return 1
+  fi
+  
+  # Load environment variables
+  load_env
+  
+  # Check API keys
+  if ! check_api_keys; then
+    return 1
+  fi
+  
+  # Setup MCP if needed
+  setup_mcp
+  
+  success "Environment setup complete!"
+}
+
 # --- Main Dispatcher ---
 function main() {
+  # Always load environment variables if available
+  load_env
+  
   case "$1" in
     up)
-      start_services
+      # Check API keys before starting services
+      if check_api_keys; then
+        start_services
+      else
+        error "Please run './init.sh setup' first to configure API keys."
+      fi
       ;;
     down)
       stop_services
@@ -109,6 +207,9 @@ function main() {
       ;;
     test)
       run_tests
+      ;;
+    setup)
+      setup_environment
       ;;
     help|*)
       show_help

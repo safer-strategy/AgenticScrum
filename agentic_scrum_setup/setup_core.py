@@ -61,6 +61,9 @@ class SetupCore:
         
         # Generate documentation
         self._generate_documentation()
+        
+        # Generate scripts
+        self._generate_scripts()
     
     def _create_directory_structure(self):
         """Create the standard AgenticScrum directory structure."""
@@ -235,6 +238,14 @@ class SetupCore:
                 agents=self.agents
             )
             (self.project_path / '.mcp.json').write_text(mcp_json)
+            
+            # Generate .mcp-secrets.json.sample
+            mcp_secrets_sample = self.jinja_env.get_template('claude/.mcp-secrets.json.sample').render()
+            (self.project_path / '.mcp-secrets.json.sample').write_text(mcp_secrets_sample)
+        
+        # Generate .env.sample for all projects (MCP support is optional)
+        env_sample = self.jinja_env.get_template('.env.sample').render()
+        (self.project_path / '.env.sample').write_text(env_sample)
     
     def _generate_language_files(self):
         """Generate language-specific files."""
@@ -494,3 +505,25 @@ class SetupCore:
                 project_name=self.project_name
             )
             (self.project_path / 'checklists' / checklist).write_text(checklist_content)
+    
+    def _generate_scripts(self):
+        """Generate utility scripts for the project."""
+        # Generate check-secrets.sh pre-commit hook
+        check_secrets = self.jinja_env.get_template('scripts/check-secrets.sh').render()
+        check_secrets_path = self.project_path / 'scripts' / 'check-secrets.sh'
+        check_secrets_path.write_text(check_secrets)
+        
+        # Make check-secrets.sh executable
+        current_permissions = check_secrets_path.stat().st_mode
+        check_secrets_path.chmod(current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        
+        # Create .git/hooks directory if project is a git repo
+        git_hooks_dir = self.project_path / '.git' / 'hooks'
+        if git_hooks_dir.parent.exists():
+            git_hooks_dir.mkdir(exist_ok=True)
+            # Copy as pre-commit hook
+            pre_commit_path = git_hooks_dir / 'pre-commit'
+            shutil.copy2(check_secrets_path, pre_commit_path)
+            # Make pre-commit executable
+            current_permissions = pre_commit_path.stat().st_mode
+            pre_commit_path.chmod(current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
