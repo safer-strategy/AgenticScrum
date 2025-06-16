@@ -180,14 +180,14 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
 ### 🎯 Acceptance Criteria
 
 #### Tutorial.md Updates
-- [ ] Update all command examples:
-  - [ ] Line 71-72: Change to `--llm-provider "anthropic" --default-model "claude-sonnet-4-0"`
-  - [ ] Update the provider selection explanation
-  - [ ] Add new section "### Using with Claude Code" after Step 2
+- [x] Update all command examples:
+  - [x] Line 71-72: Change to `--llm-provider "anthropic" --default-model "claude-sonnet-4-0"`
+  - [x] Update the provider selection explanation
+  - [x] Add new section "### Using with Claude Code" after Step 2
 
 #### Claude Code Section Content
-- [ ] Include explanation of model parameter handling
-- [ ] Provide model selection strategy:
+- [x] Include explanation of model parameter handling
+- [x] Provide model selection strategy:
   ```markdown
   ### Model Selection Strategy
   - **Planning & Architecture**: Use `/model opus` for complex analysis
@@ -196,16 +196,16 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
   ```
 
 #### README.md Updates  
-- [ ] Update main example to use Anthropic
-- [ ] Add "Claude Code Integration" section
-- [ ] Update badges/compatibility notes
+- [x] Update main example to use Anthropic
+- [x] Add "Claude Code Integration" section
+- [x] Update compatibility notes
 
 #### New Documentation
-- [ ] Create `docs/CLAUDE_CODE_GUIDE.md`:
-  - [ ] Model selection best practices
-  - [ ] Parameter handling explanation
-  - [ ] Tips for optimal performance
-  - [ ] Troubleshooting common issues
+- [x] Create `docs/CLAUDE_CODE_GUIDE.md`:
+  - [x] Model selection best practices
+  - [x] Parameter handling explanation
+  - [x] Tips for optimal performance
+  - [x] Troubleshooting common issues
 
 #### Testing
 - [ ] Verify all examples are executable

@@ -47,7 +47,7 @@ When prompted, enter the following:
 - **Frontend Language:** TypeScript (option 2)
 - **Frontend Framework:** React (option 1)
 - **Agents:** poa,sma,deva_python,deva_typescript,qaa,saa (or press Enter for smart defaults)
-- **LLM Provider:** Choose based on your API keys (OpenAI, Anthropic, etc.)
+- **LLM Provider:** Choose based on your API keys (Anthropic, OpenAI, etc.)
 
 **Alternative: Quick Setup**
 
@@ -68,8 +68,8 @@ agentic-scrum-setup init \
   --frontend-language "typescript" \
   --frontend-framework "react" \
   --agents "poa,sma,deva_python,deva_typescript,qaa,saa" \
-  --llm-provider "openai" \
-  --default-model "gpt-4-turbo-preview"
+  --llm-provider "anthropic" \
+  --default-model "claude-sonnet-4-0"
 ```
 
 The setup utility creates a new folder named `RanchHand` with separate backend and frontend directories, framework-specific configurations, and all agent personas for both Python and TypeScript development.
@@ -89,6 +89,32 @@ To see what it can do, run:
 ```
 
 You'll see a themed menu with all the available commands. This is your go-to tool for managing the project's lifecycle.
+
+---
+
+### **Using with Claude Code**
+
+If you're using Claude Code (claude.ai/code), the AgenticScrum framework is optimized to work seamlessly with the IDE. Here are some key points:
+
+#### **Model Parameter Handling**
+When using Claude Code, the IDE controls model parameters like temperature and max_tokens. The configuration files include these parameters for documentation purposes, but Claude Code will override them based on your IDE settings.
+
+#### **Model Selection Strategy**
+Use Claude's model switcher commands for different tasks:
+- **Planning & Architecture**: Use `/model opus` (claude-opus-4-0) for complex analysis and planning
+- **Development & Implementation**: Use `/model sonnet` (claude-sonnet-4-0) for coding - this is the recommended default
+- **Quick Tasks & Simple Operations**: Use `/model haiku` (claude-3-5-haiku-latest) for fast, simple tasks
+
+#### **Quick Setup for Claude Code**
+If you're using Claude Code, you can use the `--claude-code` flag for optimal defaults:
+```bash
+agentic-scrum-setup init --project-name MyProject --language python --agents poa,sma,deva_python,qaa --claude-code
+```
+
+This automatically sets:
+- Provider: `anthropic`
+- Model: `claude-sonnet-4-0`
+- Optimized configurations for Claude Code usage
 
 ---
 

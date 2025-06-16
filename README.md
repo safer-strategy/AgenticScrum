@@ -97,8 +97,8 @@ agentic-scrum-setup init \
   --language python \
   --framework fastapi \
   --agents poa,sma,deva_python,qaa,saa \
-  --llm-provider openai \
-  --default-model gpt-4-turbo-preview
+  --llm-provider anthropic \
+  --default-model claude-sonnet-4-0
 ```
 
 Fullstack project:
@@ -111,8 +111,8 @@ agentic-scrum-setup init \
   --frontend-language typescript \
   --frontend-framework react \
   --agents poa,sma,deva_python,deva_typescript,qaa,saa \
-  --llm-provider openai \
-  --default-model gpt-4-turbo-preview
+  --llm-provider anthropic \
+  --default-model claude-sonnet-4-0
 ```
 
 This command will:
@@ -125,6 +125,27 @@ This command will:
 6. Scaffold checklist documents like definition\_of\_done.md.
 
 If run interactively (e.g., agentic-scrum-setup init), the CLI will prompt for necessary information.
+
+### **Claude Code Integration**
+
+AgenticScrum is optimized for use with Claude Code (claude.ai/code). When using Claude Code:
+
+**Quick Setup:**
+```bash
+# Use the --claude-code flag for optimal defaults
+agentic-scrum-setup init --project-name MyProject --language python --agents poa,sma,deva_python,qaa --claude-code
+```
+
+**Key Features:**
+- Automatic selection of Anthropic provider and claude-sonnet-4-0 model
+- Model parameters (temperature, max_tokens) are controlled by Claude Code IDE
+- Agent configurations include model recommendations for different tasks
+- Seamless integration with Claude Code's model switching commands
+
+**Model Selection Strategy:**
+- Use `/model opus` for complex planning and architecture tasks
+- Use `/model sonnet` (default) for development and implementation
+- Use `/model haiku` for quick, simple tasks
 
 ### **Retrofitting Existing Projects**
 
