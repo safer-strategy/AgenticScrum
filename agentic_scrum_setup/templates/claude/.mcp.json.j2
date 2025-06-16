@@ -9,6 +9,14 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-git"],
       "description": "Git operations for version control"
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@itseasy21/mcp-knowledge-graph"],
+      "description": "Agent memory and knowledge persistence",
+      "env": {
+        "MEMORY_FILE_PATH": "${PROJECT_ROOT}/.agent-memory/shared/main.jsonl"
+      }
     }
   },
   "projectContext": {
@@ -37,7 +45,8 @@
         "checklists": "checklists/",
         "requirements": "docs/requirements/",
         "source": "src/",
-        "tests": "tests/"
+        "tests": "tests/",
+        "memory": ".agent-memory/"
       },
       "commands": {
         "environment": "./init.sh",

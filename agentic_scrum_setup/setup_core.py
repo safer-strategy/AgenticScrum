@@ -64,6 +64,9 @@ class SetupCore:
         
         # Generate scripts
         self._generate_scripts()
+        
+        # Create memory structure for MCP integration
+        self._create_memory_structure()
     
     def _create_directory_structure(self):
         """Create the standard AgenticScrum directory structure."""
@@ -202,6 +205,13 @@ class SetupCore:
                     )
                 
                 (agent_dir / 'priming_script.md').write_text(priming_script)
+                
+                # Generate agent MCP configuration for memory integration
+                if self.llm_provider == 'anthropic' or any('claude' in a for a in self.agents):
+                    agent_mcp_config = self.jinja_env.get_template('agents/agent_mcp_config.json.j2').render(
+                        agent_type=agent
+                    )
+                    (agent_dir / 'mcp_config.json').write_text(agent_mcp_config)
     
     def _generate_common_files(self):
         """Generate common project files."""
@@ -527,3 +537,75 @@ class SetupCore:
             # Make pre-commit executable
             current_permissions = pre_commit_path.stat().st_mode
             pre_commit_path.chmod(current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    
+    def _create_memory_structure(self):
+        """Create agent memory directory structure for MCP integration."""
+        memory_root = self.project_path / '.agent-memory'
+        
+        # Agent-specific directories
+        agent_dirs = ['poa', 'sma', 'deva', 'qaa', 'saa', 'shared']
+        
+        for agent_dir in agent_dirs:
+            dir_path = memory_root / agent_dir
+            dir_path.mkdir(parents=True, exist_ok=True)
+            
+            # Initialize empty JSONL files with starter content
+            if agent_dir == 'shared':
+                # Shared memory gets project initialization entry
+                init_entry = {
+                    "timestamp": "{{ '{' }}{{ '\"' }}timestamp{{ '\"' }}: {{ '\"' }}{{ '{:.3f}'.format(time.time()) }}{{ '\"' }},",
+                    "type": "project_init",
+                    "project_name": self.project_name,
+                    "language": self.language,
+                    "agents": self.agents,
+                    "framework": self.framework or self.backend_framework
+                }
+                # Write as JSON lines format
+                (dir_path / 'timeline.jsonl').write_text('')
+                (dir_path / 'architecture.jsonl').write_text('')
+            else:
+                # Agent-specific memory files
+                (dir_path / 'main.jsonl').touch()
+                
+                # Create specialized memory files based on agent type
+                if agent_dir == 'poa':
+                    (dir_path / 'requirements.jsonl').touch()
+                    (dir_path / 'decisions.jsonl').touch()
+                elif agent_dir == 'sma':
+                    (dir_path / 'retrospectives.jsonl').touch()
+                    (dir_path / 'impediments.jsonl').touch()
+                elif agent_dir == 'deva':
+                    (dir_path / 'patterns.jsonl').touch()
+                    (dir_path / 'refactors.jsonl').touch()
+                elif agent_dir == 'qaa':
+                    (dir_path / 'test-strategies.jsonl').touch()
+                    (dir_path / 'bug-patterns.jsonl').touch()
+                elif agent_dir == 'saa':
+                    (dir_path / 'vulnerabilities.jsonl').touch()
+                    (dir_path / 'mitigations.jsonl').touch()
+        
+        # Create README for memory directory
+        memory_readme = '''# Agent Memory Directory
+
+This directory contains persistent memory for AI agents in the AgenticScrum framework.
+
+## Structure
+
+- `poa/` - Product Owner Agent memories (requirements, decisions)
+- `sma/` - Scrum Master Agent memories (retrospectives, impediments)
+- `deva/` - Developer Agent memories (code patterns, refactoring decisions)
+- `qaa/` - QA Agent memories (test strategies, bug patterns)
+- `saa/` - Security Agent memories (vulnerabilities, mitigations)
+- `shared/` - Cross-agent shared knowledge (timeline, architecture)
+
+## File Format
+
+All memory files use JSONL (JSON Lines) format for efficient append operations.
+Each line is a complete JSON object representing a memory entry.
+
+## Privacy Note
+
+This directory is gitignored by default to protect project-specific learnings.
+Consider backing up important memories using the memory export utilities.
+'''
+        (memory_root / 'README.md').write_text(memory_readme)

@@ -5,6 +5,8 @@
 │   ├── templates
 │   │   ├── agentic_config.yaml.j2
 │   │   ├── agentic_config.yaml.sample.j2
+│   │   ├── agents
+│   │   │   └── agent_mcp_config.json.j2
 │   │   ├── checklists
 │   │   │   ├── code_review_checklist.md.j2
 │   │   │   ├── definition_of_done.md.j2
@@ -100,4 +102,4 @@
     ├── EPIC_2_CLAUDE_INTEGRATION.md
     └── EPIC_3_MCP_INTEGRATION.md
 
-28 directories, 73 files
+29 directories, 74 files

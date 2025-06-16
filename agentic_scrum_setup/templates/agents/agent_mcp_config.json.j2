@@ -1,0 +1,48 @@
+{
+  "agentMemoryConfig": {
+    "agent": "{{ agent_type }}",
+    "memoryPath": ".agent-memory/{{ agent_type }}/",
+    "memoryFiles": {
+      {% if agent_type == 'poa' %}
+      "main": "main.jsonl",
+      "requirements": "requirements.jsonl",
+      "decisions": "decisions.jsonl"
+      {% elif agent_type == 'sma' %}
+      "main": "main.jsonl",
+      "retrospectives": "retrospectives.jsonl",
+      "impediments": "impediments.jsonl"
+      {% elif agent_type == 'deva' %}
+      "main": "main.jsonl",
+      "patterns": "patterns.jsonl",
+      "refactors": "refactors.jsonl"
+      {% elif agent_type == 'qaa' %}
+      "main": "main.jsonl",
+      "testStrategies": "test-strategies.jsonl",
+      "bugPatterns": "bug-patterns.jsonl"
+      {% elif agent_type == 'saa' %}
+      "main": "main.jsonl",
+      "vulnerabilities": "vulnerabilities.jsonl",
+      "mitigations": "mitigations.jsonl"
+      {% else %}
+      "main": "main.jsonl"
+      {% endif %}
+    },
+    "queryPatterns": {
+      "beforeAction": [
+        "What similar {{ agent_type }} tasks have I handled before?",
+        "What patterns or decisions are relevant to this task?",
+        "What were the outcomes of similar approaches?"
+      ],
+      "afterAction": [
+        "What did I learn from this task?",
+        "What patterns emerged that I should remember?",
+        "How can I improve next time?"
+      ]
+    },
+    "memoryRetention": {
+      "maxEntries": 10000,
+      "relevanceDecayDays": 180,
+      "minRelevanceScore": 0.1
+    }
+  }
+}
