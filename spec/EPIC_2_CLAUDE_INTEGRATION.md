@@ -135,9 +135,9 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
 ### 🎯 Acceptance Criteria
 
 #### CLI Updates
-- [ ] Update `agentic_scrum_setup/cli.py`:
-  - [ ] Modify LLM provider prompt to list 'anthropic' first
-  - [ ] Add Claude model selection when anthropic is chosen:
+- [x] Update `agentic_scrum_setup/cli.py`:
+  - [x] Modify LLM provider prompt to list 'anthropic' first
+  - [x] Add Claude model selection when anthropic is chosen:
     ```python
     claude_models = [
         ('claude-opus-4-0', 'Most capable - Best for planning & complex analysis'),
@@ -146,18 +146,18 @@ This epic encompasses the complete transition from OpenAI-centric defaults to Cl
         ('claude-3-5-haiku-latest', 'Fastest - Good for simple tasks'),
     ]
     ```
-  - [ ] Update help text to mention Claude Code compatibility
-  - [ ] Add `--claude-code` flag that sets optimal defaults automatically
+  - [x] Update help text to mention Claude Code compatibility
+  - [x] Add `--claude-code` flag that sets optimal defaults automatically
 
 #### Default Examples
-- [ ] Update all CLI examples in help text to use:
+- [x] Update all CLI examples in help text to use:
   - `--llm-provider anthropic`
   - `--default-model claude-sonnet-4-0`
 
 #### Interactive Mode Enhancements
-- [ ] Add prompt: "Are you using Claude Code? (Y/n)"
-  - [ ] If yes, add note about model parameter handling
-  - [ ] If yes, suggest claude-sonnet-4-0 as default
+- [x] Add prompt: "Are you using Claude Code? (Y/n)"
+  - [x] If yes, add note about model parameter handling
+  - [x] If yes, suggest claude-sonnet-4-0 as default
 
 #### Testing
 - [ ] Test interactive mode flow with Claude selection

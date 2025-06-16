@@ -13,7 +13,26 @@ def parse_arguments():
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
         prog='agentic-scrum-setup',
-        description='AgenticScrum Project Setup Utility - Initialize AI-driven development projects'
+        description='AgenticScrum Project Setup Utility - Initialize AI-driven development projects',
+        epilog='''Examples:
+  # Interactive mode (recommended)
+  agentic-scrum-setup init
+  
+  # Quick setup for Claude Code
+  agentic-scrum-setup init --project-name MyProject --language python --agents poa,sma,deva_python,qaa --claude-code
+  
+  # Single language project  
+  agentic-scrum-setup init --project-name MyProject --language python --framework fastapi \\
+    --agents poa,sma,deva_python,qaa --llm-provider anthropic --default-model claude-sonnet-4-0
+  
+  # Fullstack project
+  agentic-scrum-setup init --project-name MyApp --project-type fullstack \\
+    --language python --backend-framework fastapi \\
+    --frontend-language typescript --frontend-framework react \\
+    --agents poa,sma,deva_python,deva_typescript,qaa \\
+    --llm-provider anthropic --default-model claude-sonnet-4-0
+''',
+        formatter_class=argparse.RawDescriptionHelpFormatter
     )
     
     subparsers = parser.add_subparsers(dest='command', help='Commands')
@@ -70,13 +89,18 @@ def parse_arguments():
     init_parser.add_argument(
         '--llm-provider',
         type=str,
-        choices=['openai', 'anthropic', 'azure', 'local'],
-        help='LLM provider to use'
+        choices=['anthropic', 'openai', 'azure', 'local'],
+        help='LLM provider to use (Note: When using Claude Code, model parameters are controlled by the IDE)'
+    )
+    init_parser.add_argument(
+        '--claude-code',
+        action='store_true',
+        help='Optimize settings for Claude Code IDE (sets anthropic provider and claude-sonnet-4-0 model)'
     )
     init_parser.add_argument(
         '--default-model',
         type=str,
-        help='Default model to use (e.g., gpt-4-turbo-preview, claude-3-opus)'
+        help='Default model to use (e.g., claude-sonnet-4-0, gpt-4-turbo-preview)'
     )
     init_parser.add_argument(
         '--output-dir',
@@ -236,32 +260,66 @@ def interactive_mode():
     agents_input = input(f"Enter agents (comma-separated) [{agents_default}]: ").strip()
     agents = agents_input if agents_input else agents_default
     
-    # LLM Provider
-    print("\nAvailable LLM providers:")
-    providers = ['openai', 'anthropic', 'azure', 'local']
-    for i, provider in enumerate(providers, 1):
-        print(f"  {i}. {provider}")
+    # Check if using Claude Code
+    print("\nAre you using Claude Code? (Y/n): ", end='')
+    claude_code_input = input().strip().lower()
+    using_claude_code = claude_code_input != 'n'
     
-    provider_choice = input("Select LLM provider (number or name): ").strip()
-    if provider_choice.isdigit():
-        provider_idx = int(provider_choice) - 1
-        if 0 <= provider_idx < len(providers):
-            llm_provider = providers[provider_idx]
-        else:
-            llm_provider = 'openai'
+    if using_claude_code:
+        print("\nNote: Claude Code controls model parameters (temperature, max_tokens) directly.")
+        print("The configuration will be optimized for Claude Code usage.")
+        llm_provider = 'anthropic'
+        default_model = 'claude-sonnet-4-0'
     else:
-        llm_provider = provider_choice if provider_choice in providers else 'openai'
+        # LLM Provider
+        print("\nAvailable LLM providers:")
+        providers = ['anthropic', 'openai', 'azure', 'local']
+        for i, provider in enumerate(providers, 1):
+            print(f"  {i}. {provider}")
+        
+        provider_choice = input("Select LLM provider (number or name) [1]: ").strip() or "1"
+        if provider_choice.isdigit():
+            provider_idx = int(provider_choice) - 1
+            if 0 <= provider_idx < len(providers):
+                llm_provider = providers[provider_idx]
+            else:
+                llm_provider = 'anthropic'
+        else:
+            llm_provider = provider_choice if provider_choice in providers else 'anthropic'
     
-    # Default model
-    model_suggestions = {
-        'openai': 'gpt-4-turbo-preview',
-        'anthropic': 'claude-3-opus-20240229',
-        'azure': 'gpt-4',
-        'local': 'llama2'
-    }
-    default_model = input(f"Default model (suggested: {model_suggestions.get(llm_provider, 'gpt-4')}): ").strip()
-    if not default_model:
-        default_model = model_suggestions.get(llm_provider, 'gpt-4')
+        # Model selection for Anthropic
+        if llm_provider == 'anthropic':
+            print("\nAvailable Claude models:")
+            claude_models = [
+                ('claude-opus-4-0', 'Most capable - Best for planning & complex analysis'),
+                ('claude-sonnet-4-0', 'Balanced (Recommended) - Fast with 64K output'),
+                ('claude-3-5-sonnet-latest', 'Previous generation - Still very capable'),
+                ('claude-3-5-haiku-latest', 'Fastest - Good for simple tasks'),
+            ]
+            for i, (model, desc) in enumerate(claude_models, 1):
+                print(f"  {i}. {model} - {desc}")
+            
+            model_choice = input("Select model (number or alias) [2]: ").strip() or "2"
+            if model_choice.isdigit():
+                model_idx = int(model_choice) - 1
+                if 0 <= model_idx < len(claude_models):
+                    default_model = claude_models[model_idx][0]
+                else:
+                    default_model = 'claude-sonnet-4-0'
+            else:
+                # Check if it's a valid model alias
+                valid_models = [m[0] for m in claude_models]
+                default_model = model_choice if model_choice in valid_models else 'claude-sonnet-4-0'
+        else:
+            # Default model for other providers
+            model_suggestions = {
+                'openai': 'gpt-4-turbo-preview',
+                'azure': 'gpt-4',
+                'local': 'llama2'
+            }
+            default_model = input(f"Default model (suggested: {model_suggestions.get(llm_provider, 'gpt-4')}): ").strip()
+            if not default_model:
+                default_model = model_suggestions.get(llm_provider, 'gpt-4')
     
     return {
         'project_name': project_name,
@@ -288,6 +346,12 @@ def main():
         sys.exit(1)
     
     if args.command == 'init':
+        # Handle --claude-code flag
+        if hasattr(args, 'claude_code') and args.claude_code:
+            args.llm_provider = 'anthropic'
+            args.default_model = 'claude-sonnet-4-0'
+            print("Claude Code mode enabled: Using anthropic provider with claude-sonnet-4-0 model")
+        
         # Check if we have all required arguments
         if not all([args.project_name, args.language, args.agents, args.llm_provider, args.default_model]):
             print("Running in interactive mode...")
