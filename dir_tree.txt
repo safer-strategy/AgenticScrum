@@ -72,6 +72,7 @@
 ├── dir_tree.txt
 ├── docs
 │   ├── AGENT_OPTIMIZATION.md
+│   ├── Anthropic-models.md
 │   ├── FEEDBACK_WORKFLOW.md
 │   └── RETROFITTING_GUIDE.md
 ├── EPIC_1_STORY_123.md
@@ -82,11 +83,13 @@
 ├── README.md
 ├── requirements-dev.txt
 ├── scripts
+│   ├── animated_ascii_art.py
 │   ├── collect_agent_metrics.py
 │   ├── feedback_analyzer.py
+│   ├── generate_ascii_art.py
 │   ├── retrofit_project.py
 │   └── update_agent_config.py
 ├── setup.py
 └── Tutorial.md
 
-26 directories, 64 files
+26 directories, 67 files

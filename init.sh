@@ -24,13 +24,52 @@ DEFAULT_LLM_PROVIDER="openai"
 DEFAULT_MODEL="gpt-4-turbo-preview"
 DEFAULT_AGENTS="poa,sma,deva_python,qaa"
 
-# Function to display the header
+# Function to show success message with style
+show_success() {
+    local project_name=$1
+    echo
+    if [ -f "scripts/generate_ascii_art.py" ]; then
+        python scripts/generate_ascii_art.py "SUCCESS" --style blocks --border none --color gradient
+    else
+        echo -e "${GREEN}╔══════════════════════════════════════╗${NC}"
+        echo -e "${GREEN}║         SUCCESS!                     ║${NC}"
+        echo -e "${GREEN}╚══════════════════════════════════════╝${NC}"
+    fi
+    echo
+    echo -e "${GREEN}✨ Project '$project_name' created successfully!${NC}"
+    echo
+    echo -e "${YELLOW}Next steps:${NC}"
+    echo -e "  ${CYAN}1. cd $project_name${NC}"
+    echo -e "  ${CYAN}2. ./init.sh help${NC} - See available commands"
+    echo -e "  ${CYAN}3. ./init.sh up${NC} - Start your development environment"
+    echo
+    echo -e "${YELLOW}▓▒░ Happy coding with AgenticScrum! ░▒▓${NC}"
+}
+
+# Function to display the header with ASCII art
 show_header() {
     clear
-    echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║${BOLD}                        AgenticScrum Setup Utility Helper                        ${CYAN}║${NC}"
-    echo -e "${CYAN}║${WHITE}                    Simplifying agentic-scrum-setup commands                     ${CYAN}║${NC}"
-    echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════════════════╝${NC}"
+    
+    # Check if we should use animated version (for first run or special commands)
+    if [ "$1" = "animated" ] && [ -f "scripts/animated_ascii_art.py" ]; then
+        # Use animated ASCII art for special occasions
+        python scripts/animated_ascii_art.py "AGENTIC" --effect scan
+        echo
+    elif [ -f "scripts/generate_ascii_art.py" ]; then
+        # Use static ASCII art normally
+        python scripts/generate_ascii_art.py "AGENTIC" --subtitle "AI-Driven Development Framework" --color neon
+        echo
+    else
+        # Fallback to simple header if scripts not available
+        echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${CYAN}║${BOLD}                        AgenticScrum Setup Utility Helper                        ${CYAN}║${NC}"
+        echo -e "${CYAN}║${WHITE}                    Simplifying agentic-scrum-setup commands                     ${CYAN}║${NC}"
+        echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════════════════╝${NC}"
+        echo
+    fi
+    
+    # Add a cool status line
+    echo -e "${YELLOW}▓▒░ Ready to create amazing AI-driven projects! ░▒▓${NC}"
     echo
 }
 
@@ -85,7 +124,7 @@ check_installation() {
 
 # Function to install agentic-scrum-setup
 install_utility() {
-    show_header
+    show_header animated
     echo -e "${BOLD}Installing agentic-scrum-setup utility...${NC}"
     echo
     
@@ -346,9 +385,7 @@ create_new_project() {
         echo
         echo -e "${YELLOW}Creating project...${NC}"
         eval $cmd
-        echo
-        echo -e "${GREEN}✓ Project created successfully!${NC}"
-        echo -e "${CYAN}Navigate to your project: cd $project_name${NC}"
+        show_success "$project_name"
     else
         echo -e "${YELLOW}Command cancelled${NC}"
     fi
@@ -379,9 +416,7 @@ quick_setup() {
     echo
     echo -e "${YELLOW}Creating project with default settings...${NC}"
     eval $cmd
-    echo
-    echo -e "${GREEN}✓ Project created successfully!${NC}"
-    echo -e "${CYAN}Navigate to your project: cd $project_name${NC}"
+    show_success "$project_name"
 }
 
 # Function for custom setup
