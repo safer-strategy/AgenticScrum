@@ -152,15 +152,18 @@ Please refer to `standards/coding_standards.md` for detailed coding conventions 
 
 ## Important Guidelines
 
-1. Always consult the persona rules in `agents/developer_agent/claude_python_expert/persona_rules.yaml`
-2. Follow the Definition of Done checklist in `checklists/definition_of_done.md`
-3. Ensure all code changes pass linting and tests before marking tasks complete
-4. Use the standardized project structure - don't create new top-level directories
-5. When implementing features, check `docs/requirements/user_stories/` for detailed requirements
+1. **ALWAYS check `docs/PROJECT_SCOPE.md` first** - This contains the user's project requirements
+2. If PROJECT_SCOPE.md is incomplete, help the user fill it out before proceeding
+3. Use the scoping document to create initial user stories and development plans
+4. Always consult the persona rules in `agents/developer_agent/claude_python_expert/persona_rules.yaml`
+5. Follow the Definition of Done checklist in `checklists/definition_of_done.md`
+6. Ensure all code changes pass linting and tests before marking tasks complete
+7. Use the standardized project structure - don't create new top-level directories
+8. When implementing features, check `docs/requirements/user_stories/` for detailed requirements
 {% if enable_mcp %}
-6. Query agent memories before implementing similar features
-7. Store important decisions and patterns in agent memory
-8. Never store secrets or sensitive data in memories
+9. Query agent memories before implementing similar features
+10. Store important decisions and patterns in agent memory
+11. Never store secrets or sensitive data in memories
 {% endif %}
 
 ## Claude Code Specific Notes

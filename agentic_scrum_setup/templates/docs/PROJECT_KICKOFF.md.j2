@@ -1,0 +1,285 @@
+# 🚀 Project Kickoff Guide for {{ project_name }}
+
+Welcome! This guide will help you start development with AgenticScrum and Claude Code.
+
+## Quick Start (5 minutes)
+
+1. **Complete the Scope** 📝
+   - Open `docs/PROJECT_SCOPE.md`
+   - Answer at least the required questions
+   - Save your responses
+
+2. **Start Claude Code** 🤖
+   - Navigate to this project directory
+   - Open Claude Code (claude.ai/code)
+   - Let Claude read your project structure
+
+3. **Share Your Vision** 💬
+   ```
+   I've completed the PROJECT_SCOPE.md questionnaire. Please review it and:
+   1. Create initial user stories based on my requirements
+   2. Set up the product backlog
+   3. Recommend a development roadmap
+   ```
+
+4. **Begin Development** 🛠️
+   - Claude will act as your Product Owner Agent (POA)
+   - Review generated user stories together
+   - Start with the highest priority items
+
+---
+
+## Detailed Workflow (30 minutes)
+
+### Step 1: Project Scoping (10 min)
+
+Complete the PROJECT_SCOPE.md questionnaire thoroughly. The more detail you provide, the better your AI agents can help.
+
+**Tips for Better Answers:**
+- Be specific about your users and their pain points
+- List features in order of importance
+- Include examples from products you admire
+- Don't worry about technical jargon
+
+### Step 2: Environment Setup (5 min)
+
+```bash
+# Ensure Docker is running
+docker --version
+
+# Start the development environment
+./init.sh up
+
+# Verify everything is working
+./init.sh test
+```
+
+### Step 3: Claude Code Integration (5 min)
+
+{% if has_mcp %}
+**With MCP Features:**
+- Claude will automatically access agent memories
+- Previous patterns and decisions are available
+- Search capabilities enabled for research
+{% endif %}
+
+**Starting Claude:**
+1. Open claude.ai/code
+2. Navigate to your project: `cd {{ project_name }}`
+3. Let Claude analyze the project structure
+4. Mention you're using AgenticScrum
+
+### Step 4: Initial Planning (10 min)
+
+**Sample Conversation Starters:**
+
+For a new project:
+```
+I've completed PROJECT_SCOPE.md for my {{ project_name }} project. 
+Please review it and help me create an initial product backlog 
+with prioritized user stories.
+```
+
+For specific features:
+```
+Based on the PROJECT_SCOPE.md, let's focus on implementing 
+[specific feature]. What user stories should we create?
+```
+
+For technical planning:
+```
+Given our technical requirements in PROJECT_SCOPE.md, 
+what architecture would you recommend for {{ project_name }}?
+```
+
+---
+
+## Working with AI Agents
+
+### Available Agents
+{% for agent in agents %}
+{% if agent == 'poa' %}
+**ProductOwnerAgent (POA)**
+- Creates and refines user stories
+- Prioritizes the backlog
+- Defines acceptance criteria
+{% elif agent == 'sma' %}
+**ScrumMasterAgent (SMA)**
+- Manages sprint planning
+- Tracks progress
+- Identifies blockers
+{% elif agent == 'deva_python' %}
+**PythonDeveloperAgent**
+- Implements Python features
+- Writes unit tests
+- Follows Python best practices
+{% elif agent == 'deva_javascript' %}
+**JavaScriptDeveloperAgent**
+- Implements JavaScript features
+- Creates frontend components
+- Manages npm dependencies
+{% elif agent == 'deva_typescript' %}
+**TypeScriptDeveloperAgent**
+- Implements TypeScript features
+- Ensures type safety
+- Creates interfaces and types
+{% elif agent == 'qaa' %}
+**QAAgent (QAA)**
+- Reviews code quality
+- Suggests improvements
+- Ensures standards compliance
+{% elif agent == 'saa' %}
+**SecurityAuditAgent (SAA)**
+- Identifies vulnerabilities
+- Reviews security practices
+- Suggests hardening measures
+{% endif %}
+{% endfor %}
+
+### Agent Collaboration Examples
+
+**Creating a New Feature:**
+```
+Let's work on the user authentication feature from PROJECT_SCOPE.md.
+1. POA: Create user stories
+2. DEVA: Implement the backend
+3. QAA: Review the implementation
+4. SAA: Security audit
+```
+
+**Sprint Planning:**
+```
+Based on our PROJECT_SCOPE.md priorities, let's plan Sprint 1.
+What stories should we include to deliver maximum value?
+```
+
+---
+
+## Best Practices
+
+### 1. Iterative Development
+- Start with a Minimum Viable Product (MVP)
+- Get feedback early and often
+- Adjust based on learnings
+
+### 2. Clear Communication
+- Be specific about what you want
+- Ask for clarification when needed
+- Review generated code carefully
+
+### 3. Quality First
+- Run tests frequently: `./init.sh test`
+- Follow coding standards in `standards/`
+- Use checklists in `checklists/`
+
+### 4. Documentation
+- Keep PROJECT_SCOPE.md updated
+- Document major decisions
+- Update user stories as needed
+
+{% if has_mcp %}
+### 5. Leverage Memory
+- Agents remember past decisions
+- Ask about previous implementations
+- Build on established patterns
+{% endif %}
+
+---
+
+## Common Workflows
+
+### Adding a New Feature
+1. Describe the feature need
+2. Let POA create user stories
+3. Review and refine stories
+4. Implement with DEVA
+5. Test and review with QAA
+
+### Fixing a Bug
+1. Describe the issue
+2. DEVA investigates the cause
+3. Implement the fix
+4. QAA verifies the solution
+5. Update tests
+
+### Refactoring Code
+1. Identify improvement areas
+2. DEVA proposes changes
+3. Implement incrementally
+4. Ensure tests still pass
+
+---
+
+## Troubleshooting
+
+### Claude Can't Find Files
+```
+Please read the project structure from README.md 
+and check the docs/ directory for PROJECT_SCOPE.md
+```
+
+### Unclear Requirements
+```
+I need more clarity on [specific aspect]. 
+Can you provide an example or user story?
+```
+
+### Integration Issues
+```
+I'm having trouble with [specific integration]. 
+Let's check the technical specs in PROJECT_SCOPE.md
+```
+
+{% if has_mcp %}
+### Memory Not Working
+```bash
+# Verify MCP is configured
+./init.sh test-mcp
+
+# Check memory directory
+ls -la .agent-memory/
+```
+{% endif %}
+
+---
+
+## Tips for Success
+
+### Do's ✅
+- Complete PROJECT_SCOPE.md thoroughly
+- Start with core features first
+- Test early and often
+- Ask for multiple solutions
+- Review generated code
+
+### Don'ts ❌
+- Skip the scoping questionnaire
+- Try to build everything at once
+- Ignore test failures
+- Accept code without review
+- Forget about security
+
+---
+
+## Next Actions
+
+1. **Complete Scope**: Finish PROJECT_SCOPE.md if not done
+2. **Start Claude**: Open Claude Code and share your scope
+3. **Create Stories**: Work with POA to build your backlog
+4. **Begin Sprint 1**: Start implementing highest priority items
+5. **Iterate**: Build, test, learn, repeat
+
+---
+
+## Getting Help
+
+- **Documentation**: Check `docs/` directory
+- **Standards**: Review `standards/coding_standards.md`
+- **Checklists**: Use `checklists/` for quality
+- **Community**: [AgenticScrum discussions/forum]
+
+---
+
+Remember: AgenticScrum is designed to accelerate your development while maintaining quality. The AI agents are here to help, but your vision and feedback drive the project forward.
+
+**Happy coding! 🎉**

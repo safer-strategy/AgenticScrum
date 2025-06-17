@@ -526,6 +526,23 @@ class SetupCore:
         )
         (self.project_path / 'docs' / 'SECURITY.md').write_text(security_doc)
         
+        # Generate PROJECT_SCOPE.md
+        project_scope = self.jinja_env.get_template('docs/PROJECT_SCOPE.md.j2').render(
+            project_name=self.project_name,
+            language=self.language,
+            project_type=self.project_type
+        )
+        (self.project_path / 'docs' / 'PROJECT_SCOPE.md').write_text(project_scope)
+        
+        # Generate PROJECT_KICKOFF.md
+        project_kickoff = self.jinja_env.get_template('docs/PROJECT_KICKOFF.md.j2').render(
+            project_name=self.project_name,
+            has_mcp=self.enable_mcp,
+            has_search=self.enable_search,
+            agents=self.agents
+        )
+        (self.project_path / 'docs' / 'PROJECT_KICKOFF.md').write_text(project_kickoff)
+        
         # Generate coding standards
         coding_standards = self.jinja_env.get_template('standards/coding_standards.md.j2').render(
             language=self.language
