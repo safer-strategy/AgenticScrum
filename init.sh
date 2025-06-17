@@ -20,8 +20,8 @@ NC='\033[0m' # No Color
 
 # Project configuration defaults
 DEFAULT_LANGUAGE="python"
-DEFAULT_LLM_PROVIDER="openai"
-DEFAULT_MODEL="gpt-4-turbo-preview"
+DEFAULT_LLM_PROVIDER="anthropic"
+DEFAULT_MODEL="claude-sonnet-4-0"
 DEFAULT_AGENTS="poa,sma,deva_python,qaa"
 
 # Function to show success message with style
@@ -81,14 +81,22 @@ show_help() {
     echo -e "${BOLD}Commands:${NC}"
     echo -e "  ${GREEN}new${NC}         Create a new AgenticScrum project (interactive)"
     echo -e "  ${GREEN}quick${NC}       Quick setup with sensible defaults"
+    echo -e "  ${GREEN}claude-code${NC} Quick setup optimized for Claude Code"
     echo -e "  ${GREEN}custom${NC}      Custom setup with all options"
     echo -e "  ${GREEN}install${NC}     Install agentic-scrum-setup utility"
     echo -e "  ${GREEN}help${NC}        Show this help message"
     echo
     echo -e "${BOLD}Quick Examples:${NC}"
     echo -e "  ${CYAN}./init.sh new${NC}                    # Interactive project creation"
-    echo -e "  ${CYAN}./init.sh quick MyProject${NC}        # Quick Python project with defaults"
+    echo -e "  ${CYAN}./init.sh quick MyProject${NC}        # Quick project with Claude defaults"
+    echo -e "  ${CYAN}./init.sh claude-code MyApp${NC}      # Optimized for Claude Code IDE"
     echo -e "  ${CYAN}./init.sh custom${NC}                 # Full customization options"
+    echo
+    echo -e "${BOLD}Claude Code Integration:${NC}"
+    echo -e "  Projects are now optimized for Claude Code by default"
+    echo -e "  - Default provider: Anthropic"
+    echo -e "  - Default model: claude-sonnet-4-0"
+    echo -e "  - Automatic parameter handling by Claude Code IDE"
     echo
     echo -e "${BOLD}Supported Languages:${NC}"
     echo -e "  python, javascript, typescript, java, go, rust, csharp, php, ruby"
@@ -333,22 +341,57 @@ create_new_project() {
         agents="$default_agents"
     fi
     
-    # LLM Provider
+    # Claude Code Integration Check
     echo
-    echo -e "${BOLD}Select LLM Provider:${NC}"
-    echo "1) OpenAI"
-    echo "2) Anthropic"
-    echo "3) Google"
-    echo "4) Local (Ollama)"
-    read -p "$(echo -e ${BOLD}Choice [1-4]:${NC} )" llm_choice
+    read -p "$(echo -e ${BOLD}Are you using Claude Code? [Y/n]:${NC} )" claude_code
+    if [ "$claude_code" != "n" ] && [ "$claude_code" != "N" ]; then
+        echo -e "${CYAN}Note: Claude Code controls temperature and token limits${NC}"
+        echo -e "${CYAN}Recommended model: claude-sonnet-4-0 for development${NC}"
+        # Set flag for later use
+        using_claude_code=true
+        # Auto-select Anthropic and add --claude-code flag
+        llm_provider="anthropic"
+        default_model="claude-sonnet-4-0"
+        claude_code_flag=" --claude-code"
+    else
+        using_claude_code=false
+        claude_code_flag=""
+    fi
     
-    case $llm_choice in
-        1) llm_provider="openai"; default_model="gpt-4-turbo-preview";;
-        2) llm_provider="anthropic"; default_model="claude-sonnet-4-0";;
-        3) llm_provider="google"; default_model="gemini-pro";;
-        4) llm_provider="local"; default_model="codellama";;
-        *) llm_provider="openai"; default_model="gpt-4-turbo-preview";;
-    esac
+    # LLM Provider (skip if Claude Code was selected)
+    if [ "$using_claude_code" != "true" ]; then
+        echo
+        echo -e "${BOLD}Select LLM Provider:${NC}"
+        echo "1) Anthropic (Claude)"
+        echo "2) OpenAI"
+        echo "3) Google"
+        echo "4) Local (Ollama)"
+        read -p "$(echo -e ${BOLD}Choice [1-4]:${NC} )" llm_choice
+        
+        case $llm_choice in
+            1) llm_provider="anthropic"
+               # Claude model selection
+               echo
+               echo -e "${BOLD}Select Claude Model:${NC}"
+               echo "1) claude-sonnet-4-0 (Balanced - Recommended)"
+               echo "2) claude-opus-4-0 (Most capable - Complex tasks)"
+               echo "3) claude-3-5-sonnet-latest (Previous generation)"
+               echo "4) claude-3-5-haiku-latest (Fastest - Simple tasks)"
+               read -p "$(echo -e ${BOLD}Choice [1-4]:${NC} )" model_choice
+               case $model_choice in
+                   1) default_model="claude-sonnet-4-0";;
+                   2) default_model="claude-opus-4-0";;
+                   3) default_model="claude-3-5-sonnet-latest";;
+                   4) default_model="claude-3-5-haiku-latest";;
+                   *) default_model="claude-sonnet-4-0";;
+               esac
+               ;;
+            2) llm_provider="openai"; default_model="gpt-4-turbo-preview";;
+            3) llm_provider="google"; default_model="gemini-pro";;
+            4) llm_provider="local"; default_model="codellama";;
+            *) llm_provider="anthropic"; default_model="claude-sonnet-4-0";;
+        esac
+    fi
     
     # Build command
     cmd="agentic-scrum-setup init"
@@ -372,6 +415,11 @@ create_new_project() {
     cmd="$cmd --agents $agents"
     cmd="$cmd --llm-provider $llm_provider"
     cmd="$cmd --default-model $default_model"
+    
+    # Add Claude Code flag if applicable
+    if [ "$using_claude_code" = "true" ]; then
+        cmd="$cmd --claude-code"
+    fi
     
     # Show command and confirm
     echo
@@ -409,8 +457,9 @@ quick_setup() {
     cmd="$cmd --project-name \"$project_name\""
     cmd="$cmd --language python"
     cmd="$cmd --agents poa,sma,deva_python,qaa"
-    cmd="$cmd --llm-provider openai"
-    cmd="$cmd --default-model gpt-4-turbo-preview"
+    cmd="$cmd --llm-provider anthropic"
+    cmd="$cmd --default-model claude-sonnet-4-0"
+    cmd="$cmd --claude-code"
     
     echo -e "${GREEN}$cmd${NC}"
     echo
@@ -444,8 +493,8 @@ custom_setup() {
         read -p "$(echo -e ${BOLD}Agents [poa,sma,deva_python,qaa,saa]:${NC} )" agents
     fi
     
-    read -p "$(echo -e ${BOLD}LLM Provider [openai]:${NC} )" llm_provider
-    read -p "$(echo -e ${BOLD}Default Model [gpt-4-turbo-preview]:${NC} )" default_model
+    read -p "$(echo -e ${BOLD}LLM Provider [anthropic]:${NC} )" llm_provider
+    read -p "$(echo -e ${BOLD}Default Model [claude-sonnet-4-0]:${NC} )" default_model
     read -p "$(echo -e ${BOLD}Output Directory [.]:${NC} )" output_dir
     
     # Set defaults
@@ -454,8 +503,8 @@ custom_setup() {
     frontend_language=${frontend_language:-typescript}
     frontend_framework=${frontend_framework:-react}
     agents=${agents:-poa,sma,deva_python,qaa}
-    llm_provider=${llm_provider:-openai}
-    default_model=${default_model:-gpt-4-turbo-preview}
+    llm_provider=${llm_provider:-anthropic}
+    default_model=${default_model:-claude-sonnet-4-0}
     output_dir=${output_dir:-.}
     
     # Build command
@@ -511,6 +560,32 @@ case "$1" in
     "custom")
         check_installation
         custom_setup
+        ;;
+    "claude-code")
+        check_installation
+        # Quick setup with Claude defaults
+        project_name=$2
+        if [ -z "$project_name" ]; then
+            echo -e "${RED}Error: Project name required${NC}"
+            echo -e "${YELLOW}Usage: ./init.sh claude-code <project-name>${NC}"
+            exit 1
+        fi
+        # Run with optimal Claude settings
+        show_header
+        echo -e "${BOLD}Claude Code Setup: $project_name${NC}"
+        echo
+        cmd="agentic-scrum-setup init"
+        cmd="$cmd --project-name \"$project_name\""
+        cmd="$cmd --language python"
+        cmd="$cmd --agents poa,sma,deva_python,qaa"
+        cmd="$cmd --llm-provider anthropic"
+        cmd="$cmd --default-model claude-sonnet-4-0"
+        cmd="$cmd --claude-code"
+        echo -e "${GREEN}$cmd${NC}"
+        echo
+        echo -e "${YELLOW}Creating project optimized for Claude Code...${NC}"
+        eval $cmd
+        show_success "$project_name"
         ;;
     "install")
         install_utility
