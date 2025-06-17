@@ -104,7 +104,17 @@
 │   └── Tutorial.md
 ├── init.sh
 ├── LICENSE
+├── logs
+│   ├── datetime_stderr.log
+│   ├── datetime_stdout.log
+│   └── mcp_manager.log
 ├── MANIFEST.in
+├── mcp_servers
+│   └── datetime
+│       ├── datetime_tools.py
+│       ├── README.md
+│       ├── requirements.txt
+│       └── server.py
 ├── README.md
 ├── requirements-dev.txt
 ├── scripts
@@ -114,6 +124,7 @@
 │   ├── collect_agent_metrics.py
 │   ├── feedback_analyzer.py
 │   ├── generate_ascii_art.py
+│   ├── mcp_manager.py
 │   ├── memory_analyze.py
 │   ├── memory_export.py
 │   ├── memory_prune.py
@@ -121,17 +132,19 @@
 │   ├── search_cache_manager.py
 │   └── update_agent_config.py
 ├── setup.py
-└── spec
-    ├── Design.md
-    ├── EPIC_1_STORY_123.md
-    ├── EPIC_1.STORY_124-127.md
-    ├── EPIC_2_CLAUDE_INTEGRATION.md
-    ├── EPIC_3_MCP_INTEGRATION.md
-    ├── STORY_206_UPDATE_INIT_SH_CLAUDE.md
-    ├── STORY_307_PROJECT_LOCATION_DEFAULTS.md
-    ├── STORY_308_PROJECT_SCOPING_QUESTIONNAIRE.md
-    ├── STORY_309_PRODUCTION_READINESS_GAPS.md
-    ├── STORY_310_DATETIME_MCP_SERVICE.md
-    └── STORY_311_MCP_DATETIME_TESTING_IMPLEMENTATION.md
+├── spec
+│   ├── Design.md
+│   ├── EPIC_1_STORY_123.md
+│   ├── EPIC_1.STORY_124-127.md
+│   ├── EPIC_2_CLAUDE_INTEGRATION.md
+│   ├── EPIC_3_MCP_INTEGRATION.md
+│   ├── STORY_206_UPDATE_INIT_SH_CLAUDE.md
+│   ├── STORY_307_PROJECT_LOCATION_DEFAULTS.md
+│   ├── STORY_308_PROJECT_SCOPING_QUESTIONNAIRE.md
+│   ├── STORY_309_PRODUCTION_READINESS_GAPS.md
+│   ├── STORY_310_DATETIME_MCP_SERVICE.md
+│   └── STORY_311_MCP_DATETIME_TESTING_IMPLEMENTATION.md
+└── tests
+    └── test_mcp_integration.py
 
-31 directories, 104 files
+35 directories, 113 files

@@ -24,6 +24,87 @@ DEFAULT_LLM_PROVIDER="anthropic"
 DEFAULT_MODEL="claude-sonnet-4-0"
 DEFAULT_AGENTS="poa,sma,deva_python,qaa"
 
+# MCP Service Management Functions
+start_mcp_services() {
+    echo -e "${BOLD}Starting MCP services...${NC}"
+    
+    # Start DateTime service
+    if [[ -f "mcp_servers/datetime/server.py" ]]; then
+        echo -e "${CYAN}Starting DateTime MCP service...${NC}"
+        python mcp_servers/datetime/server.py &
+        DATETIME_PID=$!
+        echo $DATETIME_PID > .datetime_service.pid
+        echo -e "${GREEN}✓ DateTime MCP service started (PID: $DATETIME_PID)${NC}"
+    else
+        echo -e "${YELLOW}⚠ DateTime service not found at mcp_servers/datetime/server.py${NC}"
+    fi
+}
+
+stop_mcp_services() {
+    echo -e "${BOLD}Stopping MCP services...${NC}"
+    
+    if [[ -f ".datetime_service.pid" ]]; then
+        PID=$(cat .datetime_service.pid)
+        if kill -0 $PID 2>/dev/null; then
+            kill $PID 2>/dev/null
+            echo -e "${GREEN}✓ DateTime MCP service stopped (PID: $PID)${NC}"
+        else
+            echo -e "${YELLOW}⚠ DateTime service was already stopped${NC}"
+        fi
+        rm .datetime_service.pid
+    else
+        echo -e "${YELLOW}⚠ No DateTime service PID file found${NC}"
+    fi
+}
+
+status_mcp_services() {
+    echo -e "${BOLD}MCP Service Status:${NC}"
+    
+    if [[ -f ".datetime_service.pid" ]]; then
+        PID=$(cat .datetime_service.pid)
+        if kill -0 $PID 2>/dev/null; then
+            echo -e "  DateTime Service: ${GREEN}✅ Running${NC} (PID: $PID)"
+        else
+            echo -e "  DateTime Service: ${RED}❌ Stopped${NC} (stale PID file)"
+            rm .datetime_service.pid
+        fi
+    else
+        echo -e "  DateTime Service: ${RED}❌ Stopped${NC}"
+    fi
+    
+    # Check if .mcp.json exists
+    if [[ -f ".mcp.json" ]]; then
+        echo -e "  MCP Configuration: ${GREEN}✅ Found${NC}"
+    else
+        echo -e "  MCP Configuration: ${RED}❌ Missing${NC}"
+    fi
+}
+
+test_datetime_service() {
+    echo -e "${BOLD}Testing DateTime MCP service...${NC}"
+    
+    if [[ ! -f "mcp_servers/datetime/datetime_tools.py" ]]; then
+        echo -e "${RED}❌ DateTime service not found${NC}"
+        return 1
+    fi
+    
+    # Test the DateTime tools directly
+    python -c "
+import sys
+sys.path.append('mcp_servers/datetime')
+from datetime_tools import DateTimeTools
+dt = DateTimeTools()
+result = dt.get_current_time('UTC')
+print(f'✓ DateTime service test passed: {result[\"timestamp\"]}')
+" 2>/dev/null
+    
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ DateTime service is functional${NC}"
+    else
+        echo -e "${RED}❌ DateTime service test failed${NC}"
+    fi
+}
+
 # Function to show success message with style
 show_success() {
     local project_name=$1
@@ -86,6 +167,10 @@ show_help() {
     echo -e "  ${GREEN}retrofit${NC} <path> Analyze existing project for integration"
     echo -e "  ${GREEN}create-workspace${NC} Set up a projects directory"
     echo -e "  ${GREEN}install${NC}        Install agentic-scrum-setup utility"
+    echo -e "  ${GREEN}mcp-start${NC}      Start MCP DateTime service"
+    echo -e "  ${GREEN}mcp-stop${NC}       Stop MCP DateTime service"
+    echo -e "  ${GREEN}mcp-status${NC}     Check MCP service status"
+    echo -e "  ${GREEN}mcp-test${NC}       Test DateTime service functionality"
     echo -e "  ${GREEN}help${NC}           Show this help message"
     echo
     echo -e "${BOLD}Quick Examples:${NC}"
@@ -94,6 +179,8 @@ show_help() {
     echo -e "  ${CYAN}./init.sh claude-code MyApp${NC}      # Optimized for Claude Code IDE"
     echo -e "  ${CYAN}./init.sh create-workspace${NC}       # Set up ~/AgenticProjects directory"
     echo -e "  ${CYAN}./init.sh custom${NC}                 # Full customization options"
+    echo -e "  ${CYAN}./init.sh mcp-start${NC}              # Start DateTime MCP service"
+    echo -e "  ${CYAN}./init.sh mcp-status${NC}             # Check if DateTime service is running"
     echo
     echo -e "${BOLD}Claude Code Integration:${NC}"
     echo -e "  Projects are now optimized for Claude Code by default"
@@ -121,6 +208,11 @@ show_help() {
     echo -e "  ${MAGENTA}deva_claude_python${NC}  Claude-powered Python Developer Agent"
     echo -e "  ${MAGENTA}qaa${NC}                 QA Agent"
     echo -e "  ${MAGENTA}saa${NC}                 Security Audit Agent"
+    echo
+    echo -e "${BOLD}MCP Services (Model Context Protocol):${NC}"
+    echo -e "  This AgenticScrum project includes a DateTime MCP service for time operations."
+    echo -e "  The service provides timezone handling, business day calculations, and sprint timing."
+    echo -e "  Use 'mcp-start' to enable the service for Claude Code integration."
     echo
 }
 
@@ -711,6 +803,18 @@ case "$1" in
         ;;
     "install")
         install_utility
+        ;;
+    "mcp-start")
+        start_mcp_services
+        ;;
+    "mcp-stop")
+        stop_mcp_services
+        ;;
+    "mcp-status")
+        status_mcp_services
+        ;;
+    "mcp-test")
+        test_datetime_service
         ;;
     "help"|"--help"|"-h"|"")
         show_help

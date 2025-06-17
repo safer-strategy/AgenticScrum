@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "datetime": {
+      "command": "python",
+      "args": ["mcp_servers/datetime/server.py"],
+      "description": "Built-in datetime service for AgenticScrum development"
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/mike/proj/AgenticScrum"],
+      "description": "Filesystem access for AgenticScrum project"
+    },
+    "git": {
+      "command": "npx", 
+      "args": ["-y", "@modelcontextprotocol/server-git"],
+      "description": "Git operations for version control"
+    }
+  },
+  "projectContext": {
+    "name": "AgenticScrum",
+    "description": "AI-driven Agile development framework with MCP integration",
+    "rootPath": "/Users/mike/proj/AgenticScrum",
+    "primaryLanguage": "python",
+    "framework": "AgenticScrum"
+  }
+}

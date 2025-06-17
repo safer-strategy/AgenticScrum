@@ -1,0 +1,2 @@
+2025-06-17 14:02:43,710 - INFO - Starting datetime with command: python mcp_servers/datetime/server.py
+2025-06-17 14:02:44,717 - ERROR - Failed to start datetime - process exited immediately
