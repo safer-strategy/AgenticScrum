@@ -5,6 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 {{ project_name }} is an AgenticScrum-powered {{ language }} project. This project uses AI agents to assist with development following Scrum methodologies.
+{% if enable_mcp %}
+
+**MCP Features Enabled**: This project uses Model Context Protocol for enhanced agent capabilities including persistent memory and advanced web search.
+{% endif %}
 
 ## Model Recommendations for AgenticScrum Agents
 
@@ -32,12 +36,51 @@ When simulating different agents, consider using appropriate models:
 - `standards/` - Coding standards and linter configurations
 - `checklists/` - Quality checklists for various development phases
 - `scripts/` - Utility scripts for automation
+{% if enable_mcp %}
+- `.agent-memory/` - Persistent agent memories (gitignored)
+- `.mcp.json` - MCP server configuration
+{% endif %}
 
 ### Agent System
 This project uses the following AI agents:
 {% for agent in agents %}
 - {{ agent }}
 {% endfor %}
+
+{% if enable_mcp %}
+## MCP Integration
+
+### Memory System
+Each agent has persistent memory that survives between Claude Code sessions:
+- **Location**: `.agent-memory/[agent_name]/`
+- **Format**: JSONL files for efficient append operations
+- **Usage**: Query memories before implementing similar features, store successful patterns
+
+### Memory Best Practices
+1. **Before starting a task**: Check if similar problems have been solved before
+2. **After completing a task**: Store successful patterns and decisions
+3. **When debugging**: Look for past bug fixes and solutions
+4. **During planning**: Review past architectural decisions
+
+### Search Integration
+{% if enable_search %}
+Perplexity search is configured for accessing current information:
+- **Use cases**: Research best practices, find latest library versions, security advisories
+- **Caching**: Results are cached to minimize API usage
+- **Rate limits**: Respect configured limits to avoid overuse
+{% else %}
+Search integration is available but not enabled. To enable:
+1. Set `PERPLEXITY_API_KEY` environment variable
+2. Re-run project setup with `--enable-search` flag
+{% endif %}
+
+### Using MCP Features
+The MCP servers configured in `.mcp.json` provide:
+- `memory`: Access to persistent agent memories
+- `perplexity-search`: Web search capabilities (if enabled)
+
+**Important**: These features work automatically within Claude Code. The configuration tells Claude which memory namespace each agent should use.
+{% endif %}
 
 ## Development Commands
 
@@ -48,6 +91,10 @@ This project uses the following AI agents:
 ./init.sh logs    # View service logs
 ./init.sh test    # Run tests
 ./init.sh help    # Show available commands
+{% if enable_mcp %}
+./init.sh verify-keys  # Check API key configuration
+./init.sh test-mcp     # Test MCP server connections
+{% endif %}
 ```
 
 ### {{ language }} Specific Commands
@@ -82,6 +129,23 @@ npm run build
 ```
 {% endif %}
 
+{% if enable_mcp %}
+### Memory Management Commands
+```bash
+# Analyze agent memories
+python scripts/memory_analyze.py --report
+
+# Export memories for backup
+python scripts/memory_export.py --output backups/memories.json
+
+# Prune old memories (dry run)
+python scripts/memory_prune.py --analyze
+
+# Prune old memories (execute)
+python scripts/memory_prune.py --strategy balanced --execute
+```
+{% endif %}
+
 ## Coding Standards
 
 Please refer to `standards/coding_standards.md` for detailed coding conventions and best practices specific to this project.
@@ -93,6 +157,11 @@ Please refer to `standards/coding_standards.md` for detailed coding conventions 
 3. Ensure all code changes pass linting and tests before marking tasks complete
 4. Use the standardized project structure - don't create new top-level directories
 5. When implementing features, check `docs/requirements/user_stories/` for detailed requirements
+{% if enable_mcp %}
+6. Query agent memories before implementing similar features
+7. Store important decisions and patterns in agent memory
+8. Never store secrets or sensitive data in memories
+{% endif %}
 
 ## Claude Code Specific Notes
 
@@ -106,8 +175,16 @@ When working on tasks for specific agents:
 1. Review the agent's persona rules in `agents/[agent_name]/persona_rules.yaml`
 2. Switch to the recommended model for that agent type
 3. Follow the agent's specific capabilities and constraints
+{% if enable_mcp %}
+4. Check agent memories for relevant past experiences
+5. Store new learnings for future reference
+{% endif %}
 
 ### Performance Tips
 - Use Sonnet 4 as your default model for most tasks
 - Switch to Opus 4 only for complex planning or deep analysis
 - Leverage Sonnet 4's 64K output capacity for large code generation tasks
+{% if enable_mcp %}
+- Use memory queries to avoid re-solving problems
+- Cache search results to minimize API usage
+{% endif %}

@@ -30,6 +30,8 @@ class SetupCore:
         self.framework = config.get('framework', None)  # For single projects
         self.backend_framework = config.get('backend_framework', None)  # For fullstack
         self.frontend_framework = config.get('frontend_framework', None)  # For fullstack
+        self.enable_mcp = config.get('enable_mcp', False)
+        self.enable_search = config.get('enable_search', False)
         
         # Setup Jinja2 environment
         template_dir = Path(__file__).parent / 'templates'
@@ -66,7 +68,8 @@ class SetupCore:
         self._generate_scripts()
         
         # Create memory structure for MCP integration
-        self._create_memory_structure()
+        if self.enable_mcp:
+            self._create_memory_structure()
     
     def _create_directory_structure(self):
         """Create the standard AgenticScrum directory structure."""
@@ -237,21 +240,21 @@ class SetupCore:
             claude_md = self.jinja_env.get_template('claude/CLAUDE.md.j2').render(
                 project_name=self.project_name,
                 language=self.language,
-                agents=self.agents
+                agents=self.agents,
+                enable_mcp=self.enable_mcp,
+                enable_search=self.enable_search
             )
             (self.project_path / 'CLAUDE.md').write_text(claude_md)
             
-            # Generate .mcp.json
-            mcp_json = self.jinja_env.get_template('claude/.mcp.json.j2').render(
-                project_name=self.project_name,
-                language=self.language,
-                agents=self.agents
-            )
-            (self.project_path / '.mcp.json').write_text(mcp_json)
-            
-            # Generate .mcp-secrets.json.sample
-            mcp_secrets_sample = self.jinja_env.get_template('claude/.mcp-secrets.json.sample').render()
-            (self.project_path / '.mcp-secrets.json.sample').write_text(mcp_secrets_sample)
+            # Generate .mcp.json if MCP is enabled
+            if self.enable_mcp:
+                mcp_json = self.jinja_env.get_template('claude/.mcp.json.j2').render(
+                    project_name=self.project_name,
+                    language=self.language,
+                    agents=self.agents,
+                    enable_search=self.enable_search
+                )
+                (self.project_path / '.mcp.json').write_text(mcp_json)
         
         # Generate .env.sample for all projects (MCP support is optional)
         env_sample = self.jinja_env.get_template('.env.sample').render()

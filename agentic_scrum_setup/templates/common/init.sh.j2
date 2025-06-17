@@ -153,6 +153,8 @@ function show_help() {
   echo -e "  ${C_YELLOW}logs${C_RESET}       - Tail the logs from all running services."
   echo -e "  ${C_YELLOW}test${C_RESET}       - Run the test suite within the Docker container."
   echo -e "  ${C_YELLOW}setup${C_RESET}      - Setup environment variables and MCP configuration."
+  echo -e "  ${C_YELLOW}verify-keys${C_RESET} - Check if all required API keys are configured."
+  echo -e "  ${C_YELLOW}test-mcp${C_RESET}   - Test MCP server connections (memory/search)."
   echo -e "  ${C_YELLOW}help${C_RESET}       - Show this help message."
   echo ""
 }
@@ -185,6 +187,45 @@ function setup_environment() {
   success "Environment setup complete!"
 }
 
+# --- Test MCP Servers ---
+function test_mcp_servers() {
+  local server="${1:-all}"
+  
+  # Check if MCP is configured
+  if [[ ! -f ".mcp.json" ]]; then
+    error "MCP is not configured for this project"
+    echo "  Run with --enable-mcp flag when creating the project"
+    return 1
+  fi
+  
+  echo "Testing MCP server connections..."
+  
+  if [[ "$server" == "all" || "$server" == "memory" ]]; then
+    # Test memory server
+    echo -n "Testing memory server... "
+    if command -v npx >/dev/null 2>&1; then
+      # Check if memory files exist
+      if [[ -d ".agent-memory" ]]; then
+        success "Memory directory exists"
+      else
+        error "Memory directory not found"
+      fi
+    else
+      error "npx not found - install Node.js 16+"
+    fi
+  fi
+  
+  if [[ "$server" == "all" || "$server" == "search" ]]; then
+    # Test search server
+    echo -n "Testing search server... "
+    if [[ -n "$PERPLEXITY_API_KEY" ]]; then
+      success "API key configured"
+    else
+      error "PERPLEXITY_API_KEY not set"
+    fi
+  fi
+}
+
 # --- Main Dispatcher ---
 function main() {
   # Always load environment variables if available
@@ -210,6 +251,12 @@ function main() {
       ;;
     setup)
       setup_environment
+      ;;
+    verify-keys)
+      check_api_keys && success "All required API keys are configured!" || error "Some API keys are missing"
+      ;;
+    test-mcp)
+      test_mcp_servers "$2"
       ;;
     help|*)
       show_help

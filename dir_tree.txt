@@ -80,6 +80,9 @@
 │   ├── Anthropic-models.md
 │   ├── CLAUDE_CODE_GUIDE.md
 │   ├── FEEDBACK_WORKFLOW.md
+│   ├── MCP_API_SETUP.md
+│   ├── MCP_INTEGRATION_GUIDE.md
+│   ├── MCP_MEMORY_ARCHITECTURE.md
 │   ├── models_claude.md
 │   ├── RETROFITTING_GUIDE.md
 │   ├── STORY_TEMPLATE.md
@@ -108,6 +111,7 @@
     ├── EPIC_1_STORY_123.md
     ├── EPIC_1.STORY_124-127.md
     ├── EPIC_2_CLAUDE_INTEGRATION.md
-    └── EPIC_3_MCP_INTEGRATION.md
+    ├── EPIC_3_MCP_INTEGRATION.md
+    └── STORY_206_UPDATE_INIT_SH_CLAUDE.md
 
-29 directories, 82 files
+29 directories, 86 files

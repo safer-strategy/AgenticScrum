@@ -147,6 +147,7 @@ twine upload dist/*
 
 - Always run 'tree --gitignore > dir_tree.txt' when new files are created
 - Always git add commit and push
+- Always add new stories to the spec/ directory
 
 ## Architecture Notes
 

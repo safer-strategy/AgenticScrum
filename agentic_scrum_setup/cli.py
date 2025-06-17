@@ -108,6 +108,16 @@ def parse_arguments():
         default='.',
         help='Directory to create the project in (default: current directory)'
     )
+    init_parser.add_argument(
+        '--enable-mcp',
+        action='store_true',
+        help='Enable MCP (Model Context Protocol) integration for persistent memory and enhanced search'
+    )
+    init_parser.add_argument(
+        '--enable-search',
+        action='store_true',
+        help='Enable Perplexity search integration (requires PERPLEXITY_API_KEY environment variable)'
+    )
     
     return parser
 
@@ -321,6 +331,30 @@ def interactive_mode():
             if not default_model:
                 default_model = model_suggestions.get(llm_provider, 'gpt-4')
     
+    # MCP Integration
+    print("\n=== MCP Integration (Model Context Protocol) ===")
+    print("MCP enables persistent memory and enhanced search capabilities for agents.")
+    print("This allows agents to learn from past experiences and access current information.")
+    
+    mcp_choice = input("Enable MCP integration? [Y/n]: ").strip().lower()
+    enable_mcp = mcp_choice != 'n'
+    
+    enable_search = False
+    if enable_mcp:
+        print("\nMCP features available:")
+        print("1. Persistent Memory - Agents remember past decisions and patterns")
+        print("2. Web Search (Perplexity) - Access current information beyond training data")
+        
+        search_choice = input("\nEnable Perplexity search integration? (requires API key) [y/N]: ").strip().lower()
+        enable_search = search_choice == 'y'
+        
+        if enable_search:
+            import os
+            if not os.environ.get('PERPLEXITY_API_KEY'):
+                print("\nWarning: PERPLEXITY_API_KEY not found in environment.")
+                print("You'll need to set it before using search features:")
+                print("  export PERPLEXITY_API_KEY='your-key-here'")
+    
     return {
         'project_name': project_name,
         'project_type': project_type,
@@ -332,7 +366,9 @@ def interactive_mode():
         'agents': agents,
         'llm_provider': llm_provider,
         'default_model': default_model,
-        'output_dir': '.'
+        'output_dir': '.',
+        'enable_mcp': enable_mcp,
+        'enable_search': enable_search
     }
 
 
@@ -377,7 +413,9 @@ def main():
                 'agents': args.agents,
                 'llm_provider': args.llm_provider,
                 'default_model': args.default_model,
-                'output_dir': args.output_dir
+                'output_dir': args.output_dir,
+                'enable_mcp': getattr(args, 'enable_mcp', False),
+                'enable_search': getattr(args, 'enable_search', False)
             }
         
         # Create the setup core instance and run

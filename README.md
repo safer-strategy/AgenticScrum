@@ -68,6 +68,10 @@ AgenticScrum is built upon the following foundational principles:
 * **Human-in-the-Loop Design:** Critical human oversight integrated into the workflow for validation and decision-making.  
 * **Multi-Stack & Multi-Repo Adaptability:** Flexible structure to support diverse technology stacks and complex project organizations.  
 * **Checklist-Driven Quality:** Utilizes checklists (e.g., Definition of Done, Code Review) to ensure thoroughness and consistency.
+* **MCP Integration (NEW):** Enhanced agent capabilities through Model Context Protocol:
+  * **Persistent Memory:** Agents learn and improve from past experiences across sessions
+  * **Advanced Web Search:** Access to current information via Perplexity API integration
+  * **Secure API Management:** Environment-based configuration keeps credentials safe
 
 ## **Getting Started**
 
@@ -146,6 +150,32 @@ agentic-scrum-setup init --project-name MyProject --language python --agents poa
 - Use `/model opus` for complex planning and architecture tasks
 - Use `/model sonnet` (default) for development and implementation
 - Use `/model haiku` for quick, simple tasks
+
+### **MCP Integration (Model Context Protocol)**
+
+AgenticScrum now supports MCP servers to enhance agent capabilities beyond Claude Code's native features:
+
+**Enable MCP Features:**
+```bash
+# Create project with MCP integration
+agentic-scrum-setup init \
+  --project-name "MyEnhancedProject" \
+  --language python \
+  --agents poa,sma,deva_python,qaa \
+  --enable-mcp \
+  --enable-search
+
+# Configure API keys (required for search)
+export PERPLEXITY_API_KEY="your-key-here"
+```
+
+**MCP Benefits:**
+- **Persistent Memory**: Agents remember past decisions, patterns, and solutions across sessions
+- **Advanced Search**: Global web search via Perplexity (not limited to US like native search)
+- **Learning Agents**: Performance improves over time as agents build knowledge
+- **Secure Configuration**: API keys managed through environment variables
+
+For detailed MCP setup, see the [MCP Integration Guide](docs/MCP_INTEGRATION_GUIDE.md).
 
 ### **Retrofitting Existing Projects**
 

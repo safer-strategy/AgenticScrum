@@ -344,7 +344,7 @@ create_new_project() {
     
     case $llm_choice in
         1) llm_provider="openai"; default_model="gpt-4-turbo-preview";;
-        2) llm_provider="anthropic"; default_model="claude-3-opus-20240229";;
+        2) llm_provider="anthropic"; default_model="claude-sonnet-4-0";;
         3) llm_provider="google"; default_model="gemini-pro";;
         4) llm_provider="local"; default_model="codellama";;
         *) llm_provider="openai"; default_model="gpt-4-turbo-preview";;
