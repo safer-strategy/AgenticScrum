@@ -30,7 +30,19 @@ cd AgenticScrum
 ./init.sh install
 ```
 
-#### **1b. Create Your Project Using init.sh**
+#### **1b. Set Up Your Projects Workspace**
+
+Before creating projects, it's best practice to set up a dedicated workspace outside of the AgenticScrum directory:
+
+```bash
+# Create a dedicated projects workspace
+./init.sh create-workspace ~/MyProjects
+
+# Or set an environment variable for your preferred location
+export AGENTIC_PROJECTS_DIR="$HOME/MyProjects"
+```
+
+#### **1c. Create Your Project Using init.sh**
 
 The `init.sh` helper script makes it easy to create projects without remembering complex command-line arguments. Let's use it to create our cattle ranching app:
 
@@ -42,6 +54,7 @@ The `init.sh` helper script makes it easy to create projects without remembering
 When prompted, enter the following:
 - **Project Type:** Fullstack project (option 2)
 - **Project Name:** RanchHand
+- **Where to create project:** ~/MyProjects (or press Enter for the suggested default)
 - **Backend Language:** Python (option 1)
 - **Backend Framework:** FastAPI (option 1)
 - **Frontend Language:** TypeScript (option 2)
@@ -69,16 +82,17 @@ agentic-scrum-setup init \
   --frontend-framework "react" \
   --agents "poa,sma,deva_python,deva_typescript,qaa,saa" \
   --llm-provider "anthropic" \
-  --default-model "claude-sonnet-4-0"
+  --default-model "claude-sonnet-4-0" \
+  --output-dir ~/MyProjects
 ```
 
-The setup utility creates a new folder named `RanchHand` with separate backend and frontend directories, framework-specific configurations, and all agent personas for both Python and TypeScript development.
+The setup utility creates a new folder named `RanchHand` in your projects directory (e.g., ~/MyProjects/RanchHand) with separate backend and frontend directories, framework-specific configurations, and all agent personas for both Python and TypeScript development.
 
 ---
 
 ### **Step 2: Meet Your Environment Manager: `init.sh`**
 
-Navigate into your new project directory: `cd RanchHand`.
+Navigate into your new project directory: `cd ~/MyProjects/RanchHand`.
 
 Inside, you'll find `init.sh`. This is your "pretty awesome", centralized script for managing the entire development environment. It handles starting, stopping, and monitoring all the services defined in `docker-compose.yml`.
 

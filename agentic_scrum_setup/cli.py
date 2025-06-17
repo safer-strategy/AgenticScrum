@@ -2,11 +2,28 @@
 """Command-line interface for AgenticScrum setup utility."""
 
 import argparse
+import os
 import sys
 from pathlib import Path
 from typing import List, Optional
 
 from .setup_core import SetupCore
+
+
+def get_default_output_dir():
+    """Get smart default output directory for project creation."""
+    # Check environment variable first
+    if env_dir := os.environ.get('AGENTIC_PROJECTS_DIR'):
+        return env_dir
+    
+    # Check if we're inside AgenticScrum
+    cwd = Path.cwd()
+    if 'AgenticScrum' in str(cwd):
+        # Default to user's home projects directory
+        return str(Path.home() / 'AgenticProjects')
+    
+    # Otherwise use current directory
+    return '.'
 
 
 def parse_arguments():
@@ -105,8 +122,8 @@ def parse_arguments():
     init_parser.add_argument(
         '--output-dir',
         type=str,
-        default='.',
-        help='Directory to create the project in (default: current directory)'
+        default=get_default_output_dir(),
+        help='Directory to create the project in (default: ~/AgenticProjects if in AgenticScrum, else current directory)'
     )
     init_parser.add_argument(
         '--enable-mcp',
@@ -366,7 +383,7 @@ def interactive_mode():
         'agents': agents,
         'llm_provider': llm_provider,
         'default_model': default_model,
-        'output_dir': '.',
+        'output_dir': get_default_output_dir(),
         'enable_mcp': enable_mcp,
         'enable_search': enable_search
     }

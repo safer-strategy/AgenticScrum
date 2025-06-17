@@ -79,17 +79,19 @@ show_help() {
     echo -e "${BOLD}Usage:${NC} ./init.sh [command] [options]"
     echo
     echo -e "${BOLD}Commands:${NC}"
-    echo -e "  ${GREEN}new${NC}         Create a new AgenticScrum project (interactive)"
-    echo -e "  ${GREEN}quick${NC}       Quick setup with sensible defaults"
-    echo -e "  ${GREEN}claude-code${NC} Quick setup optimized for Claude Code"
-    echo -e "  ${GREEN}custom${NC}      Custom setup with all options"
-    echo -e "  ${GREEN}install${NC}     Install agentic-scrum-setup utility"
-    echo -e "  ${GREEN}help${NC}        Show this help message"
+    echo -e "  ${GREEN}new${NC}            Create a new AgenticScrum project (interactive)"
+    echo -e "  ${GREEN}quick${NC}          Quick setup with sensible defaults"
+    echo -e "  ${GREEN}claude-code${NC}    Quick setup optimized for Claude Code"
+    echo -e "  ${GREEN}custom${NC}         Custom setup with all options"
+    echo -e "  ${GREEN}create-workspace${NC} Set up a projects directory"
+    echo -e "  ${GREEN}install${NC}        Install agentic-scrum-setup utility"
+    echo -e "  ${GREEN}help${NC}           Show this help message"
     echo
     echo -e "${BOLD}Quick Examples:${NC}"
     echo -e "  ${CYAN}./init.sh new${NC}                    # Interactive project creation"
     echo -e "  ${CYAN}./init.sh quick MyProject${NC}        # Quick project with Claude defaults"
     echo -e "  ${CYAN}./init.sh claude-code MyApp${NC}      # Optimized for Claude Code IDE"
+    echo -e "  ${CYAN}./init.sh create-workspace${NC}       # Set up ~/AgenticProjects directory"
     echo -e "  ${CYAN}./init.sh custom${NC}                 # Full customization options"
     echo
     echo -e "${BOLD}Claude Code Integration:${NC}"
@@ -161,6 +163,19 @@ create_new_project() {
         echo -e "${RED}Error: Project name is required${NC}"
         exit 1
     fi
+    
+    # Output directory selection
+    echo
+    default_output_dir="~/AgenticProjects"
+    if [[ "$PWD" == *"AgenticScrum"* ]]; then
+        echo -e "${YELLOW}Note: You're currently in the AgenticScrum directory${NC}"
+        echo -e "${YELLOW}Projects should be created outside of this framework${NC}"
+    else
+        default_output_dir="."
+    fi
+    read -p "$(echo -e ${BOLD}Where to create project? [${default_output_dir}]:${NC} )" output_dir
+    output_dir=${output_dir:-$default_output_dir}
+    output_dir=$(eval echo "$output_dir")  # Expand ~
     
     # Project type selection
     echo
@@ -416,6 +431,9 @@ create_new_project() {
     cmd="$cmd --llm-provider $llm_provider"
     cmd="$cmd --default-model $default_model"
     
+    # Add output directory
+    cmd="$cmd --output-dir \"$output_dir\""
+    
     # Add Claude Code flag if applicable
     if [ "$using_claude_code" = "true" ]; then
         cmd="$cmd --claude-code"
@@ -547,6 +565,99 @@ custom_setup() {
     fi
 }
 
+# Function to create a workspace directory
+create_workspace() {
+    local workspace_dir=${1:-~/AgenticProjects}
+    workspace_dir=$(eval echo "$workspace_dir")
+    
+    show_header
+    echo -e "${BOLD}Creating AgenticScrum Workspace${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo
+    echo -e "${BOLD}Creating workspace at: $workspace_dir${NC}"
+    
+    # Create directory
+    mkdir -p "$workspace_dir"
+    
+    # Create README
+    cat > "$workspace_dir/README.md" << 'EOF'
+# AgenticScrum Projects Workspace
+
+This directory contains projects created with AgenticScrum.
+
+## Projects
+
+- Add your projects here
+
+## Quick Start
+
+```bash
+# Create a new project in this workspace
+agentic-scrum-setup init --project-name MyNewProject --output-dir .
+
+# Or use the init.sh helper from AgenticScrum
+~/path/to/AgenticScrum/init.sh new
+```
+
+## Environment Setup
+
+To make this your default projects directory, add to your shell profile:
+
+```bash
+export AGENTIC_PROJECTS_DIR="$(pwd)"
+```
+
+## Organization Tips
+
+- Group related projects in subdirectories
+- Use consistent naming conventions
+- Keep project documentation updated
+- Regular backups recommended
+EOF
+    
+    # Create .gitignore
+    cat > "$workspace_dir/.gitignore" << 'EOF'
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-*
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Build artifacts
+*.pyc
+__pycache__/
+node_modules/
+dist/
+build/
+*.egg-info/
+
+# Environment files
+.env
+.env.local
+venv/
+.venv/
+EOF
+    
+    echo
+    echo -e "${GREEN}✓ Workspace created successfully!${NC}"
+    echo
+    echo -e "${CYAN}To set as your default project location:${NC}"
+    echo -e "  ${YELLOW}export AGENTIC_PROJECTS_DIR=\"$workspace_dir\"${NC}"
+    echo
+    echo -e "${CYAN}Add the above line to your shell profile (~/.zshrc or ~/.bashrc)${NC}"
+}
+
 # Main script logic
 case "$1" in
     "new")
@@ -586,6 +697,10 @@ case "$1" in
         echo -e "${YELLOW}Creating project optimized for Claude Code...${NC}"
         eval $cmd
         show_success "$project_name"
+        ;;
+    "create-workspace")
+        workspace_dir=$2
+        create_workspace "$workspace_dir"
         ;;
     "install")
         install_utility

@@ -75,6 +75,33 @@ AgenticScrum is built upon the following foundational principles:
 
 ## **Getting Started**
 
+### **Project Location Best Practices**
+
+AgenticScrum creates new projects in a designated location to keep your tool installation separate from your development projects. By default, projects are created in:
+
+- **`~/AgenticProjects`** - When running from within the AgenticScrum directory
+- **Current directory** - When running from outside AgenticScrum
+
+**Setting up a Workspace:**
+
+```bash
+# Create a dedicated workspace for your projects
+./init.sh create-workspace ~/MyProjects
+
+# Or use the default location
+./init.sh create-workspace
+```
+
+**Environment Variable Configuration:**
+
+```bash
+# Set your preferred default location
+export AGENTIC_PROJECTS_DIR="$HOME/MyProjects"
+
+# Add to your shell profile (~/.zshrc or ~/.bashrc) to make permanent
+echo 'export AGENTIC_PROJECTS_DIR="$HOME/MyProjects"' >> ~/.zshrc
+```
+
 ### **The Setup Utility**
 
 The primary way to start an AgenticScrum project is by using the agentic-scrum-setup CLI utility. To simplify the complex command-line arguments, we provide an `init.sh` helper script.
@@ -102,7 +129,8 @@ agentic-scrum-setup init \
   --framework fastapi \
   --agents poa,sma,deva_python,qaa,saa \
   --llm-provider anthropic \
-  --default-model claude-sonnet-4-0
+  --default-model claude-sonnet-4-0 \
+  --output-dir ~/AgenticProjects
 ```
 
 Fullstack project:
@@ -116,19 +144,20 @@ agentic-scrum-setup init \
   --frontend-framework react \
   --agents poa,sma,deva_python,deva_typescript,qaa,saa \
   --llm-provider anthropic \
-  --default-model claude-sonnet-4-0
+  --default-model claude-sonnet-4-0 \
+  --output-dir ~/AgenticProjects
 ```
 
 This command will:
 
-1. Create a new project directory (e.g., MyNewWebApp/).  
+1. Create a new project directory in the specified output location (e.g., ~/AgenticProjects/MyNewWebApp/).  
 2. Generate a standardized hierarchical directory structure (see below).  
 3. Create agent configuration files (persona\_rules.yaml) and priming\_script.md for each specified agent.  
 4. Generate template documents for coding standards (coding\_standards.md) and linter configurations.  
 5. Create an agentic\_config.yaml for global project settings.  
 6. Scaffold checklist documents like definition\_of\_done.md.
 
-If run interactively (e.g., agentic-scrum-setup init), the CLI will prompt for necessary information.
+If run interactively (e.g., agentic-scrum-setup init), the CLI will prompt for necessary information including the output directory.
 
 ### **Claude Code Integration**
 

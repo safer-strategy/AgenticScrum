@@ -45,15 +45,23 @@ class TestCLI:
             assert args.command is None
     
     @patch('builtins.input')
-    def test_interactive_mode(self, mock_input):
+    @patch('agentic_scrum_setup.cli.get_default_output_dir')
+    def test_interactive_mode(self, mock_get_default_dir, mock_input):
         """Test interactive mode prompts."""
+        # Mock default output directory
+        mock_get_default_dir.return_value = '.'
+        
         # Mock user inputs
         mock_input.side_effect = [
             'MyProject',      # Project name
+            '1',              # Project type (single)
             '1',              # Language choice (python)
+            '',               # Framework (skip)
             'poa,sma,qaa',    # Agents
-            '2',              # LLM provider (anthropic)
-            'claude-3-opus'   # Model
+            'n',              # Not using Claude Code
+            '1',              # LLM provider (anthropic)
+            '1',              # Claude model (opus)
+            'n',              # Don't enable MCP
         ]
         
         result = interactive_mode()
@@ -62,18 +70,25 @@ class TestCLI:
         assert result['language'] == 'python'
         assert result['agents'] == 'poa,sma,qaa'
         assert result['llm_provider'] == 'anthropic'
-        assert result['default_model'] == 'claude-3-opus'
+        assert result['default_model'] == 'claude-opus-4-0'
         assert result['output_dir'] == '.'
     
     @patch('builtins.input')
-    def test_interactive_mode_with_defaults(self, mock_input):
+    @patch('agentic_scrum_setup.cli.get_default_output_dir')
+    def test_interactive_mode_with_defaults(self, mock_get_default_dir, mock_input):
         """Test interactive mode with default values."""
+        # Mock default output directory
+        mock_get_default_dir.return_value = '.'
+        
         # Mock user inputs with some empty (using defaults)
         mock_input.side_effect = [
             'DefaultProject',  # Project name
+            '',               # Project type (default single)
             'python',         # Language by name
+            '',               # Framework (skip)
             '',               # Agents (use default)
-            'openai',         # Provider by name
+            'n',              # Not using Claude Code
+            '2',              # Provider choice (openai)
             ''                # Model (use default)
         ]
         
@@ -116,17 +131,25 @@ class TestCLI:
     
     @patch('builtins.input')
     @patch('agentic_scrum_setup.cli.SetupCore')
-    def test_main_triggers_interactive_mode(self, mock_setup_core, mock_input):
+    @patch('agentic_scrum_setup.cli.get_default_output_dir')
+    def test_main_triggers_interactive_mode(self, mock_get_default_dir, mock_setup_core, mock_input):
         """Test main function triggers interactive mode when args missing."""
         test_args = ['agentic-scrum-setup', 'init']  # Missing required args
         
+        # Mock default output directory
+        mock_get_default_dir.return_value = '.'
+        
         # Mock interactive inputs
         mock_input.side_effect = [
-            'InteractiveProject',
-            '1',  # python
-            'poa',
-            '1',  # openai
-            'gpt-4'
+            'InteractiveProject',  # Project name
+            '1',                   # Project type (single)
+            '1',                   # Language (python)
+            '',                    # Framework (skip)
+            'poa',                 # Agents
+            'n',                   # Not using Claude Code
+            '2',                   # Provider (openai)
+            'gpt-4',               # Model
+            'n'                    # Don't enable MCP
         ]
         
         mock_instance = MagicMock()

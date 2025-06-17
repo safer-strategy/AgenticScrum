@@ -41,8 +41,51 @@ class SetupCore:
             lstrip_blocks=True
         )
     
+    def validate_output_directory(self):
+        """Validate the output directory is appropriate."""
+        abs_path = self.output_dir.absolute()
+        project_abs_path = self.project_path.absolute()
+        
+        # Check if inside AgenticScrum
+        if 'AgenticScrum' in str(project_abs_path):
+            print(f"\n⚠️  WARNING: You're creating a project inside AgenticScrum!")
+            print(f"   Location: {project_abs_path}")
+            print(f"   Recommended: ~/AgenticProjects/{self.project_name}")
+            response = input("Continue anyway? [y/N]: ")
+            if response.lower() != 'y':
+                raise ValueError("Project creation cancelled")
+        
+        # Check system directories
+        forbidden_paths = ['/usr', '/etc', '/bin', '/sbin', '/System', '/Windows']
+        for forbidden in forbidden_paths:
+            if str(project_abs_path).startswith(forbidden):
+                raise ValueError(f"Cannot create projects in system directory: {forbidden}")
+        
+        # Check if inside another git repo (excluding AgenticScrum)
+        if self._is_inside_git_repo(abs_path) and 'AgenticScrum' not in str(abs_path):
+            print(f"\n⚠️  WARNING: Target directory is inside a git repository")
+            print(f"   This may cause git conflicts")
+            response = input("Continue anyway? [y/N]: ")
+            if response.lower() != 'y':
+                raise ValueError("Project creation cancelled")
+    
+    def _is_inside_git_repo(self, path: Path) -> bool:
+        """Check if path is inside a git repository."""
+        current = path
+        while current != current.parent:
+            if (current / '.git').exists():
+                return True
+            current = current.parent
+        return False
+    
     def create_project(self):
         """Create the complete project structure."""
+        # Validate output directory first
+        self.validate_output_directory()
+        
+        # Show where project will be created
+        print(f"\n📍 Creating project at: {self.project_path.absolute()}")
+        
         # Create main project directory
         self.project_path.mkdir(parents=True, exist_ok=True)
         
