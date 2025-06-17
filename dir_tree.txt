@@ -35,6 +35,12 @@
 │   │   │   ├── express_package.json.j2
 │   │   │   ├── package.json.j2
 │   │   │   └── react_package.json.j2
+│   │   ├── mcp_servers
+│   │   │   └── datetime
+│   │   │       ├── datetime_tools.py
+│   │   │       ├── README.md
+│   │   │       ├── requirements.txt
+│   │   │       └── server.py
 │   │   ├── persona_rules_advanced.yaml.j2
 │   │   ├── php
 │   │   │   └── composer.json.j2
@@ -65,7 +71,9 @@
 │   │   └── typescript
 │   │       └── tsconfig.json.j2
 │   └── tests
+│       ├── dir_tree.txt
 │       ├── test_cli.py
+│       ├── test_datetime_tools.py
 │       ├── test_framework_support.py
 │       ├── test_location_defaults.py
 │       ├── test_memory_management.py
@@ -123,6 +131,7 @@
     ├── STORY_307_PROJECT_LOCATION_DEFAULTS.md
     ├── STORY_308_PROJECT_SCOPING_QUESTIONNAIRE.md
     ├── STORY_309_PRODUCTION_READINESS_GAPS.md
-    └── STORY_310_DATETIME_MCP_SERVICE.md
+    ├── STORY_310_DATETIME_MCP_SERVICE.md
+    └── STORY_311_MCP_DATETIME_TESTING_IMPLEMENTATION.md
 
-29 directories, 97 files
+31 directories, 104 files
