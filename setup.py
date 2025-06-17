@@ -62,6 +62,12 @@ setup(
         "agentic_scrum_setup": [
             "templates/**/*.j2",
             "templates/**/.*.j2",  # Include hidden files like .gitignore.j2
+            "templates/**/*.sample", 
+            "templates/**/*.sh",
+            "templates/**/*.py",
+            "templates/**/*.md",
+            "templates/**/*.txt",
+            "templates/**/*.json",
         ],
     },
 )
