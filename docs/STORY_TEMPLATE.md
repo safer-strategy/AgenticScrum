@@ -12,7 +12,9 @@ Use this template when creating new user stories to ensure they are comprehensiv
 **Status:** [To Do/In Progress/Blocked/In Review/Done]  
 **Assigned To:** [Developer Name]  
 **Created:** [YYYY-MM-DD]  
+**Start Date:** [YYYY-MM-DD HH:MM]  
 **Last Update:** [YYYY-MM-DD HH:MM]  
+**Completed:** [YYYY-MM-DD HH:MM]  
 
 ## 📋 User Story
 

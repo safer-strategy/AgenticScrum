@@ -17,6 +17,11 @@
       "env": {
         "MEMORY_FILE_PATH": "${PROJECT_ROOT}/.agent-memory/shared/main.jsonl"
       }
+    },
+    "datetime": {
+      "command": "python",
+      "args": ["mcp_servers/datetime/server.py"],
+      "description": "Built-in datetime service for time operations, timezone handling, and sprint calculations"
     }{% if enable_search %},
     "perplexity-search": {
       "command": "uvx",

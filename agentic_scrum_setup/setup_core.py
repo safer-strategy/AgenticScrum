@@ -330,6 +330,9 @@ class SetupCore:
                     enable_search=self.enable_search
                 )
                 (self.project_path / '.mcp.json').write_text(mcp_json)
+                
+                # Copy MCP servers to project
+                self._copy_mcp_servers()
         
         # Generate .env.sample for all projects (MCP support is optional)
         env_sample = self.jinja_env.get_template('.env.sample').render()
@@ -704,3 +707,21 @@ This directory is gitignored by default to protect project-specific learnings.
 Consider backing up important memories using the memory export utilities.
 '''
         (memory_root / 'README.md').write_text(memory_readme)
+    
+    def _copy_mcp_servers(self):
+        """Copy MCP server files to the project directory."""
+        template_dir = Path(__file__).parent / 'templates'
+        mcp_servers_template_dir = template_dir / 'mcp_servers'
+        
+        if mcp_servers_template_dir.exists():
+            project_mcp_dir = self.project_path / 'mcp_servers'
+            
+            # Copy the entire mcp_servers directory
+            if project_mcp_dir.exists():
+                shutil.rmtree(project_mcp_dir)
+            shutil.copytree(mcp_servers_template_dir, project_mcp_dir)
+            
+            # Make server.py files executable
+            for server_file in project_mcp_dir.rglob('server.py'):
+                current_permissions = server_file.stat().st_mode
+                server_file.chmod(current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)

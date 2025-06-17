@@ -1,0 +1,14 @@
+.
+├── dir_tree.txt
+├── test_cli.py
+├── test_datetime_tools.py
+├── test_framework_support.py
+├── test_location_defaults.py
+├── test_memory_management.py
+├── test_project_scoping.py
+├── test_search_integration.py
+├── test_security_audit_agent.py
+├── test_security.py
+└── test_setup_core.py
+
+1 directory, 11 files

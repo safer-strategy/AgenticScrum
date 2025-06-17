@@ -90,6 +90,47 @@ memory_patterns:
         "tags": ["prioritization", "security", "trade-offs"]
       }
 
+datetime_patterns:
+  use_cases:
+    - "Track user story creation and update timestamps"
+    - "Calculate time since last stakeholder feedback"
+    - "Estimate sprint capacity based on working days"
+    - "Schedule regular backlog refinement sessions"
+    - "Track feature delivery timelines"
+    - "Monitor requirement gathering session durations"
+    - "Calculate time to market for features"
+    - "Track acceptance criteria review cycles"
+  
+  common_operations:
+    - "get_current_time() - for timestamping user stories and decisions"
+    - "calculate_duration(start, end) - for measuring feedback cycles"
+    - "calculate_sprint_dates(start_date, 14) - for sprint planning"
+    - "get_relative_time(timestamp) - for 'last updated X ago' displays"
+    - "calculate_business_days(start, end) - for realistic delivery estimates"
+    - "add_time(timestamp, weeks=2) - for setting review deadlines"
+  
+  example_usage: |
+    # When creating a user story
+    current_time = mcp.datetime.get_current_time()
+    story["created_at"] = current_time["timestamp"]
+    story["created_by"] = "poa_agent"
+    
+    # When planning sprints
+    sprint_dates = mcp.datetime.calculate_sprint_dates(
+        start_date="2025-01-20",
+        sprint_length_days=14
+    )
+    sprint["start"] = sprint_dates["sprint_start"]
+    sprint["end"] = sprint_dates["sprint_end"]
+    
+    # When tracking stakeholder feedback
+    feedback_age = mcp.datetime.calculate_duration(
+        start=last_feedback_time,
+        end=mcp.datetime.get_current_time()["timestamp"]
+    )
+    if feedback_age["days"] > 7:
+        schedule_follow_up()
+
 search_patterns:
   triggers:
     - "When researching market trends for new features"
