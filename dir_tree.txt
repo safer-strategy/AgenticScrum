@@ -77,6 +77,7 @@
 │       ├── test_framework_support.py
 │       ├── test_location_defaults.py
 │       ├── test_memory_management.py
+│       ├── test_package_data.py
 │       ├── test_project_scoping.py
 │       ├── test_search_integration.py
 │       ├── test_security_audit_agent.py
@@ -147,4 +148,4 @@
 └── tests
     └── test_mcp_integration.py
 
-35 directories, 113 files
+35 directories, 114 files
