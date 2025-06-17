@@ -28,7 +28,9 @@ class TestSearchIntegration(unittest.TestCase):
             'agents': 'poa,sma,deva_python,qaa,saa',
             'llm_provider': 'anthropic',
             'default_model': 'claude-3-5-sonnet-20241022',
-            'project_type': 'single'
+            'project_type': 'single',
+            'enable_mcp': True,
+            'enable_search': True
         }
         self.setup = SetupCore(config)
         

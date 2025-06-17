@@ -83,6 +83,7 @@ show_help() {
     echo -e "  ${GREEN}quick${NC}          Quick setup with sensible defaults"
     echo -e "  ${GREEN}claude-code${NC}    Quick setup optimized for Claude Code"
     echo -e "  ${GREEN}custom${NC}         Custom setup with all options"
+    echo -e "  ${GREEN}retrofit${NC} <path> Analyze existing project for integration"
     echo -e "  ${GREEN}create-workspace${NC} Set up a projects directory"
     echo -e "  ${GREEN}install${NC}        Install agentic-scrum-setup utility"
     echo -e "  ${GREEN}help${NC}           Show this help message"
@@ -697,6 +698,12 @@ case "$1" in
         echo -e "${YELLOW}Creating project optimized for Claude Code...${NC}"
         eval $cmd
         show_success "$project_name"
+        ;;
+    "retrofit")
+        shift
+        check_installation
+        echo -e "${GREEN}🔍 Analyzing project for AgenticScrum integration...${NC}"
+        agentic-scrum-setup retrofit "$@"
         ;;
     "create-workspace")
         workspace_dir=$2

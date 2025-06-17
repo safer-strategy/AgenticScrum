@@ -328,9 +328,11 @@ Enforcement occurs via:
 * Reinforcement in priming_script.md.  
 * Checklist items in checklists/code_review_checklist.md for the QAAgent.
 
-### **Workflow Orchestration**
+### **Workflow Orchestration (Future Feature)**
 
-The conceptual sprint lifecycle includes:
+> **Note:** Automated workflow orchestration is planned for future releases. Currently, agents operate independently and require manual coordination.
+
+The conceptual sprint lifecycle that will be automated includes:
 
 1. **Sprint Planning:** POA generates user stories from high-level goals.  
 2. **User Story Assignment:** Stories assigned to appropriate DevAs.  
@@ -341,7 +343,11 @@ The conceptual sprint lifecycle includes:
 7. **Sprint Review:** Human stakeholders review completed work.  
 8. **Sprint Retrospective:** Analyze agent performance and process for improvements.
 
-Future automation can leverage frameworks like CrewAI [6], AutoGen [6], or LangGraph [6].
+**Planned integrations:**
+- Automated sprint lifecycle management
+- Agent interaction coordination
+- Integration with CrewAI [6], AutoGen [6], or LangGraph [6]
+- Full POA → SMA → DevA → QAA → SAA workflow automation
 
 ### **Human-in-the-Loop (HITL)**
 

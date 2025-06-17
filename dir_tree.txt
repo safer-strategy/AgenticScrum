@@ -74,15 +74,18 @@
 │       ├── test_security_audit_agent.py
 │       ├── test_security.py
 │       └── test_setup_core.py
+├── CHANGELOG.md
 ├── checklists
 │   ├── agent_feedback_form.md
 │   └── retrofit_assessment.md
 ├── CLAUDE.md
+├── CONTRIBUTING.md
 ├── dir_tree.txt
 ├── docs
 │   ├── AGENT_OPTIMIZATION.md
 │   ├── Anthropic-models.md
 │   ├── CLAUDE_CODE_GUIDE.md
+│   ├── FEATURE_MATRIX.md
 │   ├── FEEDBACK_WORKFLOW.md
 │   ├── MCP_API_SETUP.md
 │   ├── MCP_INTEGRATION_GUIDE.md
@@ -118,6 +121,7 @@
     ├── EPIC_3_MCP_INTEGRATION.md
     ├── STORY_206_UPDATE_INIT_SH_CLAUDE.md
     ├── STORY_307_PROJECT_LOCATION_DEFAULTS.md
-    └── STORY_308_PROJECT_SCOPING_QUESTIONNAIRE.md
+    ├── STORY_308_PROJECT_SCOPING_QUESTIONNAIRE.md
+    └── STORY_309_PRODUCTION_READINESS_GAPS.md
 
-29 directories, 92 files
+29 directories, 96 files

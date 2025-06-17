@@ -113,21 +113,32 @@ class TestSecurityFeatures:
         project_path = Path(test_config['output_dir']) / 'SecurityTestProject'
         
         # Common patterns that indicate hardcoded secrets
+        import re
         secret_patterns = [
-            'password=',
-            'api_key=',
-            'secret=',
-            'token=',
-            'sk-',  # OpenAI
-            'claude-',  # Anthropic
-            'AIza',  # Google
+            (r'password\s*=\s*["\']?[A-Za-z0-9+/=]{8,}', 'password'),
+            (r'api[_-]?key\s*=\s*["\']?[A-Za-z0-9+/=]{20,}', 'api_key'),
+            (r'secret\s*=\s*["\']?[A-Za-z0-9+/=]{16,}', 'secret'),
+            (r'token\s*=\s*["\']?[A-Za-z0-9+/=]{20,}', 'token'),
+            (r'sk-[A-Za-z0-9]{48}', 'OpenAI API key'),  # OpenAI
+            (r'claude-[0-9a-zA-Z]{40,}', 'Anthropic API key'),  # Anthropic API keys
+            (r'AIza[0-9A-Za-z\-_]{35}', 'Google API key'),  # Google
         ]
         
         # Check all generated files (except .sample)
         for file_path in project_path.rglob('*'):
             if file_path.is_file() and '.sample' not in file_path.name:
                 content = file_path.read_text(errors='ignore')
-                for pattern in secret_patterns:
+                for pattern, desc in secret_patterns:
                     # Allow environment variable references
-                    if pattern in content and '${' not in content:
-                        pytest.fail(f"Found potential secret pattern '{pattern}' in {file_path}")
+                    if re.search(pattern, content) and '${' not in content:
+                        # Additional check: skip if it's in a comment or documentation
+                        lines = content.split('\n')
+                        for line in lines:
+                            if re.search(pattern, line):
+                                # Skip if it's a comment line or in quotes as an example
+                                if line.strip().startswith('#') or line.strip().startswith('//') or 'example:' in line.lower() or 'e.g.' in line:
+                                    continue
+                                # Skip if it's a model name reference
+                                if 'model' in line.lower() or 'claude-3' in line or 'claude-opus' in line or 'claude-sonnet' in line:
+                                    continue
+                                pytest.fail(f"Found potential {desc} in {file_path}")

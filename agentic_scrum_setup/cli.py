@@ -136,6 +136,20 @@ def parse_arguments():
         help='Enable Perplexity search integration (requires PERPLEXITY_API_KEY environment variable)'
     )
     
+    # Retrofit command
+    retrofit_parser = subparsers.add_parser('retrofit', help='Analyze existing project for AgenticScrum integration')
+    retrofit_parser.add_argument(
+        'project_path',
+        type=str,
+        help='Path to the existing project to analyze'
+    )
+    retrofit_parser.add_argument(
+        '--output',
+        '-o',
+        type=str,
+        help='Output directory for retrofit configuration (default: current directory)'
+    )
+    
     return parser
 
 
@@ -447,6 +461,28 @@ def main():
             print("  3. ./init.sh help  # To see available commands")
         except Exception as e:
             print(f"\n❌ Error creating project: {e}")
+            sys.exit(1)
+    
+    elif args.command == 'retrofit':
+        # Import retrofit script
+        try:
+            # Add scripts directory to path
+            scripts_path = Path(__file__).parent.parent / 'scripts'
+            sys.path.insert(0, str(scripts_path))
+            from retrofit_project import main as retrofit_main
+            
+            # Run retrofit analysis
+            retrofit_args = ['assess', '--path', args.project_path]
+            if args.output:
+                retrofit_args.extend(['--output', args.output])
+                
+            print(f"🔍 Analyzing project at {args.project_path} for AgenticScrum integration...")
+            retrofit_main(retrofit_args)
+        except ImportError:
+            print("❌ Error: retrofit_project.py not found in scripts directory")
+            sys.exit(1)
+        except Exception as e:
+            print(f"❌ Error during retrofit analysis: {e}")
             sys.exit(1)
 
 

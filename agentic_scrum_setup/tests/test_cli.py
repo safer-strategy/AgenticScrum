@@ -89,7 +89,8 @@ class TestCLI:
             '',               # Agents (use default)
             'n',              # Not using Claude Code
             '2',              # Provider choice (openai)
-            ''                # Model (use default)
+            '',               # Model (use default)
+            'n'               # Don't enable MCP
         ]
         
         result = interactive_mode()
