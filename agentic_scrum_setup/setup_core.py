@@ -61,11 +61,43 @@ class SetupCore:
             if str(project_abs_path).startswith(forbidden):
                 raise ValueError(f"Cannot create projects in system directory: {forbidden}")
         
+        # Check if project directory already exists and is not empty
+        if self.project_path.exists():
+            try:
+                # Get list of existing items
+                existing_items = list(self.project_path.iterdir())
+                
+                if existing_items:
+                    print(f"\n⚠️  WARNING: Directory already exists and is not empty!")
+                    print(f"   Location: {project_abs_path}")
+                    print(f"   Existing files may be overwritten!")
+                    
+                    # Show some of the existing files
+                    print(f"   Found {len(existing_items)} existing items, including:")
+                    for f in existing_items[:5]:
+                        print(f"     - {f.name}")
+                    if len(existing_items) > 5:
+                        print(f"     ... and {len(existing_items) - 5} more")
+                    
+                    response = input("\nContinue and potentially overwrite files? [y/N]: ")
+                    if response.lower() != 'y':
+                        raise ValueError("Project creation cancelled")
+            except PermissionError:
+                print(f"\n❌ ERROR: Cannot access directory: {project_abs_path}")
+                print("   Please check permissions or choose a different location")
+                raise ValueError("Cannot access target directory")
+        
         # Check if inside another git repo (excluding AgenticScrum)
         if self._is_inside_git_repo(abs_path) and 'AgenticScrum' not in str(abs_path):
             print(f"\n⚠️  WARNING: Target directory is inside a git repository")
-            print(f"   This may cause git conflicts")
-            response = input("Continue anyway? [y/N]: ")
+            print(f"   This will create nested git repositories which can cause:")
+            print(f"   - Git tracking conflicts")
+            print(f"   - Confusion about which repo controls which files")
+            print(f"   - Problems with git submodules")
+            print(f"\n   Recommended alternatives:")
+            print(f"   1. Create your project outside this repository")
+            print(f"   2. Add the project path to .gitignore of the parent repo")
+            response = input("\nContinue anyway? [y/N]: ")
             if response.lower() != 'y':
                 raise ValueError("Project creation cancelled")
     
