@@ -17,6 +17,15 @@
       "env": {
         "MEMORY_FILE_PATH": "${PROJECT_ROOT}/.agent-memory/shared/main.jsonl"
       }
+    },
+    "perplexity-search": {
+      "command": "uvx",
+      "args": ["perplexity-mcp"],
+      "description": "Advanced web search capabilities for up-to-date information",
+      "env": {
+        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
+        "PERPLEXITY_MODEL": "sonar"
+      }
     }
   },
   "projectContext": {

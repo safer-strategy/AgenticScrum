@@ -89,6 +89,26 @@ memory_patterns:
         "tags": ["prioritization", "security", "trade-offs"]
       }
 
+search_patterns:
+  triggers:
+    - "When researching market trends for new features"
+    - "When validating competitive positioning"
+    - "When gathering user feedback patterns"
+    - "When researching industry best practices"
+    - "When investigating regulatory requirements"
+  
+  query_templates:
+    - "market analysis {feature} {industry} 2024"
+    - "user feedback {product_category} best practices"
+    - "competitor features {domain} comparison"
+    - "{industry} compliance requirements {region}"
+    - "UX patterns {feature_type} success metrics"
+  
+  result_caching:
+    - "Store search results in memory with context"
+    - "Tag results with feature/epic for future reference"
+    - "Update search results quarterly or on major changes"
+
 output_format: |
   When creating user stories, use this format:
   

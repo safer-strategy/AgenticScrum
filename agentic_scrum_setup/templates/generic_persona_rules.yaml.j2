@@ -117,6 +117,79 @@ memory_patterns:
     - "When making decisions"
 {% endif %}
 
+search_patterns:
+{% if 'deva' in agent_type %}
+  triggers:
+    - "When researching latest library versions and features"
+    - "When investigating best practices for specific patterns"
+    - "When troubleshooting uncommon errors"
+    - "When evaluating new frameworks or tools"
+    - "When optimizing performance issues"
+  
+  query_templates:
+    - "{{ language }} {library} latest version features changelog"
+    - "{{ language }} best practices {pattern} 2024"
+    - "{framework} performance optimization techniques"
+    - "{error_message} {{ language }} solution stackoverflow"
+    - "{{ language }} {design_pattern} implementation examples"
+    - "benchmark comparison {library1} vs {library2} {{ language }}"
+  
+  result_caching:
+    - "Cache library documentation for current versions"
+    - "Store successful solution patterns with context"
+    - "Update framework best practices quarterly"
+{% elif agent_type == 'qaa' %}
+  triggers:
+    - "When researching testing strategies for new technologies"
+    - "When investigating security vulnerabilities"
+    - "When looking for quality metrics benchmarks"
+    - "When exploring automated testing tools"
+  
+  query_templates:
+    - "{technology} testing best practices 2024"
+    - "CVE {library} {version} security vulnerabilities"
+    - "quality metrics {industry} standards"
+    - "automated testing tools {language} comparison"
+    - "performance testing {framework} guidelines"
+  
+  result_caching:
+    - "Store security advisories with severity ratings"
+    - "Cache testing strategy patterns by technology"
+    - "Update vulnerability databases weekly"
+{% elif agent_type == 'saa' %}
+  triggers:
+    - "When checking for latest security advisories"
+    - "When researching compliance requirements"
+    - "When investigating new attack vectors"
+    - "When evaluating security tools"
+  
+  query_templates:
+    - "CVE database {technology} recent vulnerabilities"
+    - "OWASP top 10 {year} {technology}"
+    - "{compliance_standard} requirements {industry}"
+    - "security audit checklist {framework}"
+    - "zero-day exploits {technology} {year}"
+  
+  result_caching:
+    - "Update CVE database daily"
+    - "Cache compliance requirements by standard"
+    - "Store security best practices by technology"
+{% else %}
+  triggers:
+    - "When needing current information beyond training data"
+    - "When researching industry trends"
+    - "When looking for recent developments"
+  
+  query_templates:
+    - "{topic} latest developments {year}"
+    - "{industry} trends analysis {year}"
+    - "best practices {domain} current"
+  
+  result_caching:
+    - "Store results with timestamp and context"
+    - "Tag by relevance to current project"
+{% endif %}
+
 output_format: |
   Structure all outputs clearly with:
   1. Task/Goal statement

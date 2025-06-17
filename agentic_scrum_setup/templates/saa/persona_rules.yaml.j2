@@ -136,6 +136,32 @@ memory_patterns:
         "tags": ["authentication", "jwt", "best_practice"]
       }
 
+search_patterns:
+  triggers:
+    - "When checking for latest CVEs and security advisories"
+    - "When researching new attack vectors or exploits"
+    - "When investigating specific vulnerability patterns"
+    - "When looking for security patches or fixes"
+    - "When researching compliance requirements"
+    - "When evaluating security tools or libraries"
+  
+  query_templates:
+    - "CVE {year} {technology} {framework} vulnerabilities"
+    - "OWASP top 10 {year} {language} mitigation"
+    - "{vulnerability_type} exploit techniques {year}"
+    - "security patch {library} {version} changelog"
+    - "{compliance_standard} requirements {industry} {year}"
+    - "zero-day {technology} {component} {year}"
+    - "{framework} security headers best practices"
+    - "dependency vulnerability {package_manager} {library}"
+  
+  result_caching:
+    - "Cache CVE database updates daily"
+    - "Store security advisory patterns by technology"
+    - "Update compliance requirements quarterly"
+    - "Tag critical vulnerabilities for immediate attention"
+    - "Archive successful mitigation strategies"
+
 llm_config:
   provider: {{ llm_provider }}
   model: {{ default_model }}

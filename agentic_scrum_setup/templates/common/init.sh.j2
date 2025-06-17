@@ -49,7 +49,7 @@ function check_api_keys() {
     fi
   fi
   
-  if [[ ${#missing_keys[@]} -gt 0 ]]; then
+  if [[ ${{'{#'}}missing_keys[@]} -gt 0 ]]; then
     error "Missing required API keys:"
     printf '  - %s\n' "${missing_keys[@]}"
     echo ""

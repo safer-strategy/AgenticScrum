@@ -65,6 +65,7 @@
 │   └── tests
 │       ├── test_cli.py
 │       ├── test_framework_support.py
+│       ├── test_search_integration.py
 │       ├── test_security_audit_agent.py
 │       ├── test_security.py
 │       └── test_setup_core.py
@@ -90,10 +91,12 @@
 ├── scripts
 │   ├── agent_memory_utils.py
 │   ├── animated_ascii_art.py
+│   ├── api_rate_limiter.py
 │   ├── collect_agent_metrics.py
 │   ├── feedback_analyzer.py
 │   ├── generate_ascii_art.py
 │   ├── retrofit_project.py
+│   ├── search_cache_manager.py
 │   └── update_agent_config.py
 ├── setup.py
 └── spec
@@ -103,4 +106,4 @@
     ├── EPIC_2_CLAUDE_INTEGRATION.md
     └── EPIC_3_MCP_INTEGRATION.md
 
-29 directories, 75 files
+29 directories, 78 files
