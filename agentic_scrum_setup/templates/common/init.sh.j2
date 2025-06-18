@@ -143,11 +143,86 @@ function run_tests() {
   fi
 }
 
+# --- AgenticScrum Framework Integration ---
+
+function find_agentic_framework() {
+  # Try to locate AgenticScrum framework installation
+  local framework_paths=(
+    # Check if agentic-scrum-setup is available as command
+    "$(command -v agentic-scrum-setup 2>/dev/null)"
+    # Check common development locations
+    "../AgenticScrum"
+    "../../AgenticScrum"
+    "../../../AgenticScrum"
+    "~/proj/AgenticScrum"
+    "~/Projects/AgenticScrum"
+    "~/AgenticScrum"
+  )
+  
+  # Try agentic-patch command first (most reliable)
+  if command -v agentic-patch &> /dev/null; then
+    echo "agentic-patch"
+    return 0
+  fi
+  
+  # Try main CLI command
+  if command -v agentic-scrum-setup &> /dev/null; then
+    echo "agentic-scrum-setup"
+    return 0
+  fi
+  
+  # Check for local framework installations
+  for path in "${framework_paths[@]}"; do
+    if [[ -n "$path" ]] && [[ -d "$path" ]] && [[ -f "$path/init.sh" ]]; then
+      echo "$path/init.sh"
+      return 0
+    fi
+  done
+  
+  return 1
+}
+
+function run_framework_patch() {
+  local operation="$1"
+  shift
+  local framework_cmd
+  
+  framework_cmd=$(find_agentic_framework)
+  if [[ $? -ne 0 ]]; then
+    error "AgenticScrum framework not found!"
+    echo ""
+    echo "To use patch commands, ensure AgenticScrum is:"
+    echo "  1. Installed via pip: pip install agentic-scrum-setup"
+    echo "  2. Or accessible in a parent directory"
+    echo "  3. Or run from within the AgenticScrum framework directory"
+    return 1
+  fi
+  
+  info "Found AgenticScrum: $framework_cmd"
+  echo ""
+  
+  case "$framework_cmd" in
+    "agentic-patch")
+      agentic-patch "$operation" "$@"
+      ;;
+    "agentic-scrum-setup")
+      agentic-scrum-setup patch "$operation" "$@"
+      ;;
+    *.sh)
+      "$framework_cmd" patch "$operation" "$@"
+      ;;
+    *)
+      error "Unknown framework command type: $framework_cmd"
+      return 1
+      ;;
+  esac
+}
+
 function show_help() {
   header
   echo "Usage: ./init.sh [command]"
   echo ""
-  echo "Commands:"
+  echo "Project Commands:"
   echo -e "  ${C_YELLOW}up${C_RESET}         - Build and start all Docker services."
   echo -e "  ${C_YELLOW}down${C_RESET}       - Stop and remove all Docker services."
   echo -e "  ${C_YELLOW}logs${C_RESET}       - Tail the logs from all running services."
@@ -155,7 +230,19 @@ function show_help() {
   echo -e "  ${C_YELLOW}setup${C_RESET}      - Setup environment variables and MCP configuration."
   echo -e "  ${C_YELLOW}verify-keys${C_RESET} - Check if all required API keys are configured."
   echo -e "  ${C_YELLOW}test-mcp${C_RESET}   - Test MCP server connections (memory/search)."
-  echo -e "  ${C_YELLOW}help${C_RESET}       - Show this help message."
+  echo ""
+  echo "Framework Commands:"
+  echo -e "  ${C_YELLOW}patch${C_RESET} <operation> - Apply patches to AgenticScrum framework"
+  echo -e "  ${C_YELLOW}patch-status${C_RESET}      - Show AgenticScrum patching system status"
+  echo -e "  ${C_YELLOW}help${C_RESET}              - Show this help message."
+  echo ""
+  echo "Patch Operations:"
+  echo -e "  ${C_CYAN}status${C_RESET}       - Show patching system status"
+  echo -e "  ${C_CYAN}history${C_RESET}      - View patch history"
+  echo -e "  ${C_CYAN}add-template${C_RESET} - Add new agent templates"
+  echo -e "  ${C_CYAN}update-mcp${C_RESET}   - Update MCP configurations"
+  echo -e "  ${C_CYAN}fix-cli${C_RESET}      - Apply CLI fixes"
+  echo -e "  ${C_CYAN}sync-changes${C_RESET} - Sync changes back to framework"
   echo ""
 }
 
@@ -257,6 +344,17 @@ function main() {
       ;;
     test-mcp)
       test_mcp_servers "$2"
+      ;;
+    patch)
+      # Forward to AgenticScrum framework patching system
+      shift
+      run_framework_patch "$@"
+      ;;
+    patch-status)
+      # Quick status check
+      info "{{ project_name }} - AgenticScrum Framework Patching Status"
+      echo ""
+      run_framework_patch status
       ;;
     help|*)
       show_help

@@ -180,6 +180,66 @@ python scripts/update_agent_config.py recommend --agent deva_python
 python scripts/update_agent_config.py apply --agent deva_python --dry-run
 ```
 
+### Remote Patching System (NEW)
+
+AgenticScrum now includes a comprehensive remote patching system that allows you to update the framework from any project directory on the same computer:
+
+```bash
+# Show patching system status
+agentic-scrum-setup patch status
+./init.sh patch-status
+
+# View patch history
+agentic-scrum-setup patch history
+
+# Add new agent template
+agentic-scrum-setup patch add-template \
+  --agent-type deva_rust \
+  --target rust-agent-template.yaml \
+  --description "Add Rust developer agent"
+
+# Add MCP to existing project
+agentic-scrum-setup patch update-mcp \
+  --target /path/to/my-project \
+  --description "Enable MCP features"
+
+# Apply CLI fixes
+agentic-scrum-setup patch fix-cli \
+  --description "Fix argument parsing issues"
+
+# Sync changes from project back to framework
+agentic-scrum-setup patch sync-changes \
+  --target /path/to/my-project \
+  --description "Sync improved templates"
+
+# Rollback a patch
+agentic-scrum-setup patch rollback --patch-id abc12345
+
+# Use standalone script (works from any directory)
+agentic-patch status
+agentic-patch add-template --agent-type deva_go --target go-template.yaml
+
+# Use init.sh shortcuts
+./init.sh patch status
+./init.sh patch fix-cli
+
+# Preview changes without applying (dry run)
+agentic-scrum-setup patch add-template \
+  --agent-type test_agent \
+  --target template.yaml \
+  --dry-run
+```
+
+#### Patching System Features:
+- **Framework Discovery**: Automatically locates AgenticScrum installation from any directory
+- **Safe Application**: Validates patches before applying with rollback capability
+- **Git Integration**: Creates branches, commits changes, and enables rollback
+- **Version Control**: Tracks all patches with history and metadata
+- **Universal Access**: Works from any project directory on the computer
+- **Template Management**: Add/update agent templates and configurations
+- **MCP Integration**: Add MCP services to existing projects
+- **CLI Enhancement**: Apply fixes and add new commands to the framework
+
 ### Organization Management (NEW)
 
 AgenticScrum now supports enterprise-grade multi-repository organizations with AI agent coordination:

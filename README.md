@@ -10,6 +10,7 @@
 
 ## **Table of Contents**
 
+* [🗺️ Project Sitemap](#️-project-sitemap)  
 * [Overview](#overview)  
 * [Core Principles](#core-principles)  
 * [Key Features](#key-features)  
@@ -36,6 +37,91 @@
   * [Retrofitting Guide](#retrofitting-guide)  
 * [Contributing](#contributing)  
 * [License](#license)
+
+---
+
+## 🗺️ **Project Sitemap**
+
+**Quick navigation for the AgenticScrum framework - find what you need fast!**
+
+### **🚀 I want to get started...**
+- **`./init.sh`** - Main setup script (start here!)
+- **`./init.sh help`** - See all available commands
+- **`BETA_LAUNCH.md`** - Beta testing instructions
+- **`Tutorial.md`** - Step-by-step tutorial for first project
+
+### **📁 Key Directories & What's Inside**
+
+```
+AgenticScrum/
+├── 🏗️  agentic_scrum_setup/          # Core framework (the magic happens here)
+│   ├── cli.py                        # Main CLI commands
+│   ├── setup_core.py                 # Project generation engine
+│   ├── templates/                    # All project templates
+│   │   ├── deva_python/             # Python agent templates  
+│   │   ├── deva_typescript/         # TypeScript agent templates
+│   │   ├── claude/                  # Claude Code & MCP configs
+│   │   └── [language]/              # Language-specific templates
+│   └── patching/                    # 🆕 Remote patching system
+│
+├── 📋 spec/                         # Development stories & specifications
+│   ├── STORY_*.md                   # Feature development tracking
+│   └── STORY_TEMPLATE.md            # Template for new stories
+│
+├── 🔧 scripts/                      # Utility scripts & tools
+│   ├── agentic-patch                # 🆕 Standalone patching tool
+│   ├── collect_agent_metrics.py    # Agent performance tracking
+│   ├── feedback_analyzer.py        # Feedback analysis
+│   └── update_agent_config.py      # Agent optimization
+│
+├── 📚 docs/                         # Documentation & guides
+│   ├── RETROFITTING_GUIDE.md       # Add AgenticScrum to existing projects
+│   ├── DEVELOPMENT_PROCEDURES.md   # Development workflow
+│   └── MCP_INTEGRATION_GUIDE.md    # MCP setup (coming soon)
+│
+├── ⚙️  Configuration Files
+│   ├── pyproject.toml               # Python package configuration
+│   ├── MANIFEST.in                  # Package file inclusion rules
+│   ├── CLAUDE.md                    # Development instructions
+│   └── requirements-dev.txt         # Development dependencies
+│
+└── 🧪 Testing & Quality
+    ├── agentic_scrum_setup/tests/   # Framework test suite
+    └── tmp/                         # Temporary files (gitignored)
+```
+
+### **🎯 Common Tasks - Where to Go**
+
+| **I want to...** | **Go to...** | **Command/File** |
+|-------------------|---------------|------------------|
+| **Create a new project** | Start here! | `./init.sh new` |
+| **Add AgenticScrum to existing project** | Retrofitting | `./init.sh retrofit /path/to/project` |
+| **See what commands are available** | Help system | `./init.sh help` |
+| **Update the framework** | Patching system | `./init.sh patch status` |
+| **Install for development** | Development setup | See [Development Commands](#development-commands) |
+| **Add a new agent template** | Template system | `agentic_scrum_setup/templates/` |
+| **Report a bug or request feature** | Issues | Create story in `spec/` directory |
+| **Understand the framework design** | Documentation | `Design.md` |
+| **Learn with hands-on tutorial** | Tutorial | `Tutorial.md` |
+
+### **🆕 New Features Highlight**
+
+- **🔧 Remote Patching System**: Update AgenticScrum from any directory (`scripts/agentic-patch`)
+- **🧠 MCP Integration**: Enhanced agent memory and search capabilities  
+- **🏢 Organization Management**: Multi-repository project coordination
+- **🔄 Agent Optimization**: Feedback loops and performance improvement tools
+
+### **📦 Generated Project Structure**
+When you create a new project, AgenticScrum generates this structure:
+```
+YourProject/
+├── agents/                   # AI agent configurations
+├── src/                      # Your source code  
+├── docs/requirements/        # User stories & backlog
+├── standards/               # Coding standards & configs
+├── checklists/              # Quality checklists
+└── agentic_config.yaml      # Project settings
+```
 
 ---
 
