@@ -1,0 +1,328 @@
+#!/usr/bin/env python3
+"""Standalone script for AgenticScrum Remote Patching System.
+
+This script provides a convenient way to apply patches to the AgenticScrum
+framework from any directory on the computer.
+"""
+
+import sys
+import argparse
+from pathlib import Path
+
+
+def main():
+    """Main entry point for the agentic-patch script."""
+    parser = argparse.ArgumentParser(
+        prog='agentic-patch',
+        description='AgenticScrum Remote Patching System - Apply patches from any directory',
+        epilog='''Examples:
+  # Show patching system status
+  agentic-patch status
+  
+  # Add new agent template
+  agentic-patch add-template --agent-type deva_rust --target rust-template.yaml
+  
+  # Add MCP to existing project
+  agentic-patch update-mcp --target /path/to/my-project
+  
+  # Fix CLI issues  
+  agentic-patch fix-cli --description "Fix argument parsing"
+  
+  # Sync changes from project
+  agentic-patch sync-changes --target /path/to/my-project
+  
+  # View patch history
+  agentic-patch history
+  
+  # Rollback a patch
+  agentic-patch rollback --patch-id abc12345
+''',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    # Operation argument
+    parser.add_argument(
+        'operation',
+        choices=['add-template', 'update-mcp', 'fix-cli', 'add-command', 'sync-changes', 'rollback', 'history', 'status'],
+        help='Patch operation to perform'
+    )
+    
+    # Common arguments
+    parser.add_argument(
+        '--target',
+        type=str,
+        help='Target file or path for the operation'
+    )
+    parser.add_argument(
+        '--description',
+        type=str,
+        help='Description of the patch'
+    )
+    parser.add_argument(
+        '--agent-type',
+        type=str,
+        help='Agent type for template operations (e.g., deva_rust, qaa_advanced)'
+    )
+    parser.add_argument(
+        '--template-type',
+        type=str,
+        choices=['persona_rules', 'memory_patterns', 'search_patterns'],
+        default='persona_rules',
+        help='Type of template for add-template operation'
+    )
+    parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='Preview changes without applying them'
+    )
+    parser.add_argument(
+        '--force',
+        action='store_true',
+        help='Force apply patch even with warnings'
+    )
+    parser.add_argument(
+        '--patch-id',
+        type=str,
+        help='Patch ID for rollback operation'
+    )
+    
+    # Framework discovery arguments
+    parser.add_argument(
+        '--framework-path',
+        type=str,
+        help='Explicit path to AgenticScrum framework (auto-discovered if not provided)'
+    )
+    
+    # Parse arguments
+    args = parser.parse_args()
+    
+    try:
+        # Try to discover and import AgenticScrum
+        if args.framework_path:
+            framework_path = Path(args.framework_path)
+            if not framework_path.exists():
+                print(f"❌ Error: Specified framework path not found: {framework_path}")
+                sys.exit(1)
+        else:
+            framework_path = None
+        
+        # Import patching system
+        try:
+            # Try importing from installed package
+            from agentic_scrum_setup.patching import AgenticPatcher
+            from agentic_scrum_setup.patching.operations import (
+                AddTemplateOperation, UpdateMCPOperation, FixCLIOperation,
+                AddCommandOperation, SyncChangesOperation
+            )
+        except ImportError:
+            # Try importing from local development
+            try:
+                # Add framework path to Python path
+                if framework_path is None:
+                    # Try to find framework
+                    current_dir = Path.cwd()
+                    for parent in [current_dir] + list(current_dir.parents):
+                        potential_framework = parent / 'AgenticScrum'
+                        if potential_framework.exists() and (potential_framework / 'agentic_scrum_setup').exists():
+                            framework_path = potential_framework
+                            break
+                    
+                    if framework_path is None:
+                        print("❌ Error: Could not locate AgenticScrum framework")
+                        print("💡 Tip: Use --framework-path to specify the location")
+                        sys.exit(1)
+                
+                sys.path.insert(0, str(framework_path))
+                from agentic_scrum_setup.patching import AgenticPatcher
+                from agentic_scrum_setup.patching.operations import (
+                    AddTemplateOperation, UpdateMCPOperation, FixCLIOperation,
+                    AddCommandOperation, SyncChangesOperation
+                )
+            except ImportError as e:
+                print(f"❌ Error: Could not import AgenticScrum patching system: {e}")
+                print("💡 Make sure AgenticScrum is installed or you're in the framework directory")
+                sys.exit(1)
+        
+        # Initialize patcher
+        patcher = AgenticPatcher(framework_path=framework_path)
+        
+        print(f"🔧 AgenticScrum Remote Patching System")
+        print(f"📁 Framework: {patcher.framework_path}")
+        print(f"📍 Working from: {Path.cwd()}")
+        print()
+        
+        # Execute the requested operation
+        if args.operation == 'status':
+            # Show patcher status
+            status = patcher.get_status()
+            print(f"📊 Status Report:")
+            print(f"  • Total patches applied: {status['total_patches']}")
+            print(f"  • Git available: {'✅' if status['git_available'] else '❌'}")
+            print(f"  • Backups enabled: {'✅' if status['backup_enabled'] else '❌'}")
+            print(f"  • Backup directory: {status['backup_directory']}")
+            
+            if status['recent_patches']:
+                print(f"\n📝 Recent patches:")
+                for patch in status['recent_patches']:
+                    print(f"  • {patch['patch_id'][:8]} - {patch['operation']} ({patch['timestamp'][:10]})")
+        
+        elif args.operation == 'history':
+            # Show patch history
+            patches = patcher.get_patch_history()
+            if not patches:
+                print("📝 No patches applied yet")
+            else:
+                print(f"📝 Patch History ({len(patches)} patches)")
+                for patch in patches:
+                    print(f"\n🔸 {patch.patch_id[:8]} - {patch.operation}")
+                    print(f"   📅 {patch.timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
+                    print(f"   📄 {patch.description}")
+                    print(f"   📁 Files modified: {len(patch.files_modified)}")
+                    if patch.git_commit:
+                        print(f"   🌿 Git commit: {patch.git_commit[:8]}")
+        
+        elif args.operation == 'rollback':
+            # Rollback a patch
+            if not args.patch_id:
+                print("❌ Error: --patch-id is required for rollback operation")
+                sys.exit(1)
+            
+            print(f"🔄 Rolling back patch {args.patch_id}...")
+            patcher.rollback_patch(args.patch_id)
+        
+        elif args.operation == 'add-template':
+            # Add template operation
+            if not args.target:
+                print("❌ Error: --target is required for add-template operation")
+                sys.exit(1)
+            if not args.agent_type:
+                print("❌ Error: --agent-type is required for add-template operation")
+                sys.exit(1)
+            
+            template_op = AddTemplateOperation(patcher.framework_path, patcher.validator)
+            
+            def patch_function():
+                target_path = Path(args.target)
+                if not target_path.is_absolute():
+                    target_path = Path.cwd() / target_path
+                return template_op.add_template(args.agent_type, target_path, args.template_type)
+            
+            description = args.description or f"Add {args.template_type} template for {args.agent_type}"
+            target_template_path = patcher.framework_path / 'agentic_scrum_setup' / 'templates' / args.agent_type / f'{args.template_type}.yaml.j2'
+            files_to_modify = [target_template_path]
+            
+            patcher.apply_patch('add-template', description, patch_function, files_to_modify, args.dry_run)
+        
+        elif args.operation == 'update-mcp':
+            # Update MCP operation
+            if not args.target:
+                print("❌ Error: --target is required for update-mcp operation")
+                sys.exit(1)
+            
+            mcp_op = UpdateMCPOperation(patcher.framework_path, patcher.validator)
+            target_path = Path(args.target)
+            if not target_path.is_absolute():
+                target_path = Path.cwd() / target_path
+            
+            def patch_function():
+                if target_path.is_dir():
+                    # Adding MCP to project
+                    return mcp_op.add_mcp_to_project(target_path)
+                else:
+                    # Updating MCP service
+                    return mcp_op.update_mcp_service(target_path)
+            
+            description = args.description or f"Update MCP configuration/service"
+            
+            if target_path.is_dir():
+                files_to_modify = [target_path / '.mcp.json']
+            else:
+                files_to_modify = [patcher.framework_path / 'agentic_scrum_setup' / 'templates' / 'claude' / target_path.name]
+            
+            patcher.apply_patch('update-mcp', description, patch_function, files_to_modify, args.dry_run)
+        
+        elif args.operation == 'fix-cli':
+            # Fix CLI operation
+            cli_op = FixCLIOperation(patcher.framework_path, patcher.validator)
+            
+            def patch_function():
+                if args.target:
+                    target_path = Path(args.target)
+                    if not target_path.is_absolute():
+                        target_path = Path.cwd() / target_path
+                    
+                    if target_path.exists():
+                        # Apply patch file
+                        return cli_op.apply_cli_patch(target_path)
+                    else:
+                        print(f"⚠️  Patch file not found: {target_path}")
+                        print("Applying common CLI fixes instead...")
+                
+                # Apply common fixes
+                fix_description = args.description or "Apply common CLI fixes"
+                return cli_op.fix_argument_parsing(fix_description)
+            
+            description = args.description or "Fix CLI issues"
+            files_to_modify = [patcher.framework_path / 'agentic_scrum_setup' / 'cli.py']
+            
+            patcher.apply_patch('fix-cli', description, patch_function, files_to_modify, args.dry_run)
+        
+        elif args.operation == 'add-command':
+            # Add command operation
+            if not args.target:
+                print("❌ Error: --target is required for add-command operation (command name)")
+                sys.exit(1)
+            
+            cmd_op = AddCommandOperation(patcher.framework_path, patcher.validator)
+            
+            def patch_function():
+                # Basic command configuration
+                command_config = {
+                    'description': args.description or f"{args.target} command",
+                    'arguments': [],
+                    'handler': f'handle_{args.target}_command'
+                }
+                return cmd_op.add_cli_command(args.target, command_config)
+            
+            description = args.description or f"Add {args.target} command to CLI"
+            files_to_modify = [patcher.framework_path / 'agentic_scrum_setup' / 'cli.py']
+            
+            patcher.apply_patch('add-command', description, patch_function, files_to_modify, args.dry_run)
+        
+        elif args.operation == 'sync-changes':
+            # Sync changes operation
+            if not args.target:
+                print("❌ Error: --target is required for sync-changes operation (project path)")
+                sys.exit(1)
+            
+            sync_op = SyncChangesOperation(patcher.framework_path, patcher.validator)
+            target_path = Path(args.target)
+            if not target_path.is_absolute():
+                target_path = Path.cwd() / target_path
+            
+            def patch_function():
+                return sync_op.sync_from_project(target_path)
+            
+            description = args.description or f"Sync changes from {target_path.name}"
+            files_to_modify = [patcher.framework_path / 'agentic_scrum_setup' / 'templates']
+            
+            patcher.apply_patch('sync-changes', description, patch_function, files_to_modify, args.dry_run)
+        
+        else:
+            print(f"❌ Error: Unknown patch operation: {args.operation}")
+            sys.exit(1)
+    
+    except KeyboardInterrupt:
+        print("\n🛑 Operation cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        if args.dry_run:
+            print("💡 This was a dry run - no changes were made")
+        else:
+            print("💡 Tip: Use --dry-run to preview changes before applying")
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()

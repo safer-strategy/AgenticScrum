@@ -234,12 +234,17 @@ cd shared && docker-compose up -d
 ### Building and Distribution
 
 ```bash
-# Build distribution packages
-python setup.py sdist bdist_wheel
+# Modern build with PEP 625 compliance
+python -m build --sdist --wheel
+
+# Validate package integrity
+twine check dist/*
 
 # Upload to PyPI (requires credentials)
 twine upload dist/*
 ```
+
+**📚 For comprehensive development procedures, see [Development Procedures Guide](docs/DEVELOPMENT_PROCEDURES.md)**
 
 ## Development Best Practices
 

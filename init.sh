@@ -24,6 +24,11 @@ DEFAULT_LLM_PROVIDER="anthropic"
 DEFAULT_MODEL="claude-sonnet-4-0"
 DEFAULT_AGENTS="poa,sma,deva_python,qaa"
 
+# MCP Configuration defaults
+DEFAULT_ENABLE_MCP="true"
+DEFAULT_ENABLE_SEARCH="true"
+MCP_EXPLANATION_SHOWN="false"
+
 # MCP Service Management Functions
 start_mcp_services() {
     echo -e "${BOLD}Starting MCP services...${NC}"
@@ -171,6 +176,8 @@ show_help() {
     echo -e "  ${GREEN}mcp-stop${NC}       Stop MCP DateTime service"
     echo -e "  ${GREEN}mcp-status${NC}     Check MCP service status"
     echo -e "  ${GREEN}mcp-test${NC}       Test DateTime service functionality"
+    echo -e "  ${GREEN}patch${NC} <operation> Apply patches to AgenticScrum framework"
+    echo -e "  ${GREEN}patch-status${NC}   Show patching system status"
     echo -e "  ${GREEN}help${NC}           Show this help message"
     echo
     echo -e "${BOLD}Quick Examples:${NC}"
@@ -181,6 +188,8 @@ show_help() {
     echo -e "  ${CYAN}./init.sh custom${NC}                 # Full customization options"
     echo -e "  ${CYAN}./init.sh mcp-start${NC}              # Start DateTime MCP service"
     echo -e "  ${CYAN}./init.sh mcp-status${NC}             # Check if DateTime service is running"
+    echo -e "  ${CYAN}./init.sh patch status${NC}           # Show patching system status"
+    echo -e "  ${CYAN}./init.sh patch fix-cli${NC}          # Apply common CLI fixes"
     echo
     echo -e "${BOLD}Claude Code Integration:${NC}"
     echo -e "  Projects are now optimized for Claude Code by default"
@@ -214,6 +223,34 @@ show_help() {
     echo -e "  The service provides timezone handling, business day calculations, and sprint timing."
     echo -e "  Use 'mcp-start' to enable the service for Claude Code integration."
     echo
+}
+
+# Function to show MCP information to users
+show_mcp_info() {
+    if [ "$MCP_EXPLANATION_SHOWN" = "false" ]; then
+        echo -e "${BOLD}🧠 Enhanced AI Capabilities (MCP Integration):${NC}"
+        echo -e "  ${GREEN}✓ Persistent Memory${NC} - Agents learn from past experiences across sessions"
+        echo -e "  ${GREEN}✓ Advanced Search${NC} - Global web search via Perplexity API (not limited to US)"
+        echo -e "  ${GREEN}✓ Learning Agents${NC} - Performance improves over time as agents build knowledge"
+        echo -e "  ${GREEN}✓ Secure Configuration${NC} - API keys managed through environment variables"
+        echo
+        echo -e "${YELLOW}Note: Search requires PERPLEXITY_API_KEY environment variable${NC}"
+        echo -e "${CYAN}Set it with: export PERPLEXITY_API_KEY=\"your-key-here\"${NC}"
+        echo -e "${WHITE}Projects work without API key but search features will be disabled${NC}"
+        echo
+        MCP_EXPLANATION_SHOWN="true"
+    fi
+}
+
+# Function to check MCP environment and provide guidance
+check_mcp_environment() {
+    local enable_search=$1
+    if [ "$enable_search" = "true" ] && [ -z "$PERPLEXITY_API_KEY" ]; then
+        echo -e "${YELLOW}⚠ Search enabled but PERPLEXITY_API_KEY not set${NC}"
+        echo -e "${CYAN}Set it with: export PERPLEXITY_API_KEY=\"your-key-here\"${NC}"
+        echo -e "${WHITE}Project will be created with MCP memory but without search capability${NC}"
+        echo
+    fi
 }
 
 # Function to check if agentic-scrum-setup is installed
@@ -503,6 +540,27 @@ create_new_project() {
         esac
     fi
     
+    # MCP Configuration
+    echo
+    show_mcp_info
+    read -p "$(echo -e ${BOLD}Enable MCP features? [Y/n]:${NC} )" enable_mcp_input
+    enable_mcp=${enable_mcp_input:-Y}
+    case $enable_mcp in
+        [Nn]*) enable_mcp="false"; enable_search="false";;
+        *) enable_mcp="true"
+           echo
+           read -p "$(echo -e ${BOLD}Enable search integration? [Y/n]:${NC} )" enable_search_input
+           enable_search=${enable_search_input:-Y}
+           case $enable_search in
+               [Nn]*) enable_search="false";;
+               *) enable_search="true";;
+           esac
+           ;;
+    esac
+    
+    # Check MCP environment
+    check_mcp_environment "$enable_search"
+    
     # Build command
     cmd="agentic-scrum-setup init"
     cmd="$cmd --project-name \"$project_name\""
@@ -532,6 +590,14 @@ create_new_project() {
     # Add Claude Code flag if applicable
     if [ "$using_claude_code" = "true" ]; then
         cmd="$cmd --claude-code"
+    fi
+    
+    # Add MCP flags
+    if [ "$enable_mcp" = "true" ]; then
+        cmd="$cmd --enable-mcp"
+    fi
+    if [ "$enable_search" = "true" ]; then
+        cmd="$cmd --enable-search"
     fi
     
     # Show command and confirm
@@ -564,6 +630,7 @@ quick_setup() {
     
     show_header
     echo -e "${BOLD}Quick Setup: $project_name${NC}"
+    echo -e "${CYAN}✓ Enhanced AI capabilities enabled (MCP integration)${NC}"
     echo
     
     cmd="agentic-scrum-setup init"
@@ -573,6 +640,8 @@ quick_setup() {
     cmd="$cmd --llm-provider anthropic"
     cmd="$cmd --default-model claude-sonnet-4-0"
     cmd="$cmd --claude-code"
+    cmd="$cmd --enable-mcp"
+    cmd="$cmd --enable-search"
     
     echo -e "${GREEN}$cmd${NC}"
     echo
@@ -613,6 +682,23 @@ custom_setup() {
     read -p "$(echo -e ${BOLD}Default Model [claude-sonnet-4-0]:${NC} )" default_model
     read -p "$(echo -e ${BOLD}Output Directory [.]:${NC} )" output_dir
     
+    # MCP Configuration
+    echo
+    show_mcp_info
+    read -p "$(echo -e ${BOLD}Enable MCP features? [Y/n]:${NC} )" enable_mcp_input
+    enable_mcp=${enable_mcp_input:-Y}
+    case $enable_mcp in
+        [Nn]*) enable_mcp="false"; enable_search="false";;
+        *) enable_mcp="true"
+           read -p "$(echo -e ${BOLD}Enable search integration? [Y/n]:${NC} )" enable_search_input
+           enable_search=${enable_search_input:-Y}
+           case $enable_search in
+               [Nn]*) enable_search="false";;
+               *) enable_search="true";;
+           esac
+           ;;
+    esac
+    
     # Set defaults
     project_type=${project_type:-single}
     language=${language:-python}
@@ -646,6 +732,17 @@ custom_setup() {
     cmd="$cmd --llm-provider $llm_provider"
     cmd="$cmd --default-model $default_model"
     cmd="$cmd --output-dir $output_dir"
+    
+    # Add MCP flags
+    if [ "$enable_mcp" = "true" ]; then
+        cmd="$cmd --enable-mcp"
+    fi
+    if [ "$enable_search" = "true" ]; then
+        cmd="$cmd --enable-search"
+    fi
+    
+    # Check MCP environment
+    check_mcp_environment "$enable_search"
     
     # Show and execute
     echo
@@ -782,6 +879,7 @@ case "$1" in
         # Run with optimal Claude settings
         show_header
         echo -e "${BOLD}Claude Code Setup: $project_name${NC}"
+        echo -e "${CYAN}✓ Enhanced AI capabilities enabled (MCP integration)${NC}"
         echo
         cmd="agentic-scrum-setup init"
         cmd="$cmd --project-name \"$project_name\""
@@ -790,6 +888,8 @@ case "$1" in
         cmd="$cmd --llm-provider anthropic"
         cmd="$cmd --default-model claude-sonnet-4-0"
         cmd="$cmd --claude-code"
+        cmd="$cmd --enable-mcp"
+        cmd="$cmd --enable-search"
         echo -e "${GREEN}$cmd${NC}"
         echo
         echo -e "${YELLOW}Creating project optimized for Claude Code...${NC}"
@@ -820,6 +920,37 @@ case "$1" in
         ;;
     "mcp-test")
         test_datetime_service
+        ;;
+    "patch")
+        # Forward to agentic-patch command
+        shift
+        check_installation
+        echo -e "${GREEN}🔧 AgenticScrum Remote Patching System${NC}"
+        
+        # Use scripts/agentic-patch if available, otherwise try system agentic-patch
+        if [ -f "scripts/agentic-patch" ]; then
+            python3 scripts/agentic-patch "$@"
+        elif command -v agentic-patch &> /dev/null; then
+            agentic-patch "$@"
+        else
+            echo -e "${RED}❌ Error: agentic-patch not found${NC}"
+            echo -e "${YELLOW}Install AgenticScrum or run from framework directory${NC}"
+            exit 1
+        fi
+        ;;
+    "patch-status")
+        # Quick status check
+        check_installation
+        echo -e "${GREEN}🔧 Patching System Status${NC}"
+        
+        if [ -f "scripts/agentic-patch" ]; then
+            python3 scripts/agentic-patch status
+        elif command -v agentic-patch &> /dev/null; then
+            agentic-patch status
+        else
+            echo -e "${RED}❌ Error: agentic-patch not found${NC}"
+            exit 1
+        fi
         ;;
     "help"|"--help"|"-h"|"")
         show_help

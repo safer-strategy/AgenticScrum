@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic-scrum-setup"
+dynamic = ["version"]
+description = "CLI utility for initializing AgenticScrum projects with AI agent configurations"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+    {name = "AgenticScrum Contributors"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "jinja2>=3.0.0",
+    "pyyaml>=6.0",
+    "click>=8.0.0",
+    "gitpython>=3.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "build>=0.10.0",
+    "twine>=4.0.0",
+]
+
+[project.scripts]
+agentic-scrum-setup = "agentic_scrum_setup.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/AgenticScrum"
+Repository = "https://github.com/yourusername/AgenticScrum"
+Issues = "https://github.com/yourusername/AgenticScrum/issues"
+
+[tool.setuptools]
+packages = ["agentic_scrum_setup"]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "agentic_scrum_setup.__version__"}
+
+[tool.setuptools.package-data]
+agentic_scrum_setup = [
+    "templates/**/*.j2",
+    "templates/**/.*.j2",
+    "templates/**/*.sample", 
+    "templates/**/*.sh",
+    "templates/**/*.py",
+    "templates/**/*.md",
+    "templates/**/*.txt",
+    "templates/**/*.json",
+    "templates/**/*.yaml",
+    "templates/**/*.yml",
+]

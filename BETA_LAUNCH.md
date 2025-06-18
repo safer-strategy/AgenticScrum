@@ -1,4 +1,4 @@
-# 🚀 AgenticScrum v1.0.0-beta.4 Launch
+# 🚀 AgenticScrum v1.0.0-beta.7 Launch
 
 **Welcome to the AgenticScrum Beta!** 
 
@@ -161,7 +161,7 @@ python scripts/retrofit_project.py assess --path /path/to/existing/project
 
 #### **Option 1: PyPI (Recommended)**
 ```bash
-pip install agentic-scrum-setup==1.0.0b4
+pip install agentic-scrum-setup==1.0.0b7
 ```
 
 #### **Option 2: Development Install**
@@ -175,7 +175,7 @@ pip install -e .
 ```bash
 # Verify installation (current beta)
 python -c "import agentic_scrum_setup; print(f'AgenticScrum v{agentic_scrum_setup.__version__} installed')"
-# Should output: AgenticScrum v1.0.0-beta.4 installed
+# Should output: AgenticScrum v1.0.0-beta.7 installed
 
 # Version command (available in next release)
 # agentic-scrum-setup --version

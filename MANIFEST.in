@@ -1,6 +1,7 @@
 include README.md
 include LICENSE
 include MANIFEST.in
+include scripts/agentic-patch
 recursive-include agentic_scrum_setup/templates *.j2
 recursive-include agentic_scrum_setup/templates *.sample
 recursive-include agentic_scrum_setup/templates *.sh
