@@ -448,6 +448,8 @@ create_new_project() {
     if [ -z "$agents" ]; then
         agents="$default_agents"
     fi
+    # Remove spaces from agents list
+    agents=$(echo "$agents" | tr -d ' ')
     
     # Claude Code Integration Check
     echo
@@ -520,7 +522,7 @@ create_new_project() {
         fi
     fi
     
-    cmd="$cmd --agents $agents"
+    cmd="$cmd --agents \"$agents\""
     cmd="$cmd --llm-provider $llm_provider"
     cmd="$cmd --default-model $default_model"
     
@@ -604,6 +606,9 @@ custom_setup() {
         read -p "$(echo -e ${BOLD}Agents [poa,sma,deva_python,qaa,saa]:${NC} )" agents
     fi
     
+    # Remove spaces from agents list
+    agents=$(echo "$agents" | tr -d ' ')
+    
     read -p "$(echo -e ${BOLD}LLM Provider [anthropic]:${NC} )" llm_provider
     read -p "$(echo -e ${BOLD}Default Model [claude-sonnet-4-0]:${NC} )" default_model
     read -p "$(echo -e ${BOLD}Output Directory [.]:${NC} )" output_dir
@@ -637,7 +642,7 @@ custom_setup() {
         fi
     fi
     
-    cmd="$cmd --agents $agents"
+    cmd="$cmd --agents \"$agents\""
     cmd="$cmd --llm-provider $llm_provider"
     cmd="$cmd --default-model $default_model"
     cmd="$cmd --output-dir $output_dir"
