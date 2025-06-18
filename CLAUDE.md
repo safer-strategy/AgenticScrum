@@ -47,11 +47,21 @@ Templates are organized by purpose in `agentic_scrum_setup/templates/`:
 
 ### Setup and Installation
 
+#### Production Use (Beta Testing)
+```bash
+# Install from PyPI (recommended for beta testing)
+pip install agentic-scrum-setup==1.0.0b4
+
+# Verify installation
+python -c "import agentic_scrum_setup; print(f'AgenticScrum v{agentic_scrum_setup.__version__} installed')"
+```
+
+#### Development Setup
 ```bash
 # Install for development
 pip install -r requirements-dev.txt
 
-# Install the CLI tool locally
+# Install the CLI tool locally for development
 pip install -e .
 ```
 
@@ -86,6 +96,22 @@ mypy agentic_scrum_setup/
 
 ### Using the CLI
 
+#### Production Use (PyPI Installation)
+```bash
+# Install from PyPI first
+pip install agentic-scrum-setup==1.0.0b4
+
+# Verify installation
+python -c "import agentic_scrum_setup; print(f'AgenticScrum v{agentic_scrum_setup.__version__} installed')"
+
+# Direct CLI usage (recommended for PyPI users)
+agentic-scrum-setup init --project-name "MyProject" --language python --framework fastapi
+
+# Interactive mode
+agentic-scrum-setup init
+```
+
+#### Development Setup (Local Repository)
 ```bash
 # Interactive mode (recommended for beginners)
 ./init.sh new

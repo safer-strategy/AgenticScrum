@@ -173,8 +173,12 @@ pip install -e .
 
 #### **Verify Installation**
 ```bash
-agentic-scrum-setup --version
-# Should output: agentic-scrum-setup, version 1.0.0-beta.4
+# Verify installation (current beta)
+python -c "import agentic_scrum_setup; print(f'AgenticScrum v{agentic_scrum_setup.__version__} installed')"
+# Should output: AgenticScrum v1.0.0-beta.4 installed
+
+# Version command (available in next release)
+# agentic-scrum-setup --version
 ```
 
 ### **Quick Start**

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from .setup_core import SetupCore
+from . import __version__
 
 
 def get_default_output_dir():
@@ -51,6 +52,13 @@ def parse_arguments():
     --llm-provider anthropic --default-model claude-sonnet-4-0
 ''',
         formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    # Add version argument
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=f'agentic-scrum-setup, version {__version__}'
     )
     
     subparsers = parser.add_subparsers(dest='command', help='Commands')

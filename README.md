@@ -118,6 +118,9 @@ The primary way to start an AgenticScrum project is by using the agentic-scrum-s
 # Install the beta release
 pip install agentic-scrum-setup==1.0.0b4
 
+# Verify installation
+python -c "import agentic_scrum_setup; print(f'AgenticScrum v{agentic_scrum_setup.__version__} installed')"
+
 # Create a new project interactively (recommended for beta testing)
 ./init.sh new
 
