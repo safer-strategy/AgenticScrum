@@ -26,7 +26,7 @@ setup(
     url="https://github.com/yourusername/AgenticScrum",
     packages=find_packages(),
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Code Generators",
         "Topic :: Software Development :: Libraries :: Application Frameworks",

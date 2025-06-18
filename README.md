@@ -1,5 +1,9 @@
 # **AgenticScrum: A Framework for Structured AI-Driven Code Generation**
 
+> **🚀 BETA RELEASE v1.0.0-beta.4** - [Join our beta testing program!](BETA_LAUNCH.md)
+> 
+> ⚠️ **Beta Software**: This is pre-release software. While core features are stable, expect some rough edges. See [known limitations](BETA_LAUNCH.md#known-beta-limitations) and [how to provide feedback](BETA_LAUNCH.md#beta-feedback-collection).
+
 **AgenticScrum** is an open-source framework designed to bring structure, efficiency, and agile principles to software development powered by AI agents. It provides a comprehensive setup utility, defines clear roles for AI agents within a Scrum-like workflow, and integrates best practices for coding standards and project management.
 
 ---
@@ -19,7 +23,9 @@
   * [Coding Standards](#coding-standards)  
   * [Workflow Orchestration](#workflow-orchestration)  
   * [Human-in-the-Loop (HITL)](#human-in-the-loop-hitl)  
-* [Multi-Stack and Multi-Repository Support](#multi-stack-and-multi-repository-support)  
+* [Multi-Stack and Multi-Repository Support](#multi-stack-and-multi-repository-support)
+  * [Organization Management](#organization-management)
+  * [Single and Fullstack Projects](#single-and-fullstack-projects)  
 * [Inspiration](#inspiration)  
 * [Benefits](#benefits)  
 * [Limitations](#limitations)  
@@ -109,15 +115,17 @@ The primary way to start an AgenticScrum project is by using the agentic-scrum-s
 **Quick Start with init.sh:**
 
 ```bash
-# Install the utility (first time only)
-./init.sh install
+# Install the beta release
+pip install agentic-scrum-setup==1.0.0b4
 
-# Create a new project interactively
+# Create a new project interactively (recommended for beta testing)
 ./init.sh new
 
 # Or use quick setup with defaults
 ./init.sh quick MyNewWebApp
 ```
+
+> **Beta Testers**: Please see [BETA_LAUNCH.md](BETA_LAUNCH.md) for beta-specific installation instructions and feedback guidelines.
 
 **Direct CLI Usage:**
 
@@ -361,23 +369,85 @@ Human oversight is critical [9]. Responsibilities include:
 
 ## **Multi-Stack and Multi-Repository Support**
 
-AgenticScrum is designed for flexibility:
+AgenticScrum supports three project types to handle any software architecture:
+
+### **Organization Management**
+
+**NEW:** Enterprise-grade multi-repository management with AI agent coordination:
+
+```bash
+# Create an organization to manage multiple repositories
+agentic-scrum-setup init --project-type organization --organization-name "MyCompany"
+
+# Add repositories to the organization
+agentic-scrum-setup add-repo \
+  --organization-dir MyCompany \
+  --repo-name "api-service" \
+  --language python \
+  --framework fastapi \
+  --agents poa,sma,deva_python,qaa
+
+# List all repositories in organization
+agentic-scrum-setup list-repos --organization-dir MyCompany
+```
+
+**Organization Features:**
+* **Portfolio-Level Planning:** Organization POA manages product strategy across all repositories
+* **Cross-Project Coordination:** Organization SMA coordinates sprints and dependencies across teams
+* **Shared Standards:** Consistent coding standards, security policies, and best practices
+* **Configuration Inheritance:** Organization settings cascade to individual repositories
+* **Shared Infrastructure:** Common databases, monitoring, CI/CD, and development tools
+* **Agent Memory Sharing:** Cross-project pattern recognition and knowledge transfer
+
+**Organization Structure:**
+```
+MyOrganization/
+├── .agentic/                      # Organization configuration
+│   ├── agentic_config.yaml        # Organization-wide settings
+│   ├── agents/                    # Organization-level agents
+│   │   ├── organization_poa/      # Portfolio Product Owner
+│   │   └── organization_sma/      # Cross-project Scrum Master
+│   ├── shared_standards/          # Coding standards for all repos
+│   └── shared_memory/             # Cross-project agent memory
+├── projects/                      # Individual repositories
+│   ├── backend-api/              # Repository 1
+│   ├── frontend-app/             # Repository 2
+│   └── mobile-app/               # Repository 3
+├── shared/                        # Shared resources
+│   ├── docker-compose.yml         # Organization-wide services
+│   └── scripts/                   # Organization utility scripts
+└── docs/                         # Organization documentation
+```
+
+### **Single and Fullstack Projects**
+
+* **Single Language Projects:**
+  ```bash
+  agentic-scrum-setup init --project-name "MyAPI" --language python --framework fastapi
+  ```
 
 * **Fullstack Projects:**
-  * Use `--project-type fullstack` to create projects with separate backend and frontend
+  ```bash
+  agentic-scrum-setup init \
+    --project-type fullstack \
+    --language python \
+    --backend-framework fastapi \
+    --frontend-language typescript \
+    --frontend-framework react
+  ```
   * Automatically creates `/backend` and `/frontend` directories with appropriate structures
   * Generates multiple DeveloperAgents for different languages (e.g., `deva_python` for backend, `deva_typescript` for frontend)
-  * Separate standards and linter configurations for each stack in `/standards/backend/` and `/standards/frontend/`
-  
-* **Multiple Tech Stacks (Monorepo):**  
-  * The /standards directory can house separate coding_standards.md and linter_configs/ for each technology (e.g., /standards/python/, /standards/javascript/).  
-  * The /src and /tests directories can be subdivided (e.g., /src/backend/, /src/frontend/).  
-  * DeveloperAgents are specialized (e.g., PythonDeveloperAgent, ReactDeveloperAgent), with their persona_rules.yaml pointing to the relevant stack-specific standards and source directories.  
-  * Tools like Nx, Lerna, or Rush can complement AgenticScrum for managing complex monorepos.  
-  
-* **Multiple Repositories (Polyrepo):**  
-  * Each repository can have its own lightweight AgenticScrum configuration (relevant standards, agent personas).  
-  * Cross-repository orchestration requires higher-level coordination (e.g., a "ProjectCoordinatorAgent" or human oversight) and potentially tools like mani or gita.
+  * Separate standards and linter configurations for each stack
+
+**Use Cases:**
+* **Organizations:** Enterprise teams managing multiple related services and applications
+* **Fullstack:** Single applications with distinct backend and frontend components  
+* **Single:** Individual microservices, libraries, or standalone applications
+
+**Agent Coordination Across Project Types:**
+* **Organization Level:** Portfolio POA + Cross-project SMA coordinate across all repositories
+* **Repository Level:** Individual POA, SMA, and developer agents for each project
+* **Shared Memory:** Agents learn from patterns across the entire organization
 
 ## **Inspiration**
 

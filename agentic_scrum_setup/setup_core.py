@@ -1,11 +1,12 @@
 """Core setup functionality for AgenticScrum projects."""
 
 import os
+import re
 import stat
 import shutil
 from pathlib import Path
 from typing import Dict, List, Optional
-from jinja2 import Environment, FileSystemLoader, Template
+from jinja2 import Environment, FileSystemLoader, Template, TemplateNotFound
 
 
 class SetupCore:
@@ -40,7 +41,107 @@ class SetupCore:
             trim_blocks=True,
             lstrip_blocks=True
         )
+        
+        # Validate configuration after setup
+        self._validate_configuration()
     
+    def _validate_configuration(self):
+        """Validate all configuration parameters."""
+        self._validate_project_name()
+        self._validate_agents()
+        self._validate_output_directory_security()
+    
+    def _validate_project_name(self):
+        """Validate project name for filesystem safety."""
+        if not self.project_name or not self.project_name.strip():
+            raise ValueError("Project name cannot be empty")
+        
+        # Check for invalid characters that could cause filesystem issues
+        invalid_chars = r'[<>:"/\\|?*\x00-\x1f]'
+        if re.search(invalid_chars, self.project_name):
+            raise ValueError(
+                f"Project name '{self.project_name}' contains invalid characters. "
+                "Project names cannot contain: < > : \" / \\ | ? * or control characters. "
+                "Use only letters, numbers, hyphens, and underscores."
+            )
+        
+        # Check for reserved names on Windows
+        reserved_names = {
+            'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5',
+            'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4',
+            'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+        }
+        if self.project_name.upper() in reserved_names:
+            raise ValueError(
+                f"Project name '{self.project_name}' is a reserved name on Windows. "
+                "Please choose a different name."
+            )
+        
+        # Check length (most filesystems have 255 character limits)
+        if len(self.project_name) > 200:
+            raise ValueError(
+                f"Project name '{self.project_name}' is too long ({len(self.project_name)} characters). "
+                "Please use a name shorter than 200 characters."
+            )
+    
+    def _validate_agents(self):
+        """Validate that all specified agents are known."""
+        # Known agent types mapping
+        known_agents = {
+            'poa': 'poa',
+            'sma': 'sma', 
+            'deva_python': 'deva_python',
+            'deva_javascript': 'deva_javascript',
+            'deva_typescript': 'deva_typescript',
+            'deva_claude_python': 'deva_claude_python',
+            'qaa': 'qaa',
+            'saa': 'saa',
+            'organization_poa': 'organization_poa',
+            'organization_sma': 'organization_sma'
+        }
+        
+        unknown_agents = []
+        for agent in self.agents:
+            agent = agent.strip()
+            if agent and agent not in known_agents:
+                unknown_agents.append(agent)
+        
+        if unknown_agents:
+            raise ValueError(
+                f"Unknown agent types: {', '.join(unknown_agents)}. "
+                f"Valid agents are: {', '.join(sorted(known_agents.keys()))}. "
+                "Please check your agent list for typos."
+            )
+    
+    def _validate_output_directory_security(self):
+        """Validate output directory to prevent path traversal attacks."""
+        try:
+            # Convert to absolute path and resolve any symbolic links
+            abs_output = self.output_dir.resolve()
+            abs_project = self.project_path.resolve()
+            
+            # Check for path traversal attempts
+            if '..' in str(self.output_dir) or '..' in self.project_name:
+                raise ValueError(
+                    "Path traversal detected in output directory or project name. "
+                    "Relative paths with '..' are not allowed for security reasons."
+                )
+            
+            # Ensure project path is within or equal to output directory
+            try:
+                abs_project.relative_to(abs_output)
+            except ValueError:
+                raise ValueError(
+                    f"Project path '{abs_project}' is not within output directory '{abs_output}'. "
+                    "This could indicate a path traversal attempt."
+                )
+                
+        except (OSError, RuntimeError) as e:
+            raise ValueError(
+                f"Invalid output directory or project name: {e}. "
+                "Please ensure the path is valid and accessible."
+            )
+
     def validate_output_directory(self):
         """Validate the output directory is appropriate."""
         abs_path = self.output_dir.absolute()
@@ -112,39 +213,111 @@ class SetupCore:
     
     def create_project(self):
         """Create the complete project structure."""
-        # Validate output directory first
-        self.validate_output_directory()
+        # Handle organization project type differently
+        if self.project_type == 'organization':
+            from .organization_setup import OrganizationSetup
+            org_setup = OrganizationSetup(self.config)
+            org_setup.create_organization()
+            return
         
-        # Show where project will be created
-        print(f"\n📍 Creating project at: {self.project_path.absolute()}")
-        
-        # Create main project directory
-        self.project_path.mkdir(parents=True, exist_ok=True)
-        
-        # Create directory structure
-        self._create_directory_structure()
-        
-        # Generate configuration files
-        self._generate_config_files()
-        
-        # Generate agent configurations
-        self._generate_agent_configs()
-        
-        # Generate common files
-        self._generate_common_files()
-        
-        # Generate language-specific files
-        self._generate_language_files()
-        
-        # Generate documentation
-        self._generate_documentation()
-        
-        # Generate scripts
-        self._generate_scripts()
-        
-        # Create memory structure for MCP integration
-        if self.enable_mcp:
-            self._create_memory_structure()
+        try:
+            # Validate output directory first
+            self.validate_output_directory()
+            
+            # Show where project will be created
+            print(f"\n📍 Creating project at: {self.project_path.absolute()}")
+            
+            # Create main project directory
+            try:
+                self.project_path.mkdir(parents=True, exist_ok=True)
+            except (OSError, PermissionError) as e:
+                raise RuntimeError(
+                    f"Failed to create project directory '{self.project_path}': {e}. "
+                    "Please check permissions and ensure the path is valid."
+                )
+            
+            # Create directory structure
+            try:
+                self._create_directory_structure()
+            except (OSError, PermissionError) as e:
+                raise RuntimeError(
+                    f"Failed to create project directory structure: {e}. "
+                    "Please check disk space and permissions."
+                )
+            
+            # Generate configuration files
+            try:
+                self._generate_config_files()
+            except (TemplateNotFound, ValueError) as e:
+                raise RuntimeError(
+                    f"Failed to generate configuration files: {e}. "
+                    "Please check your project configuration and try again."
+                )
+            
+            # Generate agent configurations
+            try:
+                self._generate_agent_configs()
+            except (TemplateNotFound, ValueError) as e:
+                raise RuntimeError(
+                    f"Failed to generate agent configurations: {e}. "
+                    "Please verify your agent list contains valid agent types."
+                )
+            
+            # Generate common files
+            try:
+                self._generate_common_files()
+            except (TemplateNotFound, OSError) as e:
+                raise RuntimeError(
+                    f"Failed to generate common files: {e}. "
+                    "Please check template integrity and disk space."
+                )
+            
+            # Generate language-specific files
+            try:
+                self._generate_language_files()
+            except (TemplateNotFound, ValueError) as e:
+                raise RuntimeError(
+                    f"Failed to generate language-specific files for {self.language}: {e}. "
+                    "Please verify your language and framework selections are supported."
+                )
+            
+            # Generate documentation
+            try:
+                self._generate_documentation()
+            except (TemplateNotFound, OSError) as e:
+                raise RuntimeError(
+                    f"Failed to generate documentation files: {e}. "
+                    "Please check template availability and disk space."
+                )
+            
+            # Generate scripts
+            try:
+                self._generate_scripts()
+            except (TemplateNotFound, OSError) as e:
+                raise RuntimeError(
+                    f"Failed to generate script files: {e}. "
+                    "Please check template availability and script permissions."
+                )
+            
+            # Create memory structure for MCP integration
+            if self.enable_mcp:
+                try:
+                    self._create_memory_structure()
+                except OSError as e:
+                    raise RuntimeError(
+                        f"Failed to create MCP memory structure: {e}. "
+                        "Please check disk space and permissions."
+                    )
+                    
+        except Exception as e:
+            # Clean up partially created project on failure
+            if self.project_path.exists():
+                try:
+                    shutil.rmtree(self.project_path)
+                    print(f"\n🧹 Cleaned up partially created project directory.")
+                except OSError:
+                    print(f"\n⚠️  Warning: Could not clean up {self.project_path}. You may need to remove it manually.")
+            raise
     
     def _create_directory_structure(self):
         """Create the standard AgenticScrum directory structure."""
@@ -250,8 +423,9 @@ class SetupCore:
                         llm_provider=self.llm_provider,
                         framework=self.framework
                     )
-                except:
+                except (FileNotFoundError, TemplateNotFound) as e:
                     # Use generic template if specific one doesn't exist
+                    print(f"Warning: Specific template for {agent} not found, using generic template. ({e})")
                     persona_rules = self.jinja_env.get_template('generic_persona_rules.yaml.j2').render(
                         agent_type=agent,
                         project_name=self.project_name,
@@ -275,8 +449,9 @@ class SetupCore:
                         language=self.language,
                         framework=self.framework
                     )
-                except:
+                except (FileNotFoundError, TemplateNotFound) as e:
                     # Fallback to generic template
+                    print(f"Warning: Specific priming script template for {agent} not found, using generic template. ({e})")
                     priming_script = self.jinja_env.get_template('generic_priming_script.md.j2').render(
                         agent_type=agent,
                         project_name=self.project_name

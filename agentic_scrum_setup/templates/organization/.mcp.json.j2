@@ -1,0 +1,62 @@
+{
+  "mcpServers": {
+    "datetime": {
+      "command": "python",
+      "args": ["mcp_servers/datetime/server.py"],
+      "description": "Organization datetime service for time operations and sprint management"
+    },
+    "memory": {
+      "command": "mcp-server-memory", 
+      "args": ["--memory-dir", ".agentic/shared_memory"],
+      "description": "Organization shared memory for cross-project agent coordination"
+    }{% if enable_search %},
+    "search": {
+      "command": "mcp-server-perplexity",
+      "env": {
+        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}"
+      },
+      "description": "Organization web search capabilities for current information access"
+    }{% endif %}
+  },
+  
+  "organizationConfig": {
+    "name": "{{ organization_name }}",
+    "type": "organization",
+    "scope": "multi_repository",
+    
+    "agentCoordination": {
+      "enabled": true,
+      "coordinationAgents": [
+        "organization_poa",
+        "organization_sma"
+      ],
+      "sharedMemoryPath": ".agentic/shared_memory",
+      "crossProjectPatterns": true
+    },
+    
+    "repositoryIntegration": {
+      "autoDiscovery": true,
+      "inheritanceMode": "cascade",
+      "sharedServices": [
+        "datetime",
+        "memory"{% if enable_search %},
+        "search"{% endif %}
+      ]
+    },
+    
+    "memoryStructure": {
+      "organizationLevel": {
+        "crossProjectDecisions": ".agentic/shared_memory/cross_project_decisions.jsonl",
+        "sharedPatterns": ".agentic/shared_memory/shared_patterns.jsonl", 
+        "portfolioFeedback": ".agentic/shared_memory/portfolio_feedback.jsonl",
+        "organizationKnowledge": ".agentic/shared_memory/organization_knowledge.jsonl"{% if enable_search %},
+        "searchCache": ".agentic/shared_memory/search_cache.jsonl"{% endif %}
+      },
+      "repositoryLevel": {
+        "pattern": "projects/{repository_name}/.agent-memory/",
+        "linkToOrganization": true,
+        "inheritSharedPatterns": true
+      }
+    }
+  }
+}

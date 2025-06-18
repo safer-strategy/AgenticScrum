@@ -1,0 +1,264 @@
+# AgenticScrum Organization .gitignore
+# Generated for multi-repository organization
+
+# =============================================================================
+# Organization-Level Sensitive Files
+# =============================================================================
+
+# Never commit the actual organization config (only .sample should be committed)
+.agentic/agentic_config.yaml
+agentic_config.yaml
+
+# Environment files with secrets
+.env
+shared/.env
+*/*/env
+**/.env.local
+**/.env.production
+
+# API keys and secrets
+*.key
+*.pem
+*.p12
+*.keystore
+secrets/
+.secrets/
+
+# =============================================================================
+# Organization Memory and Cache
+# =============================================================================
+
+# MCP memory and cache files
+.agentic/shared_memory/*.jsonl
+.agent-memory/
+.mcp_cache/
+agent_outputs/
+sprint_artifacts/
+
+# Search cache
+search_cache/
+.search_cache/
+
+# =============================================================================
+# IDE and Editor Files  
+# =============================================================================
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+\#*\#
+.\#*
+
+# =============================================================================
+# Operating System Files
+# =============================================================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows  
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# =============================================================================
+# Temporary and Build Files
+# =============================================================================
+
+# General temporary files
+*.tmp
+*.temp
+*.log
+*.cache
+temp/
+tmp/
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# =============================================================================
+# Docker and Container Files
+# =============================================================================
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Container data
+volumes/
+data/
+
+# =============================================================================
+# Documentation Build Files
+# =============================================================================
+
+# Generated documentation
+docs/_build/
+docs/build/
+site/
+
+# =============================================================================
+# Dependency Directories (Repository-Specific)
+# =============================================================================
+
+# Python
+projects/*/venv/
+projects/*/.venv/
+projects/*/env/
+projects/*/.env/
+projects/*/ENV/
+projects/*/env.bak/
+projects/*/venv.bak/
+projects/*/__pycache__/
+projects/*/*.py[cod]
+projects/*/*$py.class
+projects/*/.pytest_cache/
+projects/*/.coverage
+projects/*/htmlcov/
+projects/*/.tox/
+projects/*/.cache
+projects/*/.mypy_cache/
+projects/*/.dmypy.json
+projects/*/dmypy.json
+
+# Node.js
+projects/*/node_modules/
+projects/*/npm-debug.log*
+projects/*/yarn-debug.log*
+projects/*/yarn-error.log*
+projects/*/.npm
+projects/*/.eslintcache
+projects/*/.nyc_output
+projects/*/coverage/
+
+# Java
+projects/*/target/
+projects/*/.m2/
+projects/*/*.jar
+projects/*/*.war
+projects/*/*.ear
+projects/*/*.zip
+projects/*/*.tar.gz
+projects/*/*.rar
+
+# Go
+projects/*/vendor/
+projects/*/go.sum
+
+# Rust
+projects/*/target/
+projects/*/Cargo.lock
+
+# C#
+projects/*/bin/
+projects/*/obj/
+projects/*/packages/
+projects/*/*.nupkg
+
+# PHP
+projects/*/vendor/
+projects/*/composer.phar
+projects/*/composer.lock
+
+# Ruby
+projects/*/.bundle/
+projects/*/vendor/bundle/
+projects/*/Gemfile.lock
+
+# =============================================================================
+# Testing and Coverage (Repository-Specific)
+# =============================================================================
+
+projects/*/.coverage
+projects/*/coverage/
+projects/*/htmlcov/
+projects/*/.pytest_cache/
+projects/*/.tox/
+projects/*/test-results/
+projects/*/test-reports/
+
+# =============================================================================
+# Monitoring and Logging
+# =============================================================================
+
+# Log files
+*.log
+logs/
+shared/logs/
+
+# Monitoring data
+metrics/
+prometheus_data/
+grafana_data/
+
+# =============================================================================
+# CI/CD and Deployment
+# =============================================================================
+
+# CI/CD artifacts
+.github/workflows/secrets/
+.gitlab/secrets/
+ci_artifacts/
+deployment_artifacts/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfvars
+
+# Kubernetes
+k8s-secrets/
+*.kubeconfig
+
+# =============================================================================
+# Security Scanning
+# =============================================================================
+
+# Security scan reports
+security_reports/
+vulnerability_reports/
+.snyk
+
+# SAST/DAST results
+sast_results/
+dast_results/
+
+# =============================================================================
+# Organization-Specific Patterns
+# =============================================================================
+
+# Add organization-specific patterns here
+# Example:
+# internal_tools/
+# proprietary_configs/

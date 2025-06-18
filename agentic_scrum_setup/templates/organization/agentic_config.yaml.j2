@@ -1,0 +1,169 @@
+# AgenticScrum Organization Configuration
+# Generated on {{ created_date }}
+
+organization:
+  name: "{{ organization_name }}"
+  type: "organization"
+  created_date: "{{ created_date }}"
+  description: "Multi-repository organization managed by AgenticScrum"
+
+# Default LLM Configuration for all repositories
+llm:
+  provider: "{{ llm_provider }}"
+  default_model: "{{ default_model }}"
+  
+  # Model-specific configurations
+  models:
+    {% if llm_provider == "anthropic" %}
+    claude-sonnet-4-0:
+      temperature: 0.1
+      max_tokens: 4096
+      description: "Balanced model for most tasks"
+    claude-opus-4-0:
+      temperature: 0.1
+      max_tokens: 4096
+      description: "Most capable model for complex tasks"
+    {% elif llm_provider == "openai" %}
+    gpt-4-turbo-preview:
+      temperature: 0.1
+      max_tokens: 4096
+      description: "Latest GPT-4 model"
+    {% endif %}
+
+# Organization-level agent configurations
+agents:
+  organization_poa:
+    type: "ProductOwnerAgent"
+    scope: "organization"
+    model: "{{ default_model }}"
+    responsibilities:
+      - "Portfolio-level product planning"
+      - "Cross-project feature coordination"
+      - "Stakeholder alignment across teams"
+      - "Resource allocation optimization"
+  
+  organization_sma:
+    type: "ScrumMasterAgent"
+    scope: "organization"
+    model: "{{ default_model }}"
+    responsibilities:
+      - "Cross-project sprint coordination"
+      - "Inter-team dependency management"
+      - "Organization-wide process improvement"
+      - "Scaling Agile practices"
+
+# MCP (Model Context Protocol) Configuration
+{% if enable_mcp %}
+mcp:
+  enabled: true
+  memory_directory: ".agentic/shared_memory"
+  
+  # Organization-level MCP servers
+  servers:
+    datetime:
+      command: "python"
+      args: ["mcp_servers/datetime/server.py"]
+      description: "Organization datetime service"
+    
+    memory:
+      command: "mcp-server-memory"
+      args: ["--memory-dir", ".agentic/shared_memory"]
+      description: "Organization shared memory"
+    
+    {% if enable_search %}
+    search:
+      command: "mcp-server-perplexity"
+      env:
+        PERPLEXITY_API_KEY: "${PERPLEXITY_API_KEY}"
+      description: "Organization web search capabilities"
+    {% endif %}
+{% endif %}
+
+# Shared standards and tooling
+standards:
+  coding_standards_path: ".agentic/shared_standards"
+  shared_tooling_path: ".agentic/shared_tooling"
+  
+  # Default standards applied to all repositories
+  defaults:
+    git:
+      branch_protection: true
+      required_reviews: 2
+      enforce_admins: false
+    
+    code_quality:
+      coverage_threshold: 80
+      complexity_max: 10
+      security_scan: true
+    
+    documentation:
+      require_readme: true
+      require_changelog: true
+      api_documentation: true
+
+# Repository management
+repositories:
+  auto_discovery: true
+  require_agentic_config: true
+  inheritance_mode: "cascade"  # Organization -> Repository -> Local
+  
+  # Default configurations for new repositories
+  defaults:
+    enable_mcp: {{ enable_mcp | lower }}
+    enable_search: {{ enable_search | lower }}
+    
+    # Default agents for new repositories
+    agents:
+      - "poa"
+      - "sma" 
+      - "qaa"
+      # Language-specific developer agents added based on repository language
+
+# Security configurations
+security:
+  secrets_scanning: true
+  dependency_scanning: true
+  
+  # Files that should never be committed
+  sensitive_files:
+    - "*.key"
+    - "*.pem"
+    - "*.env"
+    - "agentic_config.yaml"  # Only .sample should be committed
+  
+  # Shared security standards
+  shared_policies:
+    - "no_hardcoded_secrets"
+    - "require_secure_dependencies"
+    - "enforce_branch_protection"
+
+# Organization workflows
+workflows:
+  cross_project_sync: true
+  shared_ci_cd: true
+  
+  # Automated organization maintenance
+  automation:
+    standards_sync: "weekly"
+    dependency_updates: "monthly"
+    security_scans: "daily"
+
+# Logging and monitoring
+logging:
+  level: "info"
+  retention_days: 90
+  
+  # What to log at organization level
+  organization_events:
+    - "repository_added"
+    - "repository_removed" 
+    - "standards_updated"
+    - "cross_project_coordination"
+
+# Environment configuration
+environment:
+  shared_env_file: "shared/.env.sample"
+  organization_secrets:
+    - "PERPLEXITY_API_KEY"
+    - "GITHUB_TOKEN"
+    - "DOCKER_REGISTRY_TOKEN"

@@ -1,0 +1,236 @@
+# {{ organization_name }}
+
+An AgenticScrum-powered organization managing multiple repositories with AI agent coordination.
+
+## Overview
+
+This organization structure combines multiple related repositories under unified management, enabling cross-project coordination, shared standards, and portfolio-level planning with AI agent assistance.
+
+## Organization Structure
+
+```
+{{ organization_name }}/
+├── .agentic/                      # Organization-level configuration
+│   ├── agentic_config.yaml        # Organization settings and defaults
+│   ├── agents/                    # Organization-level agents
+│   │   ├── organization_poa/      # Portfolio Product Owner
+│   │   └── organization_sma/      # Cross-project Scrum Master
+│   ├── shared_standards/          # Coding standards for all repositories
+│   ├── shared_tooling/            # Shared CI/CD and development tools
+│   └── shared_memory/             # Cross-project agent memory
+├── projects/                      # Individual repositories
+│   ├── repository-1/              # Repository 1
+│   ├── repository-2/              # Repository 2
+│   └── repository-3/              # Repository 3
+├── shared/                        # Shared resources
+│   ├── docker-compose.yml         # Organization-wide services
+│   ├── .env.sample               # Environment template
+│   └── scripts/                   # Organization utility scripts
+├── docs/                         # Organization documentation
+│   ├── ORGANIZATION_OVERVIEW.md   # This file
+│   ├── CROSS_PROJECT_STANDARDS.md # Shared standards
+│   └── REPOSITORY_GUIDELINES.md   # Repository creation guide
+└── README.md                     # Organization root README
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Docker and Docker Compose
+- Python 3.8+
+- AgenticScrum CLI tool (`agentic-scrum-setup`)
+
+### Quick Start
+
+1. **Review Organization Configuration:**
+   ```bash
+   cat .agentic/agentic_config.yaml
+   ```
+
+2. **Set up shared environment:**
+   ```bash
+   cp shared/.env.sample shared/.env
+   # Edit shared/.env with your API keys
+   ```
+
+3. **Start shared services:**
+   ```bash
+   cd shared
+   docker-compose up -d
+   ```
+
+4. **Add your first repository:**
+   ```bash
+   agentic-scrum-setup add-repo \
+     --organization-dir . \
+     --repo-name "my-service" \
+     --language python \
+     --framework fastapi \
+     --agents poa,sma,deva_python,qaa
+   ```
+
+## Repository Management
+
+### Adding Repositories
+
+Add new repositories to the organization:
+
+```bash
+# Add a Python API service
+agentic-scrum-setup add-repo \
+  --organization-dir . \
+  --repo-name "backend-api" \
+  --language python \
+  --framework fastapi \
+  --agents poa,sma,deva_python,qaa
+
+# Add a TypeScript frontend
+agentic-scrum-setup add-repo \
+  --organization-dir . \
+  --repo-name "frontend-app" \
+  --language typescript \
+  --framework react \
+  --agents poa,sma,deva_typescript,qaa
+```
+
+### Listing Repositories
+
+View all repositories in the organization:
+
+```bash
+agentic-scrum-setup list-repos --organization-dir .
+```
+
+### Repository Guidelines
+
+Each repository automatically inherits:
+- Organization-level coding standards
+- Shared CI/CD configurations
+- Cross-project agent coordination
+- Common security policies
+- MCP integration for agent memory
+
+## Organization-Level AI Agents
+
+### Portfolio Product Owner (organization_poa)
+- **Scope:** Entire organization portfolio
+- **Responsibilities:**
+  - Portfolio-level product planning
+  - Cross-project feature coordination  
+  - Stakeholder alignment across teams
+  - Resource allocation optimization
+
+### Cross-Project Scrum Master (organization_sma)
+- **Scope:** All repositories and teams
+- **Responsibilities:**
+  - Cross-project sprint coordination
+  - Inter-team dependency management
+  - Organization-wide process improvement
+  - Scaling Agile practices
+
+## Agent Coordination
+
+Organization agents coordinate with repository-level agents to:
+- **Align Priorities:** Ensure repository work supports portfolio goals
+- **Manage Dependencies:** Track and coordinate cross-project dependencies
+- **Share Knowledge:** Enable pattern sharing and best practice propagation
+- **Optimize Resources:** Allocate development resources across projects
+
+## Shared Standards
+
+All repositories inherit organization standards:
+
+### Code Quality
+- **Coverage:** Minimum 80% test coverage
+- **Complexity:** Maximum cyclomatic complexity of 10
+- **Security:** Automated security scanning
+- **Documentation:** Required README, CHANGELOG, and API docs
+
+### Git Workflow
+- **Branch Protection:** Required on main branches
+- **Code Reviews:** Minimum 2 reviewer approvals
+- **Commit Standards:** Conventional commit message format
+
+### Security
+- **Secrets Scanning:** Automated detection of hardcoded secrets
+- **Dependency Scanning:** Regular vulnerability checks
+- **Access Control:** Role-based access to repositories
+
+## MCP Integration
+
+The organization uses Model Context Protocol for:
+- **Shared Memory:** Cross-project pattern recognition
+- **Search Integration:** Current information access via Perplexity
+- **DateTime Services:** Consistent time handling across projects
+- **Knowledge Sharing:** Agent memory coordination
+
+## Development Workflow
+
+1. **Portfolio Planning:** organization_poa creates cross-project roadmap
+2. **Sprint Coordination:** organization_sma aligns repository sprints
+3. **Development:** Repository agents implement features with organization awareness
+4. **Quality Assurance:** Shared QAA ensures consistency across projects
+5. **Security Review:** Shared SAA maintains security standards
+6. **Knowledge Capture:** Agents update shared memory with learnings
+
+## Shared Services
+
+The organization provides shared infrastructure:
+
+### Docker Services
+```bash
+cd shared
+docker-compose up -d
+```
+
+Services include:
+- Database (PostgreSQL)
+- Cache (Redis)
+- Message Queue (RabbitMQ)
+- Monitoring (Prometheus + Grafana)
+
+### Utility Scripts
+- `shared/scripts/sync_standards.sh` - Propagate standards to repositories
+- `shared/scripts/cross_project_deploy.sh` - Coordinate deployments
+
+## Best Practices
+
+### Repository Creation
+1. Use descriptive names following organization conventions
+2. Choose appropriate agents based on technology stack
+3. Review inherited standards and customize if needed
+4. Set up CI/CD integration with shared services
+
+### Cross-Project Coordination
+1. Use organization agents for portfolio-level decisions
+2. Coordinate breaking changes through organization_sma
+3. Share reusable components in organization-level packages
+4. Document cross-project dependencies
+
+### Security
+1. Never commit secrets to any repository
+2. Use shared environment variables for common secrets
+3. Follow organization security policies
+4. Regular security reviews with shared SAA
+
+## Support and Documentation
+
+- **Organization Overview:** `docs/ORGANIZATION_OVERVIEW.md`
+- **Standards Guide:** `docs/CROSS_PROJECT_STANDARDS.md` 
+- **Repository Guidelines:** `docs/REPOSITORY_GUIDELINES.md`
+- **Troubleshooting:** Contact organization_sma agent for process issues
+
+## Contributing
+
+See individual repository contribution guidelines. All repositories follow organization-wide standards for:
+- Code style and formatting
+- Testing requirements
+- Documentation standards
+- Security practices
+
+---
+
+**Created:** {{ created_date }}  
+**Framework:** AgenticScrum Multi-Repository Organization  
+**AI Agents:** Portfolio management with cross-project coordination

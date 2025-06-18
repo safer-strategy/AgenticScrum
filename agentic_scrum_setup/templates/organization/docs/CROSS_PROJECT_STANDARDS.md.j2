@@ -1,0 +1,384 @@
+# {{ organization_name }} - Cross-Project Standards
+
+**Organization:** {{ organization_name }}  
+**Last Updated:** {{ created_date }}  
+**Scope:** All repositories in the organization
+
+## Overview
+
+This document defines the standards, practices, and guidelines that apply across all repositories in {{ organization_name }}. These standards ensure consistency, quality, and maintainability across our entire software portfolio.
+
+## Code Quality Standards
+
+### General Requirements
+- **Test Coverage:** Minimum 80% code coverage for all repositories
+- **Complexity:** Maximum cyclomatic complexity of 10 per function/method
+- **Documentation:** All public APIs must have comprehensive documentation
+- **Security:** No hardcoded secrets or credentials in code
+
+### Language-Specific Standards
+
+#### Python Projects
+```yaml
+standards:
+  formatter: "black"
+  linter: "flake8"
+  type_checker: "mypy"
+  import_sorting: "isort"
+  test_framework: "pytest"
+  min_python_version: "3.8"
+  
+quality_gates:
+  max_line_length: 88
+  max_complexity: 10
+  min_coverage: 80
+```
+
+#### TypeScript/JavaScript Projects
+```yaml
+standards:
+  formatter: "prettier"
+  linter: "eslint"
+  type_checker: "typescript"
+  test_framework: "jest"
+  min_node_version: "16"
+  
+quality_gates:
+  max_line_length: 100
+  max_complexity: 10
+  min_coverage: 80
+```
+
+#### Java Projects
+```yaml
+standards:
+  formatter: "google-java-format"
+  linter: "checkstyle"
+  test_framework: "junit5"
+  build_tool: "maven"
+  min_java_version: "11"
+  
+quality_gates:
+  max_line_length: 100
+  max_complexity: 15
+  min_coverage: 80
+```
+
+## Git Workflow Standards
+
+### Branch Protection Rules
+All repositories must implement:
+- **Main branch protection:** No direct pushes to main/master
+- **Required reviews:** Minimum 2 approving reviews
+- **Status checks:** All CI/CD checks must pass
+- **Up-to-date branches:** Must be up-to-date with main before merge
+
+### Commit Message Format
+Use Conventional Commits format:
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only changes
+- `style`: Code style changes (formatting, etc.)
+- `refactor`: Code changes that neither fix bugs nor add features
+- `test`: Adding missing tests or correcting existing tests
+- `chore`: Changes to build process or auxiliary tools
+
+**Examples:**
+```
+feat(api): add user authentication endpoint
+fix(database): resolve connection timeout issue
+docs(readme): update installation instructions
+```
+
+### Branch Naming Convention
+- `feature/description-of-feature`
+- `bugfix/description-of-bug`
+- `hotfix/critical-issue-description`
+- `release/version-number`
+
+## Documentation Standards
+
+### Required Documentation
+Every repository must include:
+
+#### 1. README.md
+```markdown
+# Project Name
+
+Brief description of the project.
+
+## Quick Start
+- Prerequisites
+- Installation steps
+- Basic usage example
+
+## Development
+- Setup instructions
+- Running tests
+- Contributing guidelines
+
+## Architecture
+- High-level architecture overview
+- Key components and their responsibilities
+- Integration points with other services
+
+## API Documentation
+- Link to API documentation
+- Authentication requirements
+- Example requests/responses
+```
+
+#### 2. CHANGELOG.md
+- Follow [Keep a Changelog](https://keepachangelog.com/) format
+- Document all notable changes
+- Group changes by type: Added, Changed, Deprecated, Removed, Fixed, Security
+
+#### 3. API Documentation
+- OpenAPI/Swagger for REST APIs
+- GraphQL schema documentation for GraphQL APIs
+- gRPC proto documentation for gRPC services
+
+### Architecture Documentation
+- **Decision Records:** Document significant architectural decisions
+- **Component Diagrams:** Visual representation of system components
+- **Integration Maps:** How the service integrates with other systems
+- **Data Flow Diagrams:** How data moves through the system
+
+## Testing Standards
+
+### Test Strategy
+Every repository must implement:
+
+#### 1. Unit Tests
+- **Coverage:** Minimum 80% line coverage
+- **Isolation:** Tests should not depend on external services
+- **Fast:** Unit test suite should complete in under 2 minutes
+- **Deterministic:** Tests should produce consistent results
+
+#### 2. Integration Tests
+- **API Testing:** Test all public API endpoints
+- **Database Testing:** Test database interactions with test data
+- **External Services:** Test integration with external dependencies
+- **Contract Testing:** Verify API contracts between services
+
+#### 3. End-to-End Tests
+- **Critical Paths:** Test main user workflows
+- **Cross-service:** Test interactions between multiple services
+- **Performance:** Include basic performance tests for critical endpoints
+
+### Test Organization
+```
+tests/
+├── unit/           # Unit tests (fast, isolated)
+├── integration/    # Integration tests (medium speed)
+├── e2e/           # End-to-end tests (slow, comprehensive)
+├── fixtures/      # Test data and fixtures
+└── utils/         # Test utilities and helpers
+```
+
+## Security Standards
+
+### Code Security
+- **Static Analysis:** All code must pass SAST (Static Application Security Testing)
+- **Dependency Scanning:** Regular scanning for vulnerable dependencies
+- **Secret Detection:** Automated scanning for exposed secrets
+- **Code Reviews:** Security-focused code reviews for sensitive changes
+
+### Authentication & Authorization
+- **No Hardcoded Credentials:** Use environment variables or secret management
+- **Strong Authentication:** Multi-factor authentication where applicable
+- **Principle of Least Privilege:** Grant minimum necessary permissions
+- **Regular Rotation:** Rotate secrets and keys regularly
+
+### Data Protection
+- **Encryption at Rest:** Sensitive data must be encrypted when stored
+- **Encryption in Transit:** All communications must use TLS/SSL
+- **Data Classification:** Classify data by sensitivity level
+- **Privacy Compliance:** Adhere to GDPR, CCPA, and other privacy regulations
+
+### Vulnerability Management
+- **Regular Scanning:** Weekly vulnerability scans
+- **Patch Management:** Apply security patches within 30 days
+- **Incident Response:** Clear procedures for security incidents
+- **Penetration Testing:** Annual third-party security assessments
+
+## CI/CD Standards
+
+### Continuous Integration
+Every repository must implement:
+
+#### 1. Automated Testing
+```yaml
+ci_pipeline:
+  triggers:
+    - pull_request
+    - push_to_main
+  
+  stages:
+    - code_quality_check
+    - unit_tests
+    - integration_tests
+    - security_scanning
+    - build_artifacts
+```
+
+#### 2. Quality Gates
+- All tests must pass
+- Code coverage threshold met
+- Security scans clear
+- Code style compliance verified
+
+### Continuous Deployment
+```yaml
+cd_pipeline:
+  environments:
+    - name: "staging"
+      auto_deploy: true
+      approval_required: false
+      
+    - name: "production"
+      auto_deploy: false
+      approval_required: true
+      approvers: ["team-leads", "DevOps"]
+```
+
+### Deployment Standards
+- **Blue-Green Deployments:** Zero-downtime deployments for production
+- **Rollback Capability:** Ability to quickly rollback failed deployments
+- **Health Checks:** Comprehensive health checks for all services
+- **Monitoring:** Automated monitoring and alerting post-deployment
+
+## Monitoring & Observability
+
+### Logging Standards
+```yaml
+logging:
+  format: "structured_json"
+  level: "info"
+  include:
+    - timestamp
+    - service_name
+    - version
+    - request_id
+    - user_id (if applicable)
+    - error_details (if error)
+  
+  sensitive_data:
+    exclude:
+      - passwords
+      - tokens
+      - personal_information
+```
+
+### Metrics Standards
+Every service must expose:
+- **Business Metrics:** Feature usage, user actions, conversion rates
+- **Technical Metrics:** Response times, error rates, throughput
+- **Infrastructure Metrics:** CPU, memory, disk, network usage
+- **Custom Metrics:** Service-specific operational metrics
+
+### Alerting Standards
+```yaml
+alerts:
+  critical:
+    - service_down
+    - high_error_rate (>5%)
+    - high_response_time (>2s p95)
+    
+  warning:
+    - moderate_error_rate (>2%)
+    - elevated_response_time (>1s p95)
+    - resource_utilization (>80%)
+    
+  notification_channels:
+    - slack_critical
+    - email_team_leads
+    - pagerduty (for critical only)
+```
+
+## Performance Standards
+
+### Response Time Requirements
+- **API Endpoints:** 95th percentile under 500ms
+- **Database Queries:** 95th percentile under 100ms
+- **Page Load Times:** 95th percentile under 2 seconds
+- **Background Jobs:** Complete within defined SLA
+
+### Scalability Requirements
+- **Horizontal Scaling:** Services must support horizontal scaling
+- **Load Testing:** Regular load testing for critical services
+- **Capacity Planning:** Proactive capacity planning based on growth projections
+- **Auto-scaling:** Implement auto-scaling for variable workloads
+
+## Compliance & Governance
+
+### Code Review Requirements
+- **Two Reviewers:** All changes require approval from 2 team members
+- **Domain Expert:** At least one reviewer must be domain expert
+- **Security Review:** Security-sensitive changes require security team review
+- **Documentation Review:** Changes affecting user-facing features require docs review
+
+### Release Management
+- **Release Notes:** Document all user-facing changes
+- **Version Tagging:** Use semantic versioning for all releases
+- **Rollback Plans:** Document rollback procedures for all releases
+- **Communication:** Notify stakeholders of significant changes
+
+### Audit & Compliance
+- **Access Logs:** Maintain audit logs for all access to production systems
+- **Change Tracking:** Track all changes to production environments
+- **Compliance Reporting:** Regular reports on standards adherence
+- **External Audits:** Support for third-party security and compliance audits
+
+## Exception Process
+
+### Requesting Exceptions
+When a repository cannot meet these standards:
+
+1. **Document Rationale:** Clearly explain why exception is needed
+2. **Risk Assessment:** Analyze risks and mitigation strategies
+3. **Approval Process:** Get approval from tech leads and security team
+4. **Time-bound:** Set clear timeline for bringing into compliance
+5. **Regular Review:** Quarterly review of all active exceptions
+
+### Exception Tracking
+- **Exception Registry:** Central tracking of all approved exceptions
+- **Remediation Plans:** Clear plans for addressing each exception
+- **Progress Tracking:** Regular updates on remediation progress
+- **Risk Monitoring:** Ongoing monitoring of risks from exceptions
+
+## Standards Enforcement
+
+### Automated Enforcement
+- **CI/CD Integration:** Standards checks integrated into build pipelines
+- **Pre-commit Hooks:** Basic standards checks before code commits
+- **Automated Testing:** Regular automated testing of standards compliance
+- **Reporting Dashboards:** Real-time visibility into standards adherence
+
+### Manual Review Process
+- **Quarterly Reviews:** Regular review of all repositories for standards compliance
+- **Exception Reviews:** Quarterly review of all active exceptions
+- **Standards Updates:** Annual review and update of standards
+- **Training:** Regular training on standards for all team members
+
+---
+
+**Questions about these standards?**
+- **Technical Questions:** Contact the Architecture Team
+- **Process Questions:** Contact the Organization SMA
+- **Security Questions:** Contact the Security Team
+- **Exception Requests:** Submit through the Exception Process
+
+**Related Documentation:**
+- [Organization Overview](ORGANIZATION_OVERVIEW.md)
+- [Repository Guidelines](REPOSITORY_GUIDELINES.md)
+- [Security Policies](../security/README.md)

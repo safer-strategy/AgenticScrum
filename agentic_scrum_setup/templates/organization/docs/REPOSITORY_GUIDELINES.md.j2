@@ -1,0 +1,511 @@
+# {{ organization_name }} - Repository Guidelines
+
+**Organization:** {{ organization_name }}  
+**Last Updated:** {{ created_date }}  
+**Audience:** Team leads, developers, project managers
+
+## Overview
+
+This guide provides comprehensive instructions for creating, managing, and maintaining repositories within {{ organization_name }}. Following these guidelines ensures consistency, quality, and seamless integration with our organization-wide AI agent coordination system.
+
+## Repository Creation
+
+### Using AgenticScrum CLI
+
+The preferred method for adding repositories to our organization:
+
+#### Basic Repository Creation
+```bash
+# Add a Python API service
+agentic-scrum-setup add-repo \
+  --organization-dir /path/to/{{ organization_name }} \
+  --repo-name "user-service" \
+  --language python \
+  --framework fastapi \
+  --agents poa,sma,deva_python,qaa
+
+# Add a TypeScript frontend
+agentic-scrum-setup add-repo \
+  --organization-dir /path/to/{{ organization_name }} \
+  --repo-name "web-app" \
+  --language typescript \
+  --framework react \
+  --agents poa,sma,deva_typescript,qaa
+
+# Add a Java microservice
+agentic-scrum-setup add-repo \
+  --organization-dir /path/to/{{ organization_name }} \
+  --repo-name "payment-service" \
+  --language java \
+  --framework spring \
+  --agents poa,sma,deva_java,qaa,saa
+```
+
+#### Advanced Options
+```bash
+# Repository with custom configuration
+agentic-scrum-setup add-repo \
+  --organization-dir . \
+  --repo-name "analytics-engine" \
+  --language python \
+  --framework fastapi \
+  --agents poa,sma,deva_python,deva_claude_python,qaa,saa \
+  --enable-mcp \
+  --enable-search
+```
+
+### Repository Naming Conventions
+
+#### Naming Rules
+- **Format:** `kebab-case` (lowercase with hyphens)
+- **Length:** 3-30 characters
+- **Descriptive:** Clearly indicates purpose
+- **Consistent:** Follow organization patterns
+
+#### Good Examples
+```
+user-service           # Clear service purpose
+web-dashboard         # Clear application type
+payment-processor     # Clear functional description
+data-pipeline         # Clear system component
+mobile-app            # Clear platform and type
+```
+
+#### Bad Examples
+```
+proj1                 # Not descriptive
+UserService           # Wrong case format
+user_service          # Wrong separator
+very-long-repository-name-that-is-hard-to-remember  # Too long
+```
+
+### Repository Types and Templates
+
+#### 1. API Services
+**Purpose:** Backend services providing APIs  
+**Languages:** Python, Java, TypeScript, Go, Rust  
+**Standard Agents:** POA, SMA, Developer Agent, QAA, SAA
+
+```bash
+# Python FastAPI service
+agentic-scrum-setup add-repo \
+  --repo-name "api-service-name" \
+  --language python \
+  --framework fastapi \
+  --agents poa,sma,deva_python,qaa,saa
+```
+
+#### 2. Web Applications
+**Purpose:** Frontend applications  
+**Languages:** TypeScript, JavaScript  
+**Standard Agents:** POA, SMA, Developer Agent, QAA
+
+```bash
+# React TypeScript app
+agentic-scrum-setup add-repo \
+  --repo-name "web-app-name" \
+  --language typescript \
+  --framework react \
+  --agents poa,sma,deva_typescript,qaa
+```
+
+#### 3. Data Processing
+**Purpose:** ETL, analytics, ML pipelines  
+**Languages:** Python, Scala, Java  
+**Standard Agents:** POA, SMA, Developer Agent, QAA, SAA
+
+```bash
+# Python data pipeline
+agentic-scrum-setup add-repo \
+  --repo-name "data-pipeline-name" \
+  --language python \
+  --agents poa,sma,deva_python,qaa,saa
+```
+
+#### 4. Mobile Applications
+**Purpose:** iOS, Android, cross-platform apps  
+**Languages:** TypeScript (React Native), Swift, Kotlin  
+**Standard Agents:** POA, SMA, Developer Agent, QAA
+
+```bash
+# React Native mobile app
+agentic-scrum-setup add-repo \
+  --repo-name "mobile-app-name" \
+  --language typescript \
+  --framework react \
+  --agents poa,sma,deva_typescript,qaa
+```
+
+## Agent Configuration
+
+### Standard Agent Combinations
+
+#### Minimum Required Agents
+Every repository must have:
+- **POA (Product Owner Agent):** Feature planning and requirements
+- **SMA (Scrum Master Agent):** Process facilitation and coordination
+- **QAA (QA Agent):** Quality assurance and testing
+
+#### Language-Specific Developer Agents
+Choose based on primary language:
+- **deva_python:** Python development
+- **deva_typescript:** TypeScript/JavaScript development  
+- **deva_java:** Java development
+- **deva_go:** Go development
+- **deva_rust:** Rust development
+- **deva_csharp:** C# development
+
+#### Optional Specialized Agents
+- **SAA (Security Audit Agent):** For services handling sensitive data
+- **deva_claude_python:** For Python projects using Claude extensively
+
+### Agent Coordination with Organization
+
+#### Automatic Integration
+When you create a repository, it automatically:
+- **Links to Organization POA:** Repository POA coordinates with portfolio planning
+- **Links to Organization SMA:** Repository SMA aligns with cross-project processes
+- **Shares Memory:** Repository agents contribute to organization-wide knowledge
+- **Inherits Standards:** Automatically applies organization coding standards
+
+#### Agent Hierarchy
+```
+Organization Level:
+├── organization_poa (Portfolio Product Owner)
+└── organization_sma (Cross-Project Scrum Master)
+
+Repository Level (per repository):
+├── poa (Repository Product Owner)
+├── sma (Repository Scrum Master)
+├── deva_* (Language-specific Developer Agent)
+├── qaa (QA Agent)
+└── saa (Security Audit Agent) [optional]
+```
+
+## Repository Structure
+
+### Standard Directory Layout
+
+Every repository follows this structure:
+
+```
+repository-name/
+├── .agentic_organization_link.yaml  # Organization integration
+├── agentic_config.yaml             # Repository-specific config
+├── agents/                         # Repository agent configurations
+│   ├── poa/
+│   ├── sma/
+│   ├── deva_*/
+│   └── qaa/
+├── src/                           # Source code
+├── tests/                         # Test files
+├── docs/                          # Repository documentation
+├── standards/                     # Inherited organization standards
+├── checklists/                    # Quality checklists
+├── scripts/                       # Repository utility scripts
+├── .gitignore                     # Git ignore rules
+├── README.md                      # Repository overview
+├── CHANGELOG.md                   # Change history
+└── [language-specific files]     # requirements.txt, package.json, etc.
+```
+
+### Language-Specific Additions
+
+#### Python Projects
+```
+├── requirements.txt               # Dependencies
+├── requirements-dev.txt           # Development dependencies
+├── app/                           # Application code (if FastAPI)
+├── pyproject.toml                 # Project configuration
+└── .python-version               # Python version specification
+```
+
+#### TypeScript/JavaScript Projects
+```
+├── package.json                   # Dependencies and scripts
+├── tsconfig.json                  # TypeScript configuration
+├── .eslintrc.js                   # Linting configuration
+├── .prettierrc                    # Code formatting
+└── node_modules/                  # Dependencies (gitignored)
+```
+
+#### Java Projects
+```
+├── pom.xml                        # Maven configuration
+├── src/main/java/                 # Java source code
+├── src/test/java/                 # Java test code
+└── target/                        # Build artifacts (gitignored)
+```
+
+## Configuration Management
+
+### Configuration Inheritance
+
+Repositories inherit configuration in this order:
+1. **Organization Defaults:** Set in `.agentic/agentic_config.yaml`
+2. **Repository Config:** Overrides in repository `agentic_config.yaml`
+3. **Local Overrides:** Environment-specific overrides
+
+### Repository Configuration
+
+#### Basic Configuration
+```yaml
+# agentic_config.yaml
+project:
+  name: "repository-name"
+  type: "single"
+  language: "python"
+  framework: "fastapi"
+
+organization:
+  name: "{{ organization_name }}"
+  link: ".agentic_organization_link.yaml"
+
+agents:
+  poa:
+    model: "claude-sonnet-4-0"
+    temperature: 0.1
+  sma:
+    model: "claude-sonnet-4-0"
+    temperature: 0.1
+  deva_python:
+    model: "claude-sonnet-4-0"
+    temperature: 0.1
+  qaa:
+    model: "claude-sonnet-4-0"
+    temperature: 0.1
+```
+
+#### Advanced Configuration
+```yaml
+# Repository-specific overrides
+standards:
+  override_organization: false
+  custom_linting_rules: true
+  
+mcp:
+  enabled: true
+  repository_memory: ".agent-memory"
+  
+security:
+  additional_scanning: true
+  custom_security_rules: true
+  
+performance:
+  monitoring_enabled: true
+  custom_metrics: true
+```
+
+## Development Workflow
+
+### Getting Started with a Repository
+
+#### 1. Initial Setup
+```bash
+# Clone the organization
+git clone [organization-repo-url]
+cd {{ organization_name }}
+
+# Set up shared services (first time only)
+cd shared
+cp .env.sample .env
+# Edit .env with your API keys
+docker-compose up -d
+cd ..
+
+# Navigate to your repository
+cd projects/[repository-name]
+
+# Set up repository-specific environment
+./init.sh setup
+```
+
+#### 2. Daily Development
+```bash
+# Start your development environment
+./init.sh up
+
+# Run tests
+./init.sh test
+
+# Check code quality
+./init.sh lint
+
+# Work with AI agents
+# Your agents are automatically coordinated with organization-level planning
+```
+
+### Working with Organization-Level Coordination
+
+#### Portfolio Planning Participation
+1. **Quarterly Planning:** Participate in organization-wide portfolio planning
+2. **Feature Coordination:** Align your repository features with organization goals
+3. **Dependency Management:** Coordinate dependencies with other repositories
+4. **Resource Sharing:** Share learnings and patterns with other teams
+
+#### Cross-Repository Integration
+```bash
+# Check for cross-repository dependencies
+agentic-scrum-setup list-repos --organization-dir ..
+
+# Coordinate with other repository teams
+# Your SMA agent automatically coordinates with organization SMA
+
+# Share reusable components
+# Follow organization standards for shared libraries
+```
+
+## Quality Standards
+
+### Code Quality Requirements
+
+All repositories must meet organization standards:
+- **Test Coverage:** Minimum 80%
+- **Code Complexity:** Maximum 10 cyclomatic complexity
+- **Security:** No hardcoded secrets, pass security scans
+- **Documentation:** Comprehensive API and architecture docs
+
+### Review Process
+
+#### Code Review Requirements
+1. **Two Reviewers:** All changes require 2 approvals
+2. **Agent Review:** QAA provides automated quality feedback
+3. **Security Review:** SAA reviews security-sensitive changes
+4. **Standards Check:** Automated verification of organization standards
+
+#### Quality Gates
+```yaml
+quality_gates:
+  - unit_tests_pass: true
+  - integration_tests_pass: true
+  - coverage_threshold: 80
+  - security_scan_pass: true
+  - code_style_compliant: true
+  - documentation_updated: true
+```
+
+## Monitoring and Observability
+
+### Required Monitoring
+
+Every repository must implement:
+- **Health Checks:** `/health` endpoint for service monitoring
+- **Metrics:** Business and technical metrics
+- **Logging:** Structured logging with correlation IDs
+- **Alerting:** Critical error and performance alerts
+
+### Integration with Organization Monitoring
+
+Your repository automatically integrates with:
+- **Organization Dashboards:** Portfolio-level metrics and monitoring
+- **Shared Alerting:** Organization-wide incident management
+- **Log Aggregation:** Centralized logging across all repositories
+- **Performance Tracking:** Cross-repository performance comparison
+
+## Security Requirements
+
+### Repository-Level Security
+
+#### Required Security Measures
+1. **Dependency Scanning:** Regular vulnerability scanning
+2. **Secret Management:** No hardcoded credentials
+3. **Access Control:** Role-based access to repository
+4. **Security Testing:** SAST and DAST in CI/CD pipeline
+
+#### Security Agent Integration
+If using SAA (Security Audit Agent):
+- **Automated Reviews:** Security reviews of all code changes
+- **Vulnerability Assessment:** Regular security assessments
+- **Compliance Checking:** Automated compliance verification
+- **Incident Response:** Security incident coordination
+
+### Organization Security Integration
+
+Your repository inherits:
+- **Security Policies:** Organization-wide security standards
+- **Shared Secrets:** Access to organization-managed secrets
+- **Security Monitoring:** Integration with organization security tools
+- **Incident Response:** Coordination with organization security team
+
+## Troubleshooting
+
+### Common Issues
+
+#### 1. Repository Creation Fails
+```bash
+# Check organization structure
+ls -la .agentic/
+
+# Verify organization configuration
+cat .agentic/agentic_config.yaml
+
+# Check permissions
+ls -la projects/
+```
+
+#### 2. Agent Coordination Issues
+```bash
+# Verify organization link
+cat .agentic_organization_link.yaml
+
+# Check agent configuration
+cat agents/*/persona_rules.yaml
+
+# Test agent communication
+./init.sh test-agents
+```
+
+#### 3. Standards Synchronization Problems
+```bash
+# Manual standards sync
+../shared/scripts/sync_standards.sh --repo [repository-name]
+
+# Check standards differences
+../shared/scripts/sync_standards.sh check
+```
+
+### Getting Help
+
+#### Self-Service Resources
+1. **Organization Documentation:** Read `docs/ORGANIZATION_OVERVIEW.md`
+2. **Standards Reference:** Check `docs/CROSS_PROJECT_STANDARDS.md`
+3. **Agent Documentation:** Review agent persona rules in `agents/`
+
+#### Escalation Process
+1. **Technical Issues:** Contact repository technical lead
+2. **Process Issues:** Engage Organization SMA
+3. **Strategic Questions:** Consult Organization POA
+4. **Security Concerns:** Contact organization security team
+
+## Best Practices
+
+### Repository Management
+1. **Regular Updates:** Keep dependencies and standards current
+2. **Documentation:** Maintain comprehensive and current documentation
+3. **Testing:** Implement thorough testing at all levels
+4. **Security:** Follow security best practices consistently
+
+### Organization Integration
+1. **Coordination:** Actively participate in organization-level planning
+2. **Knowledge Sharing:** Contribute learnings to organization knowledge base
+3. **Standards Compliance:** Adhere to organization standards consistently
+4. **Communication:** Keep organization agents informed of significant changes
+
+### Agent Collaboration
+1. **Trust the Process:** Let agents handle routine coordination
+2. **Provide Context:** Give agents sufficient context for decisions
+3. **Review Recommendations:** Regularly review and act on agent recommendations
+4. **Continuous Improvement:** Provide feedback to improve agent effectiveness
+
+---
+
+**Questions about repository guidelines?**
+- **Technical Setup:** Contact the DevOps team
+- **Process Questions:** Engage with Organization SMA
+- **Strategic Alignment:** Consult with Organization POA
+- **Security Requirements:** Contact the Security team
+
+**Related Documentation:**
+- [Organization Overview](ORGANIZATION_OVERVIEW.md)
+- [Cross-Project Standards](CROSS_PROJECT_STANDARDS.md)
+- [Shared Infrastructure Guide](../shared/README.md)

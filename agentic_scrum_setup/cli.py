@@ -3,9 +3,10 @@
 
 import argparse
 import os
+import re
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from .setup_core import SetupCore
 
@@ -64,9 +65,9 @@ def parse_arguments():
     init_parser.add_argument(
         '--project-type',
         type=str,
-        choices=['single', 'fullstack'],
+        choices=['single', 'fullstack', 'organization'],
         default='single',
-        help='Project type: single language or fullstack (default: single)'
+        help='Project type: single language, fullstack, or organization (default: single)'
     )
     init_parser.add_argument(
         '--language',
@@ -135,6 +136,54 @@ def parse_arguments():
         action='store_true',
         help='Enable Perplexity search integration (requires PERPLEXITY_API_KEY environment variable)'
     )
+    init_parser.add_argument(
+        '--organization-name',
+        type=str,
+        help='Name of the organization (required for organization project type)'
+    )
+    
+    # Add repository command
+    addrepo_parser = subparsers.add_parser('add-repo', help='Add repository to existing organization')
+    addrepo_parser.add_argument(
+        '--organization-dir',
+        type=str,
+        required=True,
+        help='Path to the organization directory'
+    )
+    addrepo_parser.add_argument(
+        '--repo-name',
+        type=str,
+        required=True,
+        help='Name of the repository to add'
+    )
+    addrepo_parser.add_argument(
+        '--language',
+        type=str,
+        choices=['python', 'javascript', 'typescript', 'java', 'go', 'rust', 'csharp', 'php', 'ruby'],
+        required=True,
+        help='Primary programming language for the repository'
+    )
+    addrepo_parser.add_argument(
+        '--framework',
+        type=str,
+        choices=['fastapi', 'express', 'spring', 'gin', 'actix', 'aspnet', 'react', 'vue', 'angular', 'svelte'],
+        help='Framework for the repository'
+    )
+    addrepo_parser.add_argument(
+        '--agents',
+        type=str,
+        required=True,
+        help='Comma-separated list of agents for this repository'
+    )
+    
+    # List repositories command
+    listrepos_parser = subparsers.add_parser('list-repos', help='List repositories in organization')
+    listrepos_parser.add_argument(
+        '--organization-dir',
+        type=str,
+        required=True,
+        help='Path to the organization directory'
+    )
     
     # Retrofit command
     retrofit_parser = subparsers.add_parser('retrofit', help='Analyze existing project for AgenticScrum integration')
@@ -168,9 +217,15 @@ def interactive_mode():
     print("\nProject type:")
     print("  1. Single language project")
     print("  2. Fullstack project (backend + frontend)")
+    print("  3. Organization (multi-repository management)")
     
     project_type_choice = input("Select project type [1]: ").strip() or "1"
-    project_type = 'fullstack' if project_type_choice == "2" else 'single'
+    if project_type_choice == "2":
+        project_type = 'fullstack'
+    elif project_type_choice == "3":
+        project_type = 'organization'
+    else:
+        project_type = 'single'
     
     if project_type == 'fullstack':
         # Fullstack setup
@@ -238,6 +293,28 @@ def interactive_mode():
         language = backend_language
         framework = None
         agents_default = f"poa,sma,deva_{backend_language},deva_{frontend_language},qaa,saa"
+        
+    elif project_type == 'organization':
+        # Organization setup
+        print("\n=== Organization Configuration ===")
+        organization_name = input("Enter organization name: ").strip()
+        while not organization_name:
+            print("Organization name is required.")
+            organization_name = input("Enter organization name: ").strip()
+        
+        print("\nOrganization agents:")
+        print("  - organization_poa (Portfolio Product Owner)")
+        print("  - organization_sma (Cross-project Scrum Master)")
+        print("  - shared memory and coordination services")
+        
+        # Set default values for organization
+        language = None  # Not applicable for organizations
+        framework = None
+        backend_language = None
+        backend_framework = None
+        frontend_language = None
+        frontend_framework = None
+        agents_default = "organization_poa,organization_sma"
         
     else:
         # Single language setup
@@ -399,8 +476,132 @@ def interactive_mode():
         'default_model': default_model,
         'output_dir': get_default_output_dir(),
         'enable_mcp': enable_mcp,
-        'enable_search': enable_search
+        'enable_search': enable_search,
+        'organization_name': organization_name if project_type == 'organization' else None
     }
+
+
+def validate_cli_arguments(args) -> List[str]:
+    """Validate CLI arguments and return list of error messages."""
+    errors = []
+    
+    if args.command == 'init':
+        # Validate project name
+        if args.project_name:
+            if not args.project_name.strip():
+                errors.append("Project name cannot be empty.")
+            else:
+                # Check for invalid characters
+                invalid_chars = r'[<>:"/\\|?*\x00-\x1f]'
+                if re.search(invalid_chars, args.project_name):
+                    errors.append(
+                        f"Project name '{args.project_name}' contains invalid characters. "
+                        "Project names cannot contain: < > : \" / \\ | ? * or control characters. "
+                        "Use only letters, numbers, hyphens, and underscores."
+                    )
+                
+                # Check length
+                if len(args.project_name) > 200:
+                    errors.append(
+                        f"Project name '{args.project_name}' is too long ({len(args.project_name)} characters). "
+                        "Please use a name shorter than 200 characters."
+                    )
+                
+                # Check reserved names
+                reserved_names = {
+                    'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5',
+                    'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4',
+                    'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
+                }
+                if args.project_name.upper() in reserved_names:
+                    errors.append(
+                        f"Project name '{args.project_name}' is a reserved name on Windows. "
+                        "Please choose a different name."
+                    )
+        
+        # Validate agents
+        if args.agents:
+            known_agents = {
+                'poa', 'sma', 'deva_python', 'deva_javascript', 'deva_typescript',
+                'deva_java', 'deva_go', 'deva_rust', 'deva_csharp',
+                'deva_claude_python', 'qaa', 'saa',
+                'organization_poa', 'organization_sma'  # Organization-level agents
+            }
+            
+            agent_list = [agent.strip() for agent in args.agents.split(',')]
+            unknown_agents = []
+            
+            for agent in agent_list:
+                if agent and agent not in known_agents:
+                    unknown_agents.append(agent)
+            
+            if unknown_agents:
+                errors.append(
+                    f"Unknown agent types: {', '.join(unknown_agents)}. "
+                    f"Valid agents are: {', '.join(sorted(known_agents))}. "
+                    "Please check your agent list for typos."
+                )
+        
+        # Validate fullstack requirements
+        if args.project_type == 'fullstack':
+            if args.frontend_language and args.frontend_language not in ['javascript', 'typescript']:
+                errors.append(
+                    f"Invalid frontend language '{args.frontend_language}'. "
+                    "Supported frontend languages: javascript, typescript"
+                )
+            
+            if args.backend_framework and args.language:
+                valid_backend_frameworks = {
+                    'python': ['fastapi'],
+                    'javascript': ['express'],
+                    'typescript': ['express'],
+                    'java': ['spring'],
+                    'go': ['gin'],
+                    'rust': ['actix'],
+                    'csharp': ['aspnet']
+                }
+                
+                valid_frameworks = valid_backend_frameworks.get(args.language, [])
+                if args.backend_framework not in valid_frameworks:
+                    errors.append(
+                        f"Backend framework '{args.backend_framework}' is not supported for {args.language}. "
+                        f"Supported frameworks: {', '.join(valid_frameworks) if valid_frameworks else 'none'}"
+                    )
+        
+        # Validate organization requirements
+        if args.project_type == 'organization':
+            if not args.organization_name:
+                errors.append("Organization name is required for organization project type.")
+            elif args.organization_name:
+                # Apply same validation as project names
+                invalid_chars = r'[<>:"/\\|?*\x00-\x1f]'
+                if re.search(invalid_chars, args.organization_name):
+                    errors.append(
+                        f"Organization name '{args.organization_name}' contains invalid characters. "
+                        "Organization names cannot contain: < > : \" / \\ | ? * or control characters. "
+                        "Use only letters, numbers, hyphens, and underscores."
+                    )
+                
+                if len(args.organization_name) > 200:
+                    errors.append(
+                        f"Organization name '{args.organization_name}' is too long ({len(args.organization_name)} characters). "
+                        "Please use a name shorter than 200 characters."
+                    )
+        
+        # Validate output directory path
+        if args.output_dir:
+            try:
+                output_path = Path(args.output_dir)
+                # Check for path traversal
+                if '..' in str(output_path):
+                    errors.append(
+                        "Path traversal detected in output directory. "
+                        "Relative paths with '..' are not allowed for security reasons."
+                    )
+            except Exception as e:
+                errors.append(f"Invalid output directory path: {e}")
+    
+    return errors
 
 
 def main():
@@ -419,8 +620,25 @@ def main():
             args.default_model = 'claude-sonnet-4-0'
             print("Claude Code mode enabled: Using anthropic provider with claude-sonnet-4-0 model")
         
-        # Check if we have all required arguments
-        if not all([args.project_name, args.language, args.agents, args.llm_provider, args.default_model]):
+        # Validate CLI arguments early
+        validation_errors = validate_cli_arguments(args)
+        if validation_errors:
+            print("❌ Configuration errors found:")
+            for error in validation_errors:
+                print(f"  - {error}")
+            print("\nPlease fix these issues and try again, or run without arguments for interactive mode.")
+            sys.exit(1)
+        
+        # Check if we have all required arguments (different for organization type)
+        if args.project_type == 'organization':
+            required_args = [args.project_name, args.organization_name, args.llm_provider, args.default_model]
+            # Set default agents for organization if not specified
+            if not args.agents:
+                args.agents = 'organization_poa,organization_sma'
+        else:
+            required_args = [args.project_name, args.language, args.agents, args.llm_provider, args.default_model]
+            
+        if not all(required_args):
             print("Running in interactive mode...")
             config = interactive_mode()
         else:
@@ -446,12 +664,13 @@ def main():
                 'default_model': args.default_model,
                 'output_dir': args.output_dir,
                 'enable_mcp': getattr(args, 'enable_mcp', False),
-                'enable_search': getattr(args, 'enable_search', False)
+                'enable_search': getattr(args, 'enable_search', False),
+                'organization_name': getattr(args, 'organization_name', None)
             }
         
         # Create the setup core instance and run
-        setup = SetupCore(config)
         try:
+            setup = SetupCore(config)
             setup.create_project()
             print(f"\n✅ Project '{config['project_name']}' created successfully!")
             print(f"📁 Location: {Path(config['output_dir']) / config['project_name']}")
@@ -459,8 +678,87 @@ def main():
             print(f"  1. cd {config['project_name']}")
             print("  2. Review the generated structure and configuration")
             print("  3. ./init.sh help  # To see available commands")
+        except ValueError as e:
+            print(f"\n❌ Configuration error: {e}")
+            print("\nTroubleshooting tips:")
+            print("  - Check that your project name contains only valid characters")
+            print("  - Verify that all agent types are spelled correctly")
+            print("  - Ensure the output directory path is valid and accessible")
+            sys.exit(1)
+        except RuntimeError as e:
+            print(f"\n❌ Project creation failed: {e}")
+            print("\nTroubleshooting tips:")
+            print("  - Check disk space and file permissions")
+            print("  - Ensure the output directory is writable")
+            print("  - Try a different project name or location")
+            sys.exit(1)
         except Exception as e:
-            print(f"\n❌ Error creating project: {e}")
+            print(f"\n❌ Unexpected error: {e}")
+            print("\nIf this problem persists, please report it at:")
+            print("  https://github.com/anthropics/AgenticScrum/issues")
+            sys.exit(1)
+    
+    elif args.command == 'add-repo':
+        # Add repository to existing organization
+        try:
+            from .repository_manager import RepositoryManager
+            
+            org_path = Path(args.organization_dir)
+            if not org_path.exists():
+                print(f"❌ Error: Organization directory '{org_path}' not found")
+                sys.exit(1)
+            
+            if not (org_path / '.agentic' / 'agentic_config.yaml').exists():
+                print(f"❌ Error: '{org_path}' is not a valid AgenticScrum organization")
+                sys.exit(1)
+            
+            repo_manager = RepositoryManager(org_path)
+            repo_config = {
+                'repo_name': args.repo_name,
+                'language': args.language,
+                'framework': args.framework,
+                'agents': args.agents
+            }
+            
+            repo_path = repo_manager.add_repository(repo_config)
+            print(f"\n✅ Repository '{args.repo_name}' added successfully!")
+            print(f"📁 Location: {repo_path}")
+            print(f"🔗 Integrated with organization agents at {org_path}")
+            
+        except ImportError:
+            print("❌ Error: Repository management not available")
+            sys.exit(1)
+        except Exception as e:
+            print(f"❌ Error adding repository: {e}")
+            sys.exit(1)
+    
+    elif args.command == 'list-repos':
+        # List repositories in organization
+        try:
+            org_path = Path(args.organization_dir)
+            if not org_path.exists():
+                print(f"❌ Error: Organization directory '{org_path}' not found")
+                sys.exit(1)
+            
+            projects_dir = org_path / 'projects'
+            if not projects_dir.exists():
+                print(f"📂 No repositories found in organization at {org_path}")
+                sys.exit(0)
+            
+            repos = [d for d in projects_dir.iterdir() if d.is_dir()]
+            if not repos:
+                print(f"📂 No repositories found in organization at {org_path}")
+            else:
+                print(f"📂 Repositories in organization '{org_path.name}':")
+                for repo in sorted(repos):
+                    config_file = repo / 'agentic_config.yaml'
+                    if config_file.exists():
+                        print(f"  ✅ {repo.name}")
+                    else:
+                        print(f"  ⚠️  {repo.name} (missing config)")
+                        
+        except Exception as e:
+            print(f"❌ Error listing repositories: {e}")
             sys.exit(1)
     
     elif args.command == 'retrofit':

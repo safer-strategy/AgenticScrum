@@ -1,0 +1,178 @@
+# {{ organization_name }} - Organization Overview
+
+**Organization Type:** AgenticScrum Multi-Repository Organization  
+**Created:** {{ created_date }}  
+**Framework:** AgenticScrum with AI Agent Coordination
+
+## What is {{ organization_name }}?
+
+{{ organization_name }} is an AgenticScrum-powered organization that manages multiple related repositories under a unified structure. This approach enables:
+
+- **Portfolio-level Planning:** Strategic coordination across all projects
+- **Cross-project Agent Coordination:** AI agents that work together across repositories
+- **Shared Standards:** Consistent coding standards, security policies, and best practices
+- **Resource Optimization:** Efficient allocation of development resources
+- **Knowledge Sharing:** Patterns and learnings shared across all projects
+
+## Organization Structure
+
+Our organization follows the AgenticScrum multi-repository pattern:
+
+```
+{{ organization_name }}/
+├── .agentic/                      # Organization configuration
+│   ├── agentic_config.yaml        # Organization-wide settings
+│   ├── agents/                    # Organization-level AI agents
+│   │   ├── organization_poa/      # Portfolio Product Owner
+│   │   └── organization_sma/      # Cross-project Scrum Master
+│   ├── shared_standards/          # Coding standards for all repos
+│   ├── shared_tooling/            # CI/CD and development tools
+│   └── shared_memory/             # Cross-project AI agent memory
+├── projects/                      # Individual repositories
+│   ├── [repository-1]/            # Your project repositories
+│   ├── [repository-2]/            # Each with their own agents
+│   └── [repository-3]/            # But connected to org-level planning
+├── shared/                        # Shared infrastructure
+│   ├── docker-compose.yml         # Organization-wide services
+│   ├── .env.sample               # Environment configuration
+│   └── scripts/                   # Organization utility scripts
+└── docs/                         # This documentation
+```
+
+## Key Benefits
+
+### 1. Strategic Coordination
+- **Portfolio Planning:** Organization POA manages product strategy across all repositories
+- **Cross-project Alignment:** Ensure all projects support organizational goals
+- **Resource Optimization:** Allocate development resources where they create most value
+- **Dependency Management:** Track and coordinate dependencies between projects
+
+### 2. AI Agent Collaboration
+- **Organization-level Agents:** Strategic planning and cross-project coordination
+- **Repository-level Agents:** Focused on individual project execution
+- **Shared Memory:** Agents learn from patterns across all projects
+- **Knowledge Transfer:** Best practices automatically propagate across teams
+
+### 3. Consistent Standards
+- **Code Quality:** Shared linting, testing, and security standards
+- **Development Process:** Consistent Agile practices across all teams
+- **Documentation:** Standardized documentation requirements
+- **Security:** Organization-wide security policies and scanning
+
+### 4. Operational Efficiency
+- **Shared Infrastructure:** Common databases, caching, monitoring
+- **CI/CD Integration:** Coordinated deployment pipelines
+- **Monitoring:** Organization-wide observability and metrics
+- **Development Tools:** Shared development environment setup
+
+## Getting Started
+
+### For Developers
+1. **Clone the Organization:** `git clone [organization-repo-url]`
+2. **Set up Environment:** `cp shared/.env.sample shared/.env` and configure
+3. **Start Shared Services:** `cd shared && docker-compose up -d`
+4. **Choose a Repository:** Browse `projects/` directory for available projects
+5. **Follow Repository README:** Each project has specific setup instructions
+
+### For Project Managers
+1. **Review Portfolio:** Check `docs/ORGANIZATION_OVERVIEW.md` (this file)
+2. **Understand Standards:** Read `docs/CROSS_PROJECT_STANDARDS.md`
+3. **Plan Features:** Work with Organization POA for cross-project planning
+4. **Track Progress:** Use Organization SMA for cross-project coordination
+
+### For Team Leads
+1. **Repository Guidelines:** Review `docs/REPOSITORY_GUIDELINES.md`
+2. **Add New Repository:** Use `agentic-scrum-setup add-repo` command
+3. **Coordinate with Organization:** Align your repository with portfolio goals
+4. **Share Knowledge:** Contribute learnings to organization-wide patterns
+
+## AI Agents in Action
+
+### Organization Portfolio Product Owner (organization_poa)
+**What it does:**
+- Creates portfolio-level roadmaps spanning all repositories
+- Coordinates feature development between teams
+- Aligns individual project priorities with business objectives
+- Manages cross-project dependencies and integration points
+
+**How it helps:**
+- Ensures all projects work toward common goals
+- Identifies opportunities for code reuse
+- Prevents conflicting development across teams
+- Optimizes resource allocation for maximum value
+
+### Organization Scrum Master (organization_sma)
+**What it does:**
+- Coordinates sprint planning across all repositories
+- Manages inter-team dependencies and blockers
+- Facilitates organization-wide process improvements
+- Scales Agile practices across multiple teams
+
+**How it helps:**
+- Keeps all teams aligned and coordinated
+- Removes organizational impediments
+- Shares best practices across teams
+- Ensures consistent development velocity
+
+## Cross-Project Coordination
+
+### How Teams Work Together
+1. **Portfolio Planning:** Quarterly alignment of all project roadmaps
+2. **Sprint Coordination:** Bi-weekly cross-team dependency management
+3. **Daily Coordination:** Weekly organization standup for leads
+4. **Retrospectives:** Monthly organization-wide process improvements
+
+### Shared Resources
+- **Database:** Shared PostgreSQL for common data
+- **Cache:** Redis for session and application caching
+- **Message Queue:** RabbitMQ for inter-service communication
+- **Monitoring:** Prometheus + Grafana for organization-wide metrics
+- **Logging:** ElasticSearch + Kibana for centralized logs
+
+### Knowledge Sharing
+- **Agent Memory:** AI agents share learnings across projects
+- **Standards Sync:** Automated propagation of coding standards
+- **Code Reviews:** Cross-team code review for shared components
+- **Documentation:** Shared wiki and architectural decision records
+
+## Success Metrics
+
+We measure success at both organization and repository levels:
+
+### Portfolio Level
+- **Feature Delivery Velocity:** How quickly we deliver value across all projects
+- **Cross-project Integration:** Success rate of features spanning repositories
+- **Resource Utilization:** Efficiency of development resource allocation
+- **Technical Debt:** Organization-wide technical debt trends
+
+### Process Level
+- **Team Collaboration:** Cross-team satisfaction and coordination scores
+- **Dependency Resolution:** Time to resolve cross-project dependencies  
+- **Standards Adherence:** Consistency of practices across repositories
+- **Knowledge Sharing:** Rate of pattern reuse across projects
+
+## Next Steps
+
+### Immediate Actions
+1. **Explore Projects:** Browse the `projects/` directory to understand current repositories
+2. **Set up Environment:** Configure your development environment with shared services
+3. **Join Planning:** Participate in next portfolio planning session
+4. **Meet the Agents:** Interact with organization POA and SMA for current priorities
+
+### Ongoing Participation
+1. **Follow Standards:** Adhere to organization-wide coding and process standards
+2. **Share Knowledge:** Contribute patterns and learnings to shared agent memory
+3. **Coordinate Dependencies:** Work with Organization SMA on cross-project features
+4. **Optimize Together:** Participate in organization-wide retrospectives and improvements
+
+---
+
+**Questions?** Reach out to:
+- **Strategic Questions:** Organization POA (portfolio product planning)
+- **Process Questions:** Organization SMA (cross-project coordination)
+- **Technical Questions:** Repository technical leads in `projects/`
+
+**Documentation:**
+- [Cross-Project Standards](CROSS_PROJECT_STANDARDS.md)
+- [Repository Guidelines](REPOSITORY_GUIDELINES.md)
+- [Shared Infrastructure Guide](../shared/README.md)
