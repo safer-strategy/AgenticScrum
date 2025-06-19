@@ -1,0 +1,395 @@
+# Security Priming for TypeScript Developer Agent
+
+## Your Security Responsibilities
+
+As a TypeScript Developer Agent, you must build security into every component, API endpoint, and user interaction. The Security Audit Agent (SAA) has provided this guidance to help you write secure code from the start.
+
+## Critical Security Rules for TypeScript Development
+
+### 1. **Input Validation with Type Safety**
+```typescript
+// ALWAYS validate inputs with zod or similar
+import { z } from 'zod';
+
+const UserInputSchema = z.object({
+  email: z.string().email(),
+  age: z.number().min(0).max(150),
+  username: z.string().regex(/^[a-zA-Z0-9_]+$/).min(3).max(30),
+  password: z.string().min(8).regex(/[A-Z]/).regex(/[0-9]/)
+});
+
+// Validate in middleware
+export const validateInput = (schema: z.ZodSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      req.body = schema.parse(req.body);
+      next();
+    } catch (error) {
+      res.status(400).json({ error: 'Invalid input' });
+    }
+  };
+};
+```
+
+### 2. **XSS Prevention is Mandatory**
+```typescript
+// React automatically escapes, but be careful with dangerouslySetInnerHTML
+// ❌ WRONG:
+// <div dangerouslySetInnerHTML={{ __html: userContent }} />
+
+// ✅ CORRECT - If HTML is needed, sanitize first:
+import DOMPurify from 'dompurify';
+
+const SafeHTML: React.FC<{ content: string }> = ({ content }) => {
+  const sanitized = DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a'],
+    ALLOWED_ATTR: ['href']
+  });
+  
+  return <div dangerouslySetInnerHTML={{ __html: sanitized }} />;
+};
+
+// For plain text, use textContent
+element.textContent = userInput; // Safe
+```
+
+### 3. **Secure Authentication Implementation**
+```typescript
+// JWT with refresh tokens
+import jwt from 'jsonwebtoken';
+
+interface TokenPayload {
+  userId: string;
+  type: 'access' | 'refresh';
+}
+
+const ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_SECRET!;
+const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_SECRET!;
+
+export const generateTokens = (userId: string) => {
+  const accessToken = jwt.sign(
+    { userId, type: 'access' },
+    ACCESS_TOKEN_SECRET,
+    { expiresIn: '15m' }
+  );
+  
+  const refreshToken = jwt.sign(
+    { userId, type: 'refresh' },
+    REFRESH_TOKEN_SECRET,
+    { expiresIn: '7d' }
+  );
+  
+  return { accessToken, refreshToken };
+};
+
+// Secure password hashing
+import bcrypt from 'bcrypt';
+
+export const hashPassword = async (password: string): Promise<string> => {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+};
+
+export const verifyPassword = async (
+  password: string, 
+  hash: string
+): Promise<boolean> => {
+  return bcrypt.compare(password, hash);
+};
+```
+
+### 4. **CSRF Protection**
+```typescript
+// Express CSRF middleware
+import csrf from 'csurf';
+
+const csrfProtection = csrf({ 
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  } 
+});
+
+// Apply to state-changing routes
+router.post('/api/transfer', csrfProtection, async (req, res) => {
+  // Verify CSRF token is present
+  // The middleware handles validation
+});
+
+// In React components
+interface FormProps {
+  csrfToken: string;
+}
+
+const SecureForm: React.FC<FormProps> = ({ csrfToken }) => (
+  <form method="POST" action="/api/submit">
+    <input type="hidden" name="_csrf" value={csrfToken} />
+    {/* Other fields */}
+  </form>
+);
+```
+
+### 5. **Secure Headers Configuration**
+```typescript
+import helmet from 'helmet';
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'nonce-{NONCE}'"], // Use nonces for inline scripts
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+
+// Secure cookie configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET!,
+  name: 'sessionId',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: true,         // HTTPS only
+    httpOnly: true,       // No JavaScript access
+    maxAge: 3600000,      // 1 hour
+    sameSite: 'strict'    // CSRF protection
+  }
+}));
+```
+
+## Security Checklist for Every Feature
+
+Before writing code, verify:
+- [ ] All inputs are validated with strict schemas
+- [ ] XSS prevention is in place for all user content
+- [ ] CSRF tokens protect state-changing operations  
+- [ ] Authentication checks are on every protected route
+- [ ] Error messages don't leak sensitive information
+- [ ] Rate limiting is implemented where needed
+- [ ] Security headers are properly configured
+- [ ] Sensitive data is never logged
+
+## React-Specific Security Patterns
+
+### Safe Component Props
+```typescript
+interface UserProfileProps {
+  // Use specific types, not 'any'
+  username: string;
+  bio: string;
+  avatarUrl: string;
+}
+
+const UserProfile: React.FC<UserProfileProps> = ({ username, bio, avatarUrl }) => {
+  // Validate URLs before use
+  const isValidUrl = (url: string): boolean => {
+    try {
+      const parsed = new URL(url);
+      return ['http:', 'https:'].includes(parsed.protocol);
+    } catch {
+      return false;
+    }
+  };
+
+  return (
+    <div>
+      <h2>{username}</h2> {/* Auto-escaped */}
+      <p>{bio}</p> {/* Auto-escaped */}
+      {isValidUrl(avatarUrl) && (
+        <img src={avatarUrl} alt={`${username}'s avatar`} />
+      )}
+    </div>
+  );
+};
+```
+
+### Secure API Calls
+```typescript
+// Axios interceptor for CSRF token
+import axios from 'axios';
+
+axios.interceptors.request.use((config) => {
+  // Add CSRF token to all requests
+  const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+  if (token) {
+    config.headers['X-CSRF-Token'] = token;
+  }
+  return config;
+});
+
+// Type-safe API client
+interface ApiResponse<T> {
+  data: T;
+  error?: string;
+}
+
+class SecureApiClient {
+  private async request<T>(
+    method: string,
+    url: string,
+    data?: unknown
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response = await axios({
+        method,
+        url,
+        data,
+        timeout: 30000,
+        validateStatus: (status) => status < 500
+      });
+      
+      return { data: response.data };
+    } catch (error) {
+      // Log error details internally, return generic message
+      console.error('API Error:', error);
+      return { 
+        data: {} as T, 
+        error: 'An error occurred. Please try again.' 
+      };
+    }
+  }
+  
+  async get<T>(url: string): Promise<ApiResponse<T>> {
+    return this.request<T>('GET', url);
+  }
+  
+  async post<T>(url: string, data: unknown): Promise<ApiResponse<T>> {
+    return this.request<T>('POST', url, data);
+  }
+}
+```
+
+### File Upload Security
+```typescript
+import multer from 'multer';
+import { Request } from 'express';
+
+const ALLOWED_MIMETYPES = ['image/jpeg', 'image/png', 'application/pdf'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+const fileFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  cb: multer.FileFilterCallback
+) => {
+  if (ALLOWED_MIMETYPES.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type'));
+  }
+};
+
+const upload = multer({
+  storage: multer.memoryStorage(), // Don't save to disk immediately
+  fileFilter,
+  limits: {
+    fileSize: MAX_FILE_SIZE,
+    files: 1
+  }
+});
+
+// Secure file handling
+app.post('/upload', upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file provided' });
+  }
+  
+  // Additional content validation
+  const fileTypeResult = await fileType.fromBuffer(req.file.buffer);
+  if (!fileTypeResult || !ALLOWED_MIMETYPES.includes(fileTypeResult.mime)) {
+    return res.status(415).json({ error: 'Invalid file content' });
+  }
+  
+  // Generate safe filename
+  const safeFilename = `${uuidv4()}${path.extname(req.file.originalname)}`;
+  
+  // Process file securely...
+});
+```
+
+## Memory: Learn from SAA's Experience
+
+Common vulnerabilities in TypeScript/JavaScript projects:
+
+1. **XSS through innerHTML** - Always sanitize or use textContent
+2. **Missing CSRF protection** - Implement on all state-changing routes
+3. **Insecure session configuration** - Use secure, httpOnly, sameSite
+4. **Exposed API keys in frontend** - Use environment variables and proxy
+5. **No input validation** - Validate with zod or similar
+6. **Weak Content Security Policy** - Implement strict CSP
+7. **No rate limiting** - Protect all endpoints from abuse
+
+## Frontend Security Considerations
+
+### Local Storage Security
+```typescript
+// NEVER store sensitive data in localStorage
+// ❌ WRONG:
+// localStorage.setItem('authToken', token);
+// localStorage.setItem('creditCard', cardNumber);
+
+// ✅ CORRECT - Use httpOnly cookies for sensitive data
+// Or if you must use localStorage, encrypt non-sensitive data:
+import CryptoJS from 'crypto-js';
+
+const secureStorage = {
+  setItem: (key: string, value: any) => {
+    const encrypted = CryptoJS.AES.encrypt(
+      JSON.stringify(value),
+      process.env.REACT_APP_STORAGE_KEY!
+    ).toString();
+    localStorage.setItem(key, encrypted);
+  },
+  
+  getItem: (key: string) => {
+    const encrypted = localStorage.getItem(key);
+    if (!encrypted) return null;
+    
+    try {
+      const decrypted = CryptoJS.AES.decrypt(
+        encrypted,
+        process.env.REACT_APP_STORAGE_KEY!
+      ).toString(CryptoJS.enc.Utf8);
+      return JSON.parse(decrypted);
+    } catch {
+      return null;
+    }
+  }
+};
+```
+
+## When to Consult SAA
+
+Always consult the SAA when:
+- Implementing authentication/authorization flows
+- Handling file uploads from users
+- Processing payments or sensitive data
+- Setting up CORS configuration
+- Designing new API endpoints
+- Implementing real-time features (WebSockets)
+- Unsure about security implications
+
+## Your Security Commitment
+
+By following these patterns, you commit to:
+1. Validating all inputs with proper schemas
+2. Preventing XSS in all user-facing content
+3. Implementing CSRF protection on state changes
+4. Using secure session and cookie configurations
+5. Applying security headers to all responses
+6. Consulting SAA for security guidance when needed
+
+Remember: In web development, security vulnerabilities can be exploited within minutes of deployment. Write secure code from the start.

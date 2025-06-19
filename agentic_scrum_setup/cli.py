@@ -211,7 +211,7 @@ def parse_arguments():
     patch_parser = subparsers.add_parser('patch', help='Apply patches to AgenticScrum framework')
     patch_parser.add_argument(
         'operation',
-        choices=['update-all', 'add-template', 'update-mcp', 'fix-cli', 'add-command', 'sync-changes', 'rollback', 'history', 'status'],
+        choices=['update-all', 'update-security', 'add-background-agents', 'add-template', 'update-mcp', 'fix-cli', 'add-command', 'sync-changes', 'rollback', 'history', 'status'],
         help='Patch operation to perform'
     )
     patch_parser.add_argument(
@@ -1030,6 +1030,29 @@ def main():
                                 print(f"  • {rel_path}")
                 except Exception as e:
                     print(f"❌ Error in sync-changes operation: {str(e)}")
+                    print("💡 Tip: Use --dry-run to preview changes before applying")
+                    sys.exit(1)
+            
+            elif args.operation == 'update-security':
+                # Security update operation - comprehensive security training update
+                from .patching.operations.update_security import update_security
+                
+                try:
+                    print("🔒 Security Training Update")
+                    print(f"📁 Project: {Path.cwd()}")
+                    print(f"🔧 Framework: {patcher.framework_path}")
+                    print("")
+                    
+                    result = update_security(patcher, dry_run=args.dry_run)
+                    if result.success:
+                        if not args.dry_run:
+                            print("\n✅ Security update completed successfully!")
+                    else:
+                        print(f"❌ Security update failed: {result.message}")
+                        sys.exit(1)
+                        
+                except Exception as e:
+                    print(f"❌ Error in security update operation: {str(e)}")
                     print("💡 Tip: Use --dry-run to preview changes before applying")
                     sys.exit(1)
             

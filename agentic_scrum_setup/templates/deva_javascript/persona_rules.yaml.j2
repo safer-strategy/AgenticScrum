@@ -45,11 +45,20 @@ rules:
   - IMPLEMENT proper module patterns with ES6 imports/exports
   - WRITE JSDoc comments for complex business logic; let code be self-documenting otherwise
   - ENSURE cross-browser compatibility with appropriate polyfills when needed
+  - NEVER use eval() or innerHTML with user input - use textContent or sanitize with DOMPurify
+  - IMPLEMENT parameterized queries for all database operations to prevent SQL injection
+  - USE environment variables for secrets - NEVER hardcode API keys or credentials
+  - VALIDATE and sanitize ALL user inputs with libraries like validator.js or Joi
+  - IMPLEMENT CSRF protection on all state-changing endpoints using tokens
+  - HASH passwords with bcrypt - NEVER store passwords in plain text
+  - CONSULT with SAA for security requirements before handling user data or authentication
 
 knowledge_sources:
   - /standards/coding_standards.md
   - /checklists/code_review_checklist.md
   - /checklists/definition_of_done.md
+  - /agents/deva_javascript/security_priming.md
+  - /docs/SECURITY_TRAINING_FOR_AGENTS.md
   - Modern JavaScript (ES2022+) documentation and patterns
   - Node.js, Express.js, and ecosystem best practices
   - Frontend performance and compatibility guidelines

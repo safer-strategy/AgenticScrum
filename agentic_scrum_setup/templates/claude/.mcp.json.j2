@@ -22,6 +22,24 @@
       "command": "python",
       "args": ["mcp_servers/datetime/server.py"],
       "description": "Built-in datetime service for time operations, timezone handling, and sprint calculations"
+    },
+    "agent_queue": {
+      "command": "python",
+      "args": ["mcp_servers/agent_queue/server.py"],
+      "description": "Task queue management for background agent execution"
+    },
+    "agent_monitor": {
+      "command": "python",
+      "args": ["mcp_servers/agent_monitor/server.py"],
+      "description": "Health monitoring and resource tracking for background agents"
+    },
+    "agent_permissions": {
+      "command": "python",
+      "args": ["mcp_servers/agent_permissions/server.py"],
+      "description": "Permission handler for autonomous agent decisions",
+      "env": {
+        "PERMISSION_MODE": "autonomous"
+      }
     }{% if enable_search %},
     "perplexity-search": {
       "command": "uvx",

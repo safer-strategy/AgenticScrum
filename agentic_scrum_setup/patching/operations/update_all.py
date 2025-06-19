@@ -69,8 +69,25 @@ def update_all(patcher, **kwargs) -> PatchApplication:
                     target_path.write_text(rendered)
                     updates_applied.append(f"✅ Added {mcp_file}")
                     mcp_updated = True
+                elif template_path.exists() and target_path.exists() and mcp_file == ".mcp.json":
+                    # Existing MCP config - merge instead of overwrite
+                    try:
+                        from ..utils.mcp_merger import MCPConfigMerger
+                        merger = MCPConfigMerger()
+                        
+                        project_name = _get_project_name(project_path)
+                        backup_path = merger.merge_configs_safely(template_path, target_path, project_name)
+                        
+                        if backup_path:
+                            updates_applied.append(f"✅ Updated {mcp_file} (preserved customizations, backup: {backup_path.name})")
+                            mcp_updated = True
+                        else:
+                            updates_applied.append(f"ℹ️  {mcp_file} is already up to date")
+                            
+                    except Exception as e:
+                        errors.append(f"⚠️  Could not merge {mcp_file}: {str(e)}")
                 elif template_path.exists() and target_path.exists():
-                    # Check if update is needed (simple content comparison)
+                    # Other files (.mcp-secrets.json.sample) - simple check
                     template_content = template_path.read_text()
                     current_content = target_path.read_text()
                     if len(template_content) != len(current_content):
@@ -157,7 +174,72 @@ def update_all(patcher, **kwargs) -> PatchApplication:
         except Exception as e:
             errors.append(f"❌ Error updating coding standards: {str(e)}")
         
-        # 5. Summary
+        # 5. Apply security updates
+        try:
+            # Import and run security update
+            from .update_security import update_security
+            
+            # Create a mock patcher with just what we need
+            class MockPatcher:
+                def __init__(self, fw_path):
+                    self.framework_path = fw_path
+            
+            mock_patcher = MockPatcher(patcher.framework_path)
+            
+            # Run security update in embedded mode (no duplicate output)
+            print("\n📋 Checking for security updates...")
+            from io import StringIO
+            import sys
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+            
+            try:
+                result = update_security(mock_patcher, dry_run=False)
+                output = sys.stdout.getvalue()
+                if "Successfully applied security training updates" in output:
+                    updates_applied.append("✅ Applied security training updates")
+                elif "No security updates needed" in output:
+                    updates_applied.append("ℹ️  Security features are up to date")
+                else:
+                    # Extract specific updates from output
+                    for line in output.split('\n'):
+                        if line.strip().startswith('✅'):
+                            updates_applied.append(line.strip())
+            finally:
+                sys.stdout = old_stdout
+                
+        except Exception as e:
+            errors.append(f"❌ Error applying security updates: {str(e)}")
+        
+        # 6. Apply background agent system
+        try:
+            # Import and run background agent update
+            from .add_background_agents import add_background_agents
+            
+            # Run background agent update in embedded mode
+            print("\n🤖 Checking for background agent system...")
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+            
+            try:
+                result = add_background_agents(mock_patcher, dry_run=False)
+                output = sys.stdout.getvalue()
+                if "Background Agent System Added Successfully" in output:
+                    updates_applied.append("✅ Added background agent execution system")
+                elif "background agent system already configured" in output:
+                    updates_applied.append("ℹ️  Background agent system is up to date")
+                else:
+                    # Extract specific updates from output
+                    for line in output.split('\n'):
+                        if line.strip().startswith('✅'):
+                            updates_applied.append(line.strip())
+            finally:
+                sys.stdout = old_stdout
+                
+        except Exception as e:
+            errors.append(f"❌ Error adding background agent system: {str(e)}")
+        
+        # 7. Summary
         if updates_applied and not errors:
             print("\n🎉 Project Update Summary:")
             for update in updates_applied:

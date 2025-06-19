@@ -1,0 +1,378 @@
+# Security Training for Developer Agents - {{ project_name }}
+
+## Overview
+
+This document serves as the primary security training resource for all developer agents. The Security Audit Agent (SAA) uses this guide to proactively train developers to write secure code from the start, preventing vulnerabilities rather than finding them after implementation.
+
+## Core Security Principles
+
+### 1. **Defense in Depth**
+- Never rely on a single security control
+- Implement multiple layers of protection
+- Assume each layer might fail
+
+### 2. **Least Privilege**
+- Grant minimum necessary permissions
+- Limit scope of access tokens and API keys
+- Use role-based access control (RBAC)
+
+### 3. **Fail Securely**
+- Errors should not expose sensitive information
+- Default to denying access when uncertain
+- Log security events for monitoring
+
+### 4. **Input Validation**
+- Never trust user input
+- Validate on both client and server
+- Use allowlists, not denylists
+
+## Language-Specific Security Patterns
+
+### Python Security Patterns
+
+#### SQL Injection Prevention
+```python
+# ❌ VULNERABLE - Never do this
+query = f"SELECT * FROM users WHERE email = '{user_email}'"
+
+# ✅ SECURE - Use parameterized queries
+from sqlalchemy import text
+
+# With SQLAlchemy
+query = text("SELECT * FROM users WHERE email = :email")
+result = db.execute(query, {"email": user_email})
+
+# With raw psycopg2
+cursor.execute(
+    "SELECT * FROM users WHERE email = %s",
+    (user_email,)
+)
+```
+
+#### Input Validation with Pydantic
+```python
+from pydantic import BaseModel, EmailStr, constr, validator
+from typing import Optional
+
+class UserRegistration(BaseModel):
+    email: EmailStr
+    password: constr(min_length=8, max_length=128)
+    username: constr(regex=r'^[a-zA-Z0-9_]+$', min_length=3, max_length=30)
+    age: Optional[int] = None
+    
+    @validator('password')
+    def password_complexity(cls, v):
+        if not any(char.isdigit() for char in v):
+            raise ValueError('Password must contain at least one digit')
+        if not any(char.isupper() for char in v):
+            raise ValueError('Password must contain at least one uppercase letter')
+        return v
+```
+
+#### Secure Password Handling
+```python
+import bcrypt
+import secrets
+
+# Password hashing
+def hash_password(password: str) -> str:
+    """Hash password using bcrypt with random salt."""
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+
+def verify_password(password: str, hashed: str) -> bool:
+    """Verify password against hash."""
+    return bcrypt.checkpw(
+        password.encode('utf-8'), 
+        hashed.encode('utf-8')
+    )
+
+# Secure token generation
+def generate_reset_token() -> str:
+    """Generate cryptographically secure random token."""
+    return secrets.token_urlsafe(32)
+```
+
+#### JWT Implementation
+```python
+from datetime import datetime, timedelta, timezone
+import jwt
+from typing import Optional
+
+SECRET_KEY = os.environ["JWT_SECRET_KEY"]
+ALGORITHM = "HS256"
+
+def create_access_token(user_id: int, expires_delta: timedelta = timedelta(minutes=15)):
+    """Create JWT with short expiration for access."""
+    expire = datetime.now(timezone.utc) + expires_delta
+    payload = {
+        "sub": str(user_id),
+        "exp": expire,
+        "iat": datetime.now(timezone.utc),
+        "type": "access"
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+def verify_token(token: str) -> Optional[dict]:
+    """Verify and decode JWT token."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        # Handle token expiration
+        return None
+    except jwt.InvalidTokenError:
+        # Handle invalid token
+        return None
+```
+
+### TypeScript/JavaScript Security Patterns
+
+#### XSS Prevention
+```typescript
+// ❌ VULNERABLE - Never insert raw HTML
+element.innerHTML = userInput;
+
+// ✅ SECURE - Use safe DOM methods
+element.textContent = userInput;
+
+// For React - automatically escapes
+const SafeComponent = () => <div>{userInput}</div>;
+
+// When HTML is needed, sanitize first
+import DOMPurify from 'dompurify';
+const sanitized = DOMPurify.sanitize(userHtml);
+```
+
+#### CSRF Protection
+```typescript
+// Express.js CSRF middleware
+import csrf from 'csurf';
+
+const csrfProtection = csrf({ cookie: true });
+
+app.get('/form', csrfProtection, (req, res) => {
+  res.render('form', { csrfToken: req.csrfToken() });
+});
+
+// In React components
+const FormComponent = ({ csrfToken }) => (
+  <form method="POST" action="/submit">
+    <input type="hidden" name="_csrf" value={csrfToken} />
+    {/* Other form fields */}
+  </form>
+);
+```
+
+#### Secure Cookie Handling
+```typescript
+// Express.js secure cookie configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: true,        // HTTPS only
+    httpOnly: true,      // No JS access
+    sameSite: 'strict',  // CSRF protection
+    maxAge: 3600000      // 1 hour
+  }
+}));
+```
+
+#### Input Validation with Zod
+```typescript
+import { z } from 'zod';
+
+const UserSchema = z.object({
+  email: z.string().email(),
+  password: z.string()
+    .min(8)
+    .max(128)
+    .regex(/[A-Z]/, 'Must contain uppercase')
+    .regex(/[0-9]/, 'Must contain number'),
+  username: z.string()
+    .min(3)
+    .max(30)
+    .regex(/^[a-zA-Z0-9_]+$/),
+  age: z.number().min(13).max(120).optional()
+});
+
+// Validate request
+export const validateUser = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const validated = UserSchema.parse(req.body);
+    req.body = validated;
+    next();
+  } catch (error) {
+    res.status(400).json({ error: 'Invalid input' });
+  }
+};
+```
+
+### General Security Patterns (All Languages)
+
+#### API Security Headers
+```typescript
+// Express.js security headers
+import helmet from 'helmet';
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+```
+
+#### Rate Limiting
+```python
+# FastAPI rate limiting
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+@app.post("/login")
+@limiter.limit("5/minute")
+async def login(request: Request, credentials: LoginCredentials):
+    # Login logic
+    pass
+```
+
+## Security Review Checklist for Developers
+
+### Before Writing Code
+- [ ] Review security requirements with SAA
+- [ ] Identify sensitive data flows
+- [ ] Plan input validation strategy
+- [ ] Design authentication/authorization
+- [ ] Consider rate limiting needs
+
+### While Writing Code
+- [ ] Validate all inputs
+- [ ] Use parameterized queries
+- [ ] Implement proper error handling
+- [ ] Add security headers
+- [ ] Use secure random generation
+- [ ] Encrypt sensitive data
+
+### After Writing Code
+- [ ] Run security linters
+- [ ] Test with malicious inputs
+- [ ] Verify error messages don't leak info
+- [ ] Check for hardcoded secrets
+- [ ] Review with SAA
+
+## Common Vulnerability Prevention
+
+### 1. Injection Attacks
+- **SQL Injection**: Use parameterized queries
+- **NoSQL Injection**: Validate input types
+- **Command Injection**: Avoid shell commands, use libraries
+- **LDAP Injection**: Escape special characters
+
+### 2. Broken Authentication
+- **Weak Passwords**: Enforce complexity requirements
+- **Session Fixation**: Regenerate session IDs
+- **Brute Force**: Implement rate limiting
+- **Credential Stuffing**: Use MFA
+
+### 3. Sensitive Data Exposure
+- **Encryption**: Use TLS 1.2+
+- **At Rest**: Encrypt databases and files
+- **Logging**: Never log passwords or tokens
+- **Error Messages**: Generic messages only
+
+### 4. XML External Entities (XXE)
+```python
+# Disable XML external entity processing
+import defusedxml.ElementTree as ET
+tree = ET.parse(xml_file)
+```
+
+### 5. Broken Access Control
+- Verify permissions on every request
+- Use deny-by-default
+- Log access attempts
+- Implement proper RBAC
+
+### 6. Security Misconfiguration
+- Remove default accounts
+- Disable unnecessary features
+- Keep frameworks updated
+- Use secure defaults
+
+### 7. Cross-Site Scripting (XSS)
+- Escape all output
+- Use Content Security Policy
+- Validate input types
+- Sanitize HTML content
+
+### 8. Insecure Deserialization
+```python
+# Use safe JSON parsing
+import json
+data = json.loads(user_input)  # Safe
+
+# Avoid pickle with untrusted data
+# data = pickle.loads(user_input)  # DANGEROUS
+```
+
+### 9. Using Components with Known Vulnerabilities
+- Regular dependency updates
+- Security scanning in CI/CD
+- Monitor security advisories
+- Use tools like Dependabot
+
+### 10. Insufficient Logging & Monitoring
+- Log authentication attempts
+- Monitor for anomalies
+- Alert on security events
+- Retain logs securely
+
+## Integration with SAA
+
+### Pre-Development Consultation
+When assigned a new story, developers should:
+1. Request security requirements from SAA
+2. Review relevant security patterns
+3. Discuss potential security risks
+4. Plan security testing approach
+
+### During Development
+- Apply security patterns consistently
+- Ask SAA for guidance when uncertain
+- Use security-focused code snippets
+- Implement defense in depth
+
+### Post-Development Review
+- SAA validates security implementation
+- Developers address findings immediately
+- Security patterns are documented
+- Lessons learned are shared
+
+## Continuous Learning
+
+The SAA maintains a memory of:
+- Successful security implementations
+- Common vulnerability patterns
+- Effective prevention strategies
+- Project-specific security requirements
+
+Developers should regularly consult with SAA to stay updated on the latest security threats and prevention techniques specific to your technology stack.
+
+---
+
+*This document is regularly updated by the SAA based on new threats, vulnerabilities discovered, and lessons learned from security reviews.*

@@ -241,6 +241,15 @@ function show_help() {
   echo "Framework Commands:"
   echo -e "  ${C_YELLOW}patch${C_RESET} <operation> - Apply patches to AgenticScrum framework"
   echo -e "  ${C_YELLOW}patch-status${C_RESET}      - Show AgenticScrum patching system status"
+  echo ""
+  echo "Background Agent Commands:"
+  echo -e "  ${C_YELLOW}agent-run${C_RESET} <type> <id> <prompt> - Run story in background agent"
+  echo -e "  ${C_YELLOW}agent-status${C_RESET}      - Show background agent status"
+  echo -e "  ${C_YELLOW}agent${C_RESET} list        - List active background agents"
+  echo -e "  ${C_YELLOW}agent${C_RESET} queue       - Show task queue"
+  echo -e "  ${C_YELLOW}agent${C_RESET} assign      - Assign story to agent"
+  echo -e "  ${C_YELLOW}agent${C_RESET} terminate   - Terminate agent session"
+  echo ""
   echo -e "  ${C_YELLOW}help${C_RESET}              - Show this help message."
   echo ""
   echo "Patch Operations:"
@@ -321,6 +330,152 @@ function test_mcp_servers() {
   fi
 }
 
+# --- Background Agent Functions ---
+function manage_background_agents() {
+  local cmd="$1"
+  shift
+  
+  case "$cmd" in
+    list)
+      info "Listing background agents..."
+      if command -v claude >/dev/null 2>&1; then
+        claude -p "List all background agents" \
+          --allowedTools "mcp__agent_monitor__list_agents" \
+          --mcp-config .mcp.json \
+          --output-format json 2>/dev/null | jq -r '.result' || \
+          error "Failed to list agents"
+      else
+        error "Claude Code CLI not found. Install with: npm install -g @anthropic-ai/claude-code"
+      fi
+      ;;
+    
+    queue)
+      info "Showing task queue..."
+      if command -v claude >/dev/null 2>&1; then
+        claude -p "Show task queue with pending and active tasks" \
+          --allowedTools "mcp__agent_queue__list_tasks,mcp__agent_queue__get_queue_stats" \
+          --mcp-config .mcp.json \
+          --output-format json 2>/dev/null | jq -r '.result' || \
+          error "Failed to show queue"
+      else
+        error "Claude Code CLI not found"
+      fi
+      ;;
+    
+    assign)
+      local story_id="$1"
+      local agent_type="$2"
+      if [[ -z "$story_id" || -z "$agent_type" ]]; then
+        error "Usage: ./init.sh agent assign <story_id> <agent_type>"
+        return 1
+      fi
+      
+      info "Assigning $story_id to $agent_type..."
+      if command -v claude >/dev/null 2>&1; then
+        claude -p "Assign story $story_id to agent type $agent_type" \
+          --allowedTools "mcp__agent_queue__assign_story" \
+          --mcp-config .mcp.json \
+          --output-format json 2>/dev/null | jq -r '.result' || \
+          error "Failed to assign story"
+      else
+        error "Claude Code CLI not found"
+      fi
+      ;;
+    
+    terminate)
+      local session_id="$1"
+      if [[ -z "$session_id" ]]; then
+        error "Usage: ./init.sh agent terminate <session_id>"
+        return 1
+      fi
+      
+      info "Terminating agent $session_id..."
+      if command -v claude >/dev/null 2>&1; then
+        claude -p "Terminate agent session $session_id" \
+          --allowedTools "mcp__agent_monitor__terminate_agent" \
+          --mcp-config .mcp.json \
+          --output-format json 2>/dev/null | jq -r '.result' || \
+          error "Failed to terminate agent"
+      else
+        error "Claude Code CLI not found"
+      fi
+      ;;
+    
+    *)
+      error "Unknown agent command: $cmd"
+      echo "Usage: ./init.sh agent [list|queue|assign|terminate]"
+      ;;
+  esac
+}
+
+function run_background_agent() {
+  local agent_type="$1"
+  local story_id="$2"
+  local story_prompt="$3"
+  
+  if [[ -z "$agent_type" || -z "$story_id" || -z "$story_prompt" ]]; then
+    error "Usage: ./init.sh agent-run <agent_type> <story_id> <story_prompt>"
+    echo ""
+    echo "Example:"
+    echo "  ./init.sh agent-run deva_python STORY_001 'Implement user authentication'"
+    return 1
+  fi
+  
+  # Check if runner script exists
+  local runner_script="scripts/run_background_agent.sh"
+  if [[ ! -f "$runner_script" ]]; then
+    error "Background agent runner not found at $runner_script"
+    info "Run './init.sh patch update-all' to get the latest framework updates"
+    return 1
+  fi
+  
+  info "Starting background agent..."
+  echo "  Agent Type: $agent_type"
+  echo "  Story ID: $story_id"
+  echo "  Story: $story_prompt"
+  echo ""
+  
+  # Run in background with nohup
+  nohup "$runner_script" "$agent_type" "$story_id" "$story_prompt" > /dev/null 2>&1 &
+  local pid=$!
+  
+  success "Background agent started with PID $pid"
+  echo ""
+  echo "To monitor progress:"
+  echo "  ./init.sh agent-status"
+  echo "  ./init.sh agent list"
+  echo "  tail -f logs/background_agents/${agent_type}_${story_id}_*.log"
+}
+
+function show_agent_status() {
+  info "Background Agent Status"
+  echo ""
+  
+  # Show active agents
+  echo -e "${C_BOLD}Active Agents:${C_RESET}"
+  if command -v claude >/dev/null 2>&1; then
+    claude -p "Show active background agents with their current status" \
+      --allowedTools "mcp__agent_monitor__list_agents" \
+      --mcp-config .mcp.json \
+      --output-format json 2>/dev/null | jq -r '.result' || \
+      echo "  No active agents or MCP server not running"
+  else
+    echo "  Claude Code CLI not found"
+  fi
+  
+  echo ""
+  echo -e "${C_BOLD}Queue Statistics:${C_RESET}"
+  if command -v claude >/dev/null 2>&1; then
+    claude -p "Show queue statistics" \
+      --allowedTools "mcp__agent_queue__get_queue_stats" \
+      --mcp-config .mcp.json \
+      --output-format json 2>/dev/null | jq -r '.result' || \
+      echo "  No queue data available"
+  else
+    echo "  Claude Code CLI not found"
+  fi
+}
+
 # --- Main Dispatcher ---
 function main() {
   # Always load environment variables if available
@@ -363,6 +518,20 @@ function main() {
       info "{{ project_name }} - AgenticScrum Framework Patching Status"
       echo ""
       run_framework_patch status
+      ;;
+    agent)
+      # Background agent management
+      shift
+      manage_background_agents "$@"
+      ;;
+    agent-run)
+      # Run a specific story in background
+      shift
+      run_background_agent "$@"
+      ;;
+    agent-status)
+      # Quick agent status check
+      show_agent_status
       ;;
     help|*)
       show_help

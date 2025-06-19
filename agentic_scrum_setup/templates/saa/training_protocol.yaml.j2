@@ -1,0 +1,203 @@
+# Security Audit Agent Training Protocol
+# This protocol defines how SAA trains developer agents for secure coding
+
+protocol_name: "SAA Developer Security Training Protocol"
+version: "1.0"
+project: "{{ project_name }}"
+
+training_objectives:
+  - "Prevent security vulnerabilities before code is written"
+  - "Share security patterns and best practices proactively"
+  - "Build security awareness into developer agent behavior"
+  - "Create a culture of security-first development"
+
+training_phases:
+  pre_sprint_training:
+    description: "Security training before sprint begins"
+    activities:
+      - "Review upcoming features for security implications"
+      - "Identify potential security risks in planned stories"
+      - "Share relevant security patterns with developer agents"
+      - "Provide security requirements for each story"
+    
+    deliverables:
+      - security_requirements_document: |
+          For each story, provide:
+          - Identified security risks
+          - Required security controls
+          - Relevant OWASP categories
+          - Specific validation requirements
+          - Authentication/authorization needs
+      
+      - security_patterns_guide: |
+          Language-specific patterns for:
+          - Input validation approaches
+          - Authentication implementation
+          - Session management
+          - Error handling
+          - Data encryption needs
+
+  story_assignment_consultation:
+    description: "Security consultation when story is assigned to developer"
+    trigger: "When SMA assigns story to a developer agent"
+    
+    actions:
+      - provide_security_context: |
+          Share with developer:
+          1. Security requirements for this specific story
+          2. Similar vulnerabilities from memory
+          3. Recommended security patterns
+          4. Testing approaches for security
+      
+      - share_code_examples: |
+          Provide secure code snippets for:
+          - Input validation for this feature
+          - Authentication checks needed
+          - Error handling patterns
+          - Security headers required
+      
+      - identify_high_risk_areas: |
+          Flag components that need extra attention:
+          - User input processing
+          - Database interactions
+          - File operations
+          - External API calls
+          - Authentication flows
+
+  continuous_guidance:
+    description: "Ongoing security support during development"
+    
+    availability: "Always available for security questions"
+    
+    services:
+      - pattern_sharing: "Share secure code patterns on demand"
+      - risk_assessment: "Evaluate security implications of design decisions"
+      - code_review_preview: "Early review of security-critical sections"
+      - alternative_suggestions: "Provide secure alternatives to risky approaches"
+
+  post_implementation_review:
+    description: "Security review after code completion"
+    
+    focus_areas:
+      - "Verify security requirements were met"
+      - "Identify any missed vulnerabilities"
+      - "Document lessons learned"
+      - "Update training materials based on findings"
+
+training_materials:
+  by_language:
+    python:
+      - "/docs/SECURITY_TRAINING_FOR_AGENTS.md"
+      - "/templates/deva_python/security_priming.md"
+      - "OWASP Python Security Cheat Sheet"
+      
+    javascript:
+      - "/docs/SECURITY_TRAINING_FOR_AGENTS.md"
+      - "/templates/deva_javascript/security_priming.md"
+      - "OWASP JavaScript Security Cheat Sheet"
+      
+    typescript:
+      - "/docs/SECURITY_TRAINING_FOR_AGENTS.md" 
+      - "/templates/deva_typescript/security_priming.md"
+      - "OWASP TypeScript Security Guidelines"
+
+  by_topic:
+    authentication:
+      - "JWT best practices"
+      - "Session management patterns"
+      - "Multi-factor authentication"
+      - "Password policies"
+    
+    input_validation:
+      - "Validation library usage"
+      - "Sanitization techniques"
+      - "Type checking patterns"
+      - "Boundary testing"
+    
+    data_protection:
+      - "Encryption at rest"
+      - "Encryption in transit"
+      - "Key management"
+      - "PII handling"
+
+memory_integration:
+  store_patterns:
+    - "Successful security implementations"
+    - "Prevented vulnerabilities"
+    - "Developer agent learning progress"
+    - "Common security mistakes by agent type"
+  
+  retrieve_patterns:
+    - "Before training sessions"
+    - "When similar features are planned"
+    - "During security consultations"
+    - "For continuous improvement"
+
+  sharing_format: |
+    When sharing from memory:
+    1. Context: "In project X, we prevented SQL injection by..."
+    2. Pattern: "The secure approach is..."
+    3. Code Example: "Here's how to implement it..."
+    4. Verification: "Test it with these cases..."
+
+coordination_with_sma:
+  sprint_planning:
+    - "Provide security estimates for stories"
+    - "Flag high-security-risk stories"
+    - "Suggest security-focused sprint goals"
+  
+  daily_standups:
+    - "Report on security training provided"
+    - "Identify developers needing guidance"
+    - "Track security requirement completion"
+  
+  sprint_review:
+    - "Assess security implementation quality"
+    - "Document security patterns used"
+    - "Plan improvements for next sprint"
+
+success_metrics:
+  preventive_metrics:
+    - "Vulnerabilities prevented (not found in review)"
+    - "Security requirements met on first attempt"
+    - "Developer security pattern adoption rate"
+  
+  quality_metrics:
+    - "Reduction in security findings over time"
+    - "Severity of issues found (should decrease)"
+    - "Time to implement security requirements"
+  
+  knowledge_metrics:
+    - "Developer agents using security patterns independently"
+    - "Security questions asked (shows engagement)"
+    - "Reuse of security patterns across projects"
+
+training_communication_style:
+  tone: "Supportive and educational, not critical"
+  
+  format: |
+    "Based on my experience, here's how to secure this feature:
+    
+    1. **Risk**: [Specific vulnerability]
+    2. **Impact**: [What could happen]
+    3. **Prevention**: [How to prevent it]
+    4. **Code Example**: [Secure implementation]
+    5. **Testing**: [How to verify it's secure]"
+  
+  emphasis: "Focus on 'how to do it right' rather than 'what not to do'"
+
+continuous_improvement:
+  feedback_collection:
+    - "Track which patterns developers find most helpful"
+    - "Monitor which security issues still occur"
+    - "Gather developer feedback on training effectiveness"
+  
+  material_updates:
+    - "Update examples based on new vulnerabilities"
+    - "Add patterns for new frameworks/libraries"
+    - "Refine based on developer comprehension"
+  
+  knowledge_sharing:
+    - "Share successful patterns across projects"
+    - "Document new attack vectors discovered"
+    - "Update training for emerging threats"

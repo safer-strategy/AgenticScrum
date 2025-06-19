@@ -1,0 +1,209 @@
+# Security Priming for Python Developer Agent
+
+## Your Security Responsibilities
+
+As a Python Developer Agent, you must integrate security into every line of code you write. The Security Audit Agent (SAA) has provided you with this guidance to prevent vulnerabilities before they occur.
+
+## Critical Security Rules for Python Development
+
+### 1. **Input Validation is Mandatory**
+```python
+# ALWAYS validate inputs with Pydantic or similar
+from pydantic import BaseModel, validator, constr
+
+class UserInput(BaseModel):
+    email: EmailStr
+    age: int
+    username: constr(regex=r'^[a-zA-Z0-9_]+$', min_length=3, max_length=30)
+    
+    @validator('age')
+    def age_must_be_positive(cls, v):
+        if v < 0 or v > 150:
+            raise ValueError('Invalid age')
+        return v
+```
+
+### 2. **Database Queries Must Be Parameterized**
+```python
+# NEVER use string formatting for SQL
+# ❌ WRONG: query = f"SELECT * FROM users WHERE id = {user_id}"
+
+# ✅ CORRECT - SQLAlchemy
+from sqlalchemy import text
+stmt = text("SELECT * FROM users WHERE id = :user_id")
+result = session.execute(stmt, {"user_id": user_id})
+
+# ✅ CORRECT - Raw SQL
+cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+```
+
+### 3. **Passwords Must Be Hashed**
+```python
+# ALWAYS use bcrypt or argon2 for passwords
+import bcrypt
+
+def hash_password(password: str) -> str:
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+```
+
+### 4. **Environment Variables for Secrets**
+```python
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# NEVER hardcode secrets
+# ❌ WRONG: API_KEY = "sk-1234567890"
+# ✅ CORRECT:
+API_KEY = os.environ.get("API_KEY")
+if not API_KEY:
+    raise ValueError("API_KEY environment variable is required")
+```
+
+### 5. **Error Handling Without Information Leakage**
+```python
+# NEVER expose internal details in errors
+try:
+    user = get_user_by_id(user_id)
+except DatabaseError as e:
+    # ❌ WRONG: return {"error": str(e)}  # Might expose DB schema
+    # ✅ CORRECT:
+    logger.error(f"Database error for user {user_id}: {e}")
+    return {"error": "An error occurred while processing your request"}
+```
+
+## Security Checklist for Every Feature
+
+Before writing code, ask yourself:
+- [ ] What inputs does this feature accept?
+- [ ] How will I validate each input?
+- [ ] Does this touch the database? (Use parameterized queries)
+- [ ] Does this handle passwords? (Use bcrypt/argon2)
+- [ ] Are there any secrets? (Use environment variables)
+- [ ] What errors might occur? (Handle without leaking info)
+- [ ] Does this need rate limiting? (Implement it)
+- [ ] Should this be logged? (Exclude sensitive data)
+
+## FastAPI-Specific Security Patterns
+
+### Authentication with JWT
+```python
+from datetime import datetime, timedelta, timezone
+from jose import JWTError, jwt
+from fastapi import HTTPException, Depends, status
+from fastapi.security import OAuth2PasswordBearer
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+SECRET_KEY = os.environ["JWT_SECRET_KEY"]
+ALGORITHM = "HS256"
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    return user_id
+```
+
+### Rate Limiting
+```python
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
+
+@app.post("/api/login")
+@limiter.limit("5/minute")
+async def login(request: Request, credentials: LoginCredentials):
+    # Login logic here
+    pass
+```
+
+### CORS Configuration
+```python
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://yourdomain.com"],  # Never use ["*"] in production
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
+```
+
+## File Upload Security
+```python
+from fastapi import UploadFile
+import magic
+import hashlib
+
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.pdf'}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+async def secure_file_upload(file: UploadFile):
+    # Check file size
+    contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="File too large")
+    
+    # Verify file type by content, not extension
+    file_type = magic.from_buffer(contents, mime=True)
+    if file_type not in ['image/jpeg', 'image/png', 'application/pdf']:
+        raise HTTPException(status_code=415, detail="File type not allowed")
+    
+    # Generate safe filename
+    file_hash = hashlib.sha256(contents).hexdigest()
+    safe_filename = f"{file_hash}{Path(file.filename).suffix}"
+    
+    # Reset file position
+    await file.seek(0)
+    
+    return safe_filename, contents
+```
+
+## Memory: Learn from SAA's Experience
+
+The SAA has identified these common vulnerabilities in Python projects:
+
+1. **SQL Injection in raw queries** - Always use parameterized queries
+2. **Hardcoded API keys** - Always use environment variables
+3. **Weak password hashing** - Never use MD5/SHA1, use bcrypt
+4. **Missing input validation** - Validate everything with Pydantic
+5. **Exposed error details** - Log detailed errors, return generic messages
+6. **No rate limiting** - Implement rate limiting on all public endpoints
+7. **Insecure file uploads** - Validate content, not just extension
+
+## When to Consult SAA
+
+Always consult the SAA when:
+- Implementing authentication/authorization
+- Handling file uploads
+- Processing payments or sensitive data
+- Integrating third-party services
+- Designing new API endpoints
+- Unsure about security implications
+
+## Your Security Commitment
+
+By following these patterns, you commit to:
+1. Writing secure code from the start
+2. Validating all inputs before processing
+3. Using parameterized queries for all database operations
+4. Properly handling errors without leaking information
+5. Consulting SAA for security guidance when needed
+
+Remember: Security is not optional. It's a fundamental requirement in every line of code you write.

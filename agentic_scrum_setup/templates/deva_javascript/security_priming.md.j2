@@ -1,0 +1,430 @@
+# Security Priming for JavaScript Developer Agent
+
+## Your Security Responsibilities
+
+As a JavaScript Developer Agent, you must ensure every line of code is secure by default. The Security Audit Agent (SAA) provides this guidance to prevent vulnerabilities before they occur.
+
+## Critical Security Rules for JavaScript Development
+
+### 1. **Input Validation Without TypeScript**
+```javascript
+// Use validation libraries even without TypeScript
+const validator = require('validator');
+const Joi = require('joi');
+
+// Joi schema validation
+const userSchema = Joi.object({
+  email: Joi.string().email().required(),
+  age: Joi.number().min(0).max(150).required(),
+  username: Joi.string().alphanum().min(3).max(30).required(),
+  password: Joi.string().min(8).pattern(/[A-Z]/).pattern(/[0-9]/).required()
+});
+
+// Express middleware for validation
+const validateRequest = (schema) => {
+  return (req, res, next) => {
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ 
+        error: 'Invalid input',
+        details: process.env.NODE_ENV === 'development' ? error.details : undefined
+      });
+    }
+    req.body = value;
+    next();
+  };
+};
+
+// Manual validation for simple cases
+const isValidEmail = (email) => {
+  return validator.isEmail(email);
+};
+
+const sanitizeInput = (input) => {
+  return validator.escape(input);
+};
+```
+
+### 2. **XSS Prevention**
+```javascript
+// DOM manipulation - always use safe methods
+// ❌ WRONG:
+// element.innerHTML = userInput;
+// document.write(userInput);
+// eval(userCode);
+
+// ✅ CORRECT:
+element.textContent = userInput; // Safe for text
+element.setAttribute('data-value', sanitizeInput(userInput));
+
+// If HTML is needed, sanitize it
+const DOMPurify = require('isomorphic-dompurify');
+
+const sanitizeHTML = (dirty) => {
+  return DOMPurify.sanitize(dirty, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p'],
+    ALLOWED_ATTR: ['href', 'title']
+  });
+};
+
+// Template literals safety
+const username = sanitizeInput(req.body.username);
+const safeHTML = `<h1>Welcome, ${username}</h1>`; // Still sanitize!
+```
+
+### 3. **Secure Authentication**
+```javascript
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+// Password hashing
+const hashPassword = async (password) => {
+  const saltRounds = 10;
+  return await bcrypt.hash(password, saltRounds);
+};
+
+const verifyPassword = async (password, hash) => {
+  return await bcrypt.compare(password, hash);
+};
+
+// JWT implementation
+const generateTokens = (userId) => {
+  const accessToken = jwt.sign(
+    { userId, type: 'access' },
+    process.env.JWT_ACCESS_SECRET,
+    { expiresIn: '15m' }
+  );
+  
+  const refreshToken = jwt.sign(
+    { userId, type: 'refresh' },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: '7d' }
+  );
+  
+  return { accessToken, refreshToken };
+};
+
+// Verify tokens
+const verifyAccessToken = (token) => {
+  try {
+    return jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+  } catch (error) {
+    throw new Error('Invalid token');
+  }
+};
+```
+
+### 4. **Environment Variables**
+```javascript
+// Load environment variables
+require('dotenv').config();
+
+// NEVER hardcode secrets
+// ❌ WRONG:
+// const API_KEY = "sk-1234567890";
+// const DB_PASSWORD = "admin123";
+
+// ✅ CORRECT:
+const API_KEY = process.env.API_KEY;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+
+// Validate required environment variables
+const requiredEnvVars = ['API_KEY', 'DB_PASSWORD', 'JWT_SECRET'];
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    throw new Error(`Missing required environment variable: ${envVar}`);
+  }
+}
+```
+
+### 5. **SQL Injection Prevention**
+```javascript
+// Using parameterized queries with different libraries
+
+// MySQL2
+const mysql = require('mysql2/promise');
+
+const getUser = async (userId) => {
+  // ❌ WRONG:
+  // const query = `SELECT * FROM users WHERE id = ${userId}`;
+  
+  // ✅ CORRECT:
+  const [rows] = await connection.execute(
+    'SELECT * FROM users WHERE id = ?',
+    [userId]
+  );
+  return rows[0];
+};
+
+// PostgreSQL with pg
+const { Pool } = require('pg');
+const pool = new Pool();
+
+const getUserByEmail = async (email) => {
+  const result = await pool.query(
+    'SELECT * FROM users WHERE email = $1',
+    [email]
+  );
+  return result.rows[0];
+};
+
+// MongoDB - be careful with query injection
+const sanitizeMongoQuery = (query) => {
+  // Remove dangerous operators
+  if (typeof query === 'object') {
+    for (const key in query) {
+      if (key.startsWith('$')) {
+        delete query[key];
+      }
+    }
+  }
+  return query;
+};
+```
+
+### 6. **Express Security Configuration**
+```javascript
+const express = require('express');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+
+const app = express();
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Avoid unsafe-inline in production
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+  }
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP'
+});
+
+app.use('/api/', limiter);
+
+// Stricter limiter for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: true
+});
+
+app.use('/api/auth/', authLimiter);
+
+// Prevent NoSQL injection
+app.use(mongoSanitize());
+
+// Body parsing with limits
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+```
+
+### 7. **Session Security**
+```javascript
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    touchAfter: 24 * 3600 // lazy session update
+  }),
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    httpOnly: true, // No JS access
+    maxAge: 1000 * 60 * 60 * 24, // 24 hours
+    sameSite: 'strict' // CSRF protection
+  },
+  name: 'sessionId' // Don't use default name
+}));
+```
+
+### 8. **CSRF Protection**
+```javascript
+const csrf = require('csurf');
+
+// Configure CSRF
+const csrfProtection = csrf({ 
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  }
+});
+
+// Apply to routes that change state
+app.post('/api/transfer', csrfProtection, (req, res) => {
+  // CSRF token is automatically validated
+  res.json({ success: true });
+});
+
+// Provide token to frontend
+app.get('/api/csrf-token', csrfProtection, (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+```
+
+## Frontend JavaScript Security
+
+### Safe DOM Manipulation
+```javascript
+// Create elements safely
+const createUserCard = (userData) => {
+  const card = document.createElement('div');
+  card.className = 'user-card';
+  
+  const name = document.createElement('h3');
+  name.textContent = userData.name; // Safe - textContent escapes
+  
+  const bio = document.createElement('p');
+  bio.textContent = userData.bio; // Safe
+  
+  card.appendChild(name);
+  card.appendChild(bio);
+  
+  return card;
+};
+
+// Event handler safety
+document.addEventListener('click', (e) => {
+  if (e.target.matches('.delete-btn')) {
+    const itemId = e.target.dataset.id;
+    // Validate itemId before use
+    if (/^[a-zA-Z0-9]+$/.test(itemId)) {
+      deleteItem(itemId);
+    }
+  }
+});
+```
+
+### Secure AJAX Requests
+```javascript
+// Axios setup with security
+const axios = require('axios');
+
+// Add CSRF token to all requests
+axios.defaults.headers.common['X-CSRF-Token'] = getCsrfToken();
+
+// Request interceptor for auth
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor for error handling
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Don't expose detailed errors to user
+    console.error('API Error:', error);
+    
+    if (error.response?.status === 401) {
+      // Handle unauthorized
+      window.location.href = '/login';
+    }
+    
+    return Promise.reject({
+      message: 'An error occurred. Please try again.'
+    });
+  }
+);
+```
+
+### File Upload Security
+```javascript
+const multer = require('multer');
+const path = require('path');
+const crypto = require('crypto');
+
+// Configure multer safely
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/temp/');
+  },
+  filename: (req, file, cb) => {
+    // Generate safe filename
+    const uniqueName = crypto.randomBytes(16).toString('hex');
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${uniqueName}${ext}`);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // Whitelist file types
+  const allowedTypes = /jpeg|jpg|png|gif|pdf/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+  
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Invalid file type'));
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+    files: 1
+  },
+  fileFilter: fileFilter
+});
+```
+
+## Common Vulnerabilities to Avoid
+
+1. **eval() and Function() constructor** - Never use with user input
+2. **innerHTML with user data** - Use textContent or sanitize
+3. **Hardcoded secrets** - Use environment variables
+4. **SQL/NoSQL injection** - Use parameterized queries
+5. **Missing HTTPS** - Always use TLS in production
+6. **Weak session config** - Set secure, httpOnly, sameSite
+7. **No rate limiting** - Protect all endpoints
+8. **Exposed error details** - Log internally, show generic messages
+
+## When to Consult SAA
+
+Contact SAA when:
+- Implementing authentication/authorization
+- Handling file uploads
+- Processing payments
+- Using new third-party libraries
+- Designing API endpoints
+- Handling sensitive data
+- Unsure about security implications
+
+## Your Security Commitment
+
+By following these patterns, you commit to:
+1. Validating and sanitizing all inputs
+2. Using parameterized database queries
+3. Implementing proper authentication
+4. Applying security headers
+5. Following the principle of least privilege
+6. Consulting SAA when needed
+
+Remember: JavaScript's flexibility makes it easy to introduce vulnerabilities. Always code defensively and assume all input is malicious until proven otherwise.

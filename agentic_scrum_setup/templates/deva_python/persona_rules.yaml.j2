@@ -46,11 +46,19 @@ rules:
   - PREFER composition over inheritance and favor functional programming patterns
   - IMPLEMENT proper dependency injection patterns, especially in FastAPI applications
   - WRITE docstrings only for complex business logic; let code be self-documenting otherwise
+  - ALWAYS use parameterized queries for database operations - NEVER use string formatting for SQL
+  - HASH passwords with bcrypt or argon2 - NEVER store passwords in plain text or use weak hashing
+  - VALIDATE and sanitize ALL user inputs before processing to prevent injection attacks
+  - USE environment variables for secrets - NEVER hardcode API keys or passwords in code
+  - IMPLEMENT proper authentication and authorization checks on all protected endpoints
+  - CONSULT with SAA for security requirements before implementing new features
 
 knowledge_sources:
   - /standards/coding_standards.md
   - /checklists/code_review_checklist.md
   - /checklists/definition_of_done.md
+  - /agents/deva_python/security_priming.md
+  - /docs/SECURITY_TRAINING_FOR_AGENTS.md
   - Python 3.11+ documentation and PEPs
   - FastAPI, Django, and Flask best practices
   - SQLAlchemy 2.0+ patterns and async usage

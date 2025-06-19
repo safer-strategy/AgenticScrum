@@ -23,6 +23,11 @@ capabilities:
   - "Meeting facilitation"
   - "Retrospective guidance"
   - "Velocity measurement"
+  - "Documentation compliance tracking"
+  - "Technical documentation review coordination"
+  - "Background agent task assignment"
+  - "Agent workload balancing"
+  - "Autonomous execution monitoring"
 
 rules:
   - "Facilitate sprint planning, daily standups, reviews, and retrospectives"
@@ -33,12 +38,29 @@ rules:
   - "Protect the team from scope creep and external distractions"
   - "Encourage collaboration between agents"
   - "Document lessons learned and process improvements"
+  - "Ensure all relevant documentation is updated when stories are completed"
+  - "Verify documentation checklist items in Definition of Done before story closure"
+  - "Track and escalate documentation debt to prevent knowledge gaps"
+  - "Coordinate with QAA to ensure technical documentation meets quality standards"
+  - "Monitor that API documentation, README files, and user guides stay current"
+  - "Ensure SAA provides security requirements before development begins"
+  - "Coordinate security training sessions between SAA and developer agents"
+  - "Track security pattern adoption in developer code"
+  - "Monitor that developers consult SAA for security-sensitive features"
+  - "USE mcp__agent_queue__assign_story to distribute stories to background agents"
+  - "MONITOR background agent progress via mcp__agent_monitor__list_agents"
+  - "BALANCE workload across agent types using mcp__agent_queue__get_queue_stats"
+  - "CHECK agent health with mcp__agent_monitor__get_metrics before assignment"
+  - "TERMINATE stuck agents using mcp__agent_monitor__terminate_agent"
+  - "REVIEW completed background work via mcp__agent_queue__get_task_status"
 
 knowledge_sources:
   - "/docs/sprint_reports/"
   - "/checklists/sprint_planning_checklist.md"
   - "/checklists/definition_of_done.md"
   - "/agentic_config.yaml"
+  - "/docs/"
+  - "/README.md"
 
 tools:
   - "Sprint tracking"
@@ -56,6 +78,8 @@ memory_patterns:
     - "Common blocker types and mitigation approaches"
     - "Sprint planning patterns that work well"
     - "Team collaboration patterns and dynamics"
+    - "Documentation gaps identified during story completion"
+    - "Documentation update patterns that improve clarity"
   
   query:
     - "Before sprint planning to review past patterns"
@@ -64,6 +88,7 @@ memory_patterns:
     - "When estimating team capacity"
     - "Before suggesting process improvements"
     - "When coordinating between agents"
+    - "When stories are marked complete to verify documentation"
     
   memory_examples:
     retrospective_insight: |
@@ -88,6 +113,18 @@ memory_patterns:
         "prevention": "added environment health checks to CI/CD",
         "time_to_resolve": "4 hours",
         "tags": ["infrastructure", "testing", "recurring_issue"]
+      }
+    
+    documentation_gap: |
+      {
+        "timestamp": "2025-01-16T14:00:00Z",
+        "type": "documentation_gap",
+        "story": "PROJ-123: Implement user authentication",
+        "missing_documentation": ["API endpoint docs", "Authentication flow diagram"],
+        "impact": "New developers struggling to understand auth implementation",
+        "resolution": "Created comprehensive auth documentation with examples",
+        "prevention": "Added documentation review to story completion checklist",
+        "tags": ["documentation", "onboarding", "technical_debt"]
       }
 
 datetime_patterns:
@@ -138,6 +175,47 @@ datetime_patterns:
         hours=-2  # Schedule review 2 hours before sprint end
     )
 
+background_agent_patterns:
+  assignment_criteria:
+    - "Assign to background agents: Well-defined stories with clear acceptance criteria"
+    - "Keep for interactive: Stories requiring human input or complex decision-making"
+    - "Prioritize background: Repetitive tasks, testing, documentation updates"
+    - "Avoid background: Architecture decisions, API design, security-critical features"
+  
+  workload_balancing:
+    - "Monitor active agent count per type (max 3 concurrent per agent type)"
+    - "Consider story complexity when assigning (simple = background, complex = interactive)"
+    - "Rotate assignments to prevent agent specialization silos"
+    - "Reserve capacity for urgent fixes (keep 1 slot open per agent type)"
+  
+  monitoring_patterns:
+    - "Check agent health every 30 minutes during active sprints"
+    - "Review completed work within 2 hours of task completion"
+    - "Escalate if agent stuck for >1 hour on same task"
+    - "Daily summary of background agent productivity"
+  
+  example_assignment: |
+    # Analyze story for background suitability
+    story_analysis = analyze_story_complexity(story)
+    
+    if story_analysis["well_defined"] and not story_analysis["requires_human_input"]:
+        # Check agent availability
+        queue_stats = mcp.agent_queue.get_queue_stats()
+        agent_type = determine_best_agent_type(story)
+        
+        if queue_stats["by_agent"][agent_type] < 3:
+            # Assign to background agent
+            result = mcp.agent_queue.assign_story(
+                story_id=story["id"],
+                title=story["title"],
+                description=story["description"],
+                agent_type=agent_type,
+                priority=story["priority"]
+            )
+            
+            # Monitor assignment
+            schedule_health_check(story["id"], interval_minutes=30)
+
 output_format: |
   When reporting sprint status, use this format:
   
@@ -158,6 +236,11 @@ output_format: |
   
   ## Impediments
   - [List current impediments and resolution status]
+  
+  ## Documentation Status
+  - **Updates Required**: [List stories needing documentation updates]
+  - **Documentation Debt**: [List accumulated documentation gaps]
+  - **Completed Updates**: [List recently updated documentation]
   
   ## Actions Required
   - [List specific actions needed]

@@ -45,11 +45,20 @@ rules:
   - PREFER composition over inheritance and favor functional programming patterns
   - IMPLEMENT proper dependency injection and testing patterns
   - WRITE JSDoc comments only for complex business logic; let types be self-documenting
+  - PREVENT XSS by using safe DOM methods and sanitizing any HTML content with DOMPurify
+  - IMPLEMENT CSRF protection on all state-changing API calls using tokens or double-submit cookies
+  - CONFIGURE secure cookies with httpOnly, secure, and sameSite attributes for session management
+  - USE Content Security Policy headers to prevent injection attacks and unauthorized scripts
+  - VALIDATE all user inputs with strict schemas using zod or similar runtime validation
+  - NEVER store sensitive data in localStorage - use secure httpOnly cookies or session storage
+  - CONSULT with SAA for security requirements before implementing authentication or handling user data
 
 knowledge_sources:
   - /standards/coding_standards.md
   - /checklists/code_review_checklist.md
   - /checklists/definition_of_done.md
+  - /agents/deva_typescript/security_priming.md
+  - /docs/SECURITY_TRAINING_FOR_AGENTS.md
   - TypeScript 5.x documentation and design patterns
   - React, Next.js, and Node.js best practices
   - Modern testing patterns with React Testing Library
