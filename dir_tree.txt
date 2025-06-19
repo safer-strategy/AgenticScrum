@@ -1,6 +1,26 @@
 .
 ├── agentic_scrum_setup
+│   ├── __init__.py
 │   ├── cli.py
+│   ├── organization_setup.py
+│   ├── patching
+│   │   ├── __init__.py
+│   │   ├── discovery.py
+│   │   ├── operations
+│   │   │   ├── __init__.py
+│   │   │   ├── add_command.py
+│   │   │   ├── add_template.py
+│   │   │   ├── fix_cli.py
+│   │   │   ├── sync_changes.py
+│   │   │   ├── update_all.py
+│   │   │   ├── update_mcp.py
+│   │   │   └── update_security.py
+│   │   ├── patcher.py
+│   │   ├── utils
+│   │   │   ├── __init__.py
+│   │   │   └── mcp_merger.py
+│   │   └── validation.py
+│   ├── repository_manager.py
 │   ├── setup_core.py
 │   ├── templates
 │   │   ├── agentic_config.yaml.j2
@@ -20,9 +40,25 @@
 │   │   │   └── init.sh.j2
 │   │   ├── csharp
 │   │   │   └── project.csproj.j2
+│   │   ├── deva_claude_python
+│   │   │   └── persona_rules.yaml.j2
+│   │   ├── deva_java
+│   │   │   └── persona_rules.yaml.j2
+│   │   ├── deva_javascript
+│   │   │   ├── persona_rules.yaml.j2
+│   │   │   └── security_priming.md.j2
+│   │   ├── deva_python
+│   │   │   ├── persona_rules.yaml.j2
+│   │   │   ├── priming_script.md.j2
+│   │   │   └── security_priming.md.j2
+│   │   ├── deva_typescript
+│   │   │   ├── persona_rules.yaml.j2
+│   │   │   ├── priming_script.md.j2
+│   │   │   └── security_priming.md.j2
 │   │   ├── docs
 │   │   │   ├── PROJECT_KICKOFF.md.j2
 │   │   │   ├── PROJECT_SCOPE.md.j2
+│   │   │   ├── SECURITY_TRAINING_FOR_AGENTS.md.j2
 │   │   │   └── SECURITY.md.j2
 │   │   ├── generic_persona_rules.yaml.j2
 │   │   ├── generic_priming_script.md.j2
@@ -37,10 +73,27 @@
 │   │   │   └── react_package.json.j2
 │   │   ├── mcp_servers
 │   │   │   └── datetime
+│   │   │       ├── __init__.py
 │   │   │       ├── datetime_tools.py
 │   │   │       ├── README.md
 │   │   │       ├── requirements.txt
 │   │   │       └── server.py
+│   │   ├── organization
+│   │   │   ├── agentic_config.yaml.j2
+│   │   │   ├── agents
+│   │   │   │   ├── organization_poa
+│   │   │   │   │   └── persona_rules.yaml.j2
+│   │   │   │   └── organization_sma
+│   │   │   │       └── persona_rules.yaml.j2
+│   │   │   ├── docs
+│   │   │   │   ├── CROSS_PROJECT_STANDARDS.md.j2
+│   │   │   │   ├── ORGANIZATION_OVERVIEW.md.j2
+│   │   │   │   └── REPOSITORY_GUIDELINES.md.j2
+│   │   │   ├── README.md.j2
+│   │   │   └── shared
+│   │   │       ├── docker-compose.yml.j2
+│   │   │       └── scripts
+│   │   │           └── sync_standards.sh.j2
 │   │   ├── persona_rules_advanced.yaml.j2
 │   │   ├── php
 │   │   │   └── composer.json.j2
@@ -61,7 +114,8 @@
 │   │   │   └── Cargo.toml.j2
 │   │   ├── saa
 │   │   │   ├── persona_rules.yaml.j2
-│   │   │   └── priming_script.md.j2
+│   │   │   ├── priming_script.md.j2
+│   │   │   └── training_protocol.yaml.j2
 │   │   ├── scripts
 │   │   │   └── check-secrets.sh
 │   │   ├── sma
@@ -71,6 +125,7 @@
 │   │   └── typescript
 │   │       └── tsconfig.json.j2
 │   └── tests
+│       ├── __init__.py
 │       ├── dir_tree.txt
 │       ├── test_cli.py
 │       ├── test_datetime_tools.py
@@ -83,6 +138,7 @@
 │       ├── test_security_audit_agent.py
 │       ├── test_security.py
 │       └── test_setup_core.py
+├── BETA_LAUNCH.md
 ├── CHANGELOG.md
 ├── checklists
 │   ├── agent_feedback_form.md
@@ -92,8 +148,10 @@
 ├── dir_tree.txt
 ├── docs
 │   ├── AGENT_OPTIMIZATION.md
+│   ├── AGENT_USAGE_CHEATSHEET.md
 │   ├── Anthropic-models.md
 │   ├── CLAUDE_CODE_GUIDE.md
+│   ├── DEVELOPMENT_PROCEDURES.md
 │   ├── FEATURE_MATRIX.md
 │   ├── FEEDBACK_WORKFLOW.md
 │   ├── MCP_API_SETUP.md
@@ -104,6 +162,7 @@
 │   ├── STORY_TEMPLATE.md
 │   └── Tutorial.md
 ├── init.sh
+├── LAUNCH_ANNOUNCEMENT.md
 ├── LICENSE
 ├── logs
 │   ├── datetime_stderr.log
@@ -111,15 +170,22 @@
 │   └── mcp_manager.log
 ├── MANIFEST.in
 ├── mcp_servers
-│   └── datetime
-│       ├── datetime_tools.py
-│       ├── README.md
-│       ├── requirements.txt
-│       └── server.py
+│   ├── datetime
+│   │   ├── __init__.py
+│   │   ├── datetime_tools.py
+│   │   ├── README.md
+│   │   ├── requirements.txt
+│   │   ├── server.py
+│   │   └── simple_server.py
+│   └── README.md
+├── PRODUCTION_READINESS.md
+├── pyproject.toml
 ├── README.md
+├── RELEASE_NOTES_v1.0.0-beta.4.md
 ├── requirements-dev.txt
 ├── scripts
 │   ├── agent_memory_utils.py
+│   ├── agentic-patch
 │   ├── animated_ascii_art.py
 │   ├── api_rate_limiter.py
 │   ├── collect_agent_metrics.py
@@ -129,6 +195,7 @@
 │   ├── memory_analyze.py
 │   ├── memory_export.py
 │   ├── memory_prune.py
+│   ├── patch-project-init.sh
 │   ├── retrofit_project.py
 │   ├── search_cache_manager.py
 │   └── update_agent_config.py
@@ -144,8 +211,17 @@
 │   ├── STORY_308_PROJECT_SCOPING_QUESTIONNAIRE.md
 │   ├── STORY_309_PRODUCTION_READINESS_GAPS.md
 │   ├── STORY_310_DATETIME_MCP_SERVICE.md
-│   └── STORY_311_MCP_DATETIME_TESTING_IMPLEMENTATION.md
+│   ├── STORY_311_MCP_DATETIME_TESTING_IMPLEMENTATION.md
+│   ├── STORY_312_MULTI_REPOSITORY_ORGANIZATION_SUPPORT.md
+│   ├── STORY_313_PYPI_UPLOAD_BETA_LAUNCH.md
+│   ├── STORY_314_AGENT_PERSONALITY_DEVELOPMENT.md
+│   ├── STORY_315_PYPI_PEP625_COMPLIANCE_FIX.md
+│   ├── STORY_316_INIT_SCRIPT_MCP_DEFAULTS.md
+│   ├── STORY_317_AGENTIC_PATCH_REMOTE_UPDATE_SYSTEM.md
+│   ├── STORY_318_BACKGROUND_AGENT_SYSTEM_CORE.md
+│   ├── STORY_319_BACKGROUND_AGENT_COORDINATION.md
+│   └── STORY_320_BACKGROUND_AGENT_MONITORING.md
 └── tests
     └── test_mcp_integration.py
 
-35 directories, 114 files
+50 directories, 175 files
