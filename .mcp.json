@@ -1,19 +1,22 @@
 {
   "mcpServers": {
-    "datetime": {
-      "command": "python",
-      "args": ["mcp_servers/datetime/server.py"],
-      "description": "Built-in datetime service for AgenticScrum development"
-    },
     "filesystem": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/mike/proj/AgenticScrum"],
       "description": "Filesystem access for AgenticScrum project"
     },
-    "git": {
-      "command": "npx", 
-      "args": ["-y", "@modelcontextprotocol/server-git"],
-      "description": "Git operations for version control"
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@itseasy21/mcp-knowledge-graph"],
+      "description": "Agent memory and knowledge persistence for AgenticScrum development",
+      "env": {
+        "MEMORY_FILE_PATH": "/Users/mike/proj/AgenticScrum/.agent-memory/shared/main.jsonl"
+      }
+    },
+    "datetime": {
+      "command": "/Users/mike/.pyenv/shims/python",
+      "args": ["/Users/mike/proj/AgenticScrum/mcp_servers/datetime/simple_server.py"],
+      "description": "Built-in datetime service for time operations, timezone handling, and sprint calculations"
     }
   },
   "projectContext": {
@@ -21,6 +24,28 @@
     "description": "AI-driven Agile development framework with MCP integration",
     "rootPath": "/Users/mike/proj/AgenticScrum",
     "primaryLanguage": "python",
-    "framework": "AgenticScrum"
+    "framework": "AgenticScrum",
+    "agenticScrum": {
+      "version": "1.0.0-beta.8",
+      "modelRecommendations": {
+        "default": "claude-sonnet-4-0",
+        "planning": "claude-opus-4-0",
+        "quickTasks": "claude-3-5-haiku-latest"
+      },
+      "keyPaths": {
+        "agentTemplates": "agentic_scrum_setup/templates/",
+        "coreImplementation": "agentic_scrum_setup/",
+        "tests": "agentic_scrum_setup/tests/",
+        "scripts": "scripts/",
+        "memory": ".agent-memory/"
+      },
+      "commands": {
+        "test": "pytest",
+        "lint": "flake8 agentic_scrum_setup/",
+        "format": "black agentic_scrum_setup/",
+        "build": "python -m build",
+        "install-dev": "pip install -e .[dev]"
+      }
+    }
   }
 }

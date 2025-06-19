@@ -211,7 +211,7 @@ def parse_arguments():
     patch_parser = subparsers.add_parser('patch', help='Apply patches to AgenticScrum framework')
     patch_parser.add_argument(
         'operation',
-        choices=['add-template', 'update-mcp', 'fix-cli', 'add-command', 'sync-changes', 'rollback', 'history', 'status'],
+        choices=['update-all', 'add-template', 'update-mcp', 'fix-cli', 'add-command', 'sync-changes', 'rollback', 'history', 'status'],
         help='Patch operation to perform'
     )
     patch_parser.add_argument(
@@ -887,6 +887,28 @@ def main():
                 print(f"🔄 Rolling back patch {args.patch_id}...")
                 patcher.rollback_patch(args.patch_id)
             
+            elif args.operation == 'update-all':
+                # Update all operation - comprehensive project update
+                from .patching.operations.update_all import update_all
+                
+                try:
+                    print("🔄 Applying comprehensive project update...")
+                    print(f"📁 Project: {Path.cwd()}")
+                    print(f"🔧 Framework: {patcher.framework_path}")
+                    print("")
+                    
+                    result = update_all(patcher, dry_run=args.dry_run)
+                    if result.success:
+                        print("✅ Update-all operation completed successfully!")
+                    else:
+                        print(f"❌ Update-all operation failed: {result.message}")
+                        sys.exit(1)
+                        
+                except Exception as e:
+                    print(f"❌ Error in update-all operation: {str(e)}")
+                    print("💡 Tip: Use --dry-run to preview changes before applying")
+                    sys.exit(1)
+            
             elif args.operation == 'add-template':
                 # Add template operation
                 if not args.target:
@@ -909,23 +931,24 @@ def main():
                 patcher.apply_patch('add-template', description, patch_function, files_to_modify, args.dry_run)
             
             elif args.operation == 'update-mcp':
-                # Update MCP operation
-                if not args.target:
-                    print("❌ Error: --target is required for update-mcp operation")
+                # Update MCP operation - auto-detect target if not provided
+                target_path = Path(args.target) if args.target else Path.cwd()
+                
+                if not target_path.exists():
+                    print(f"❌ Error: Target path does not exist: {target_path}")
                     sys.exit(1)
                 
                 mcp_op = UpdateMCPOperation(patcher.framework_path, patcher.validator)
                 
                 def patch_function():
-                    if Path(args.target).is_dir():
+                    if target_path.is_dir():
                         # Adding MCP to project
-                        return mcp_op.add_mcp_to_project(Path(args.target))
+                        return mcp_op.add_mcp_to_project(target_path)
                     else:
                         # Updating MCP service
-                        return mcp_op.update_mcp_service(Path(args.target))
+                        return mcp_op.update_mcp_service(target_path)
                 
                 description = args.description or f"Update MCP configuration/service"
-                target_path = Path(args.target)
                 
                 if target_path.is_dir():
                     files_to_modify = [target_path / '.mcp.json', target_path / '.mcp' / 'services']
@@ -975,21 +998,40 @@ def main():
                 patcher.apply_patch('add-command', description, patch_function, files_to_modify, args.dry_run)
             
             elif args.operation == 'sync-changes':
-                # Sync changes operation
-                if not args.target:
-                    print("❌ Error: --target is required for sync-changes operation (project path)")
+                # Sync changes operation - auto-detect target if not provided
+                target_path = Path(args.target) if args.target else Path.cwd()
+                
+                if not target_path.exists():
+                    print(f"❌ Error: Target path does not exist: {target_path}")
                     sys.exit(1)
                 
                 sync_op = SyncChangesOperation(patcher.framework_path, patcher.validator)
                 
                 def patch_function():
-                    return sync_op.sync_from_project(Path(args.target))
+                    return sync_op.sync_from_project(target_path)
                 
-                description = args.description or f"Sync changes from {args.target}"
-                # Files to modify depend on what's being synced
-                files_to_modify = [patcher.framework_path / 'agentic_scrum_setup' / 'templates']
+                description = args.description or f"Sync changes from {target_path.name}"
                 
-                patcher.apply_patch('sync-changes', description, patch_function, files_to_modify, args.dry_run)
+                # Execute sync operation directly (doesn't use standard patch system)
+                try:
+                    if args.dry_run:
+                        print("🔍 DRY RUN: Sync changes operation")
+                        print(f"📁 Source project: {target_path}")
+                        print(f"🎯 Framework: {patcher.framework_path}")
+                        print("ℹ️  No changes would be applied in dry run mode")
+                    else:
+                        modified_files = sync_op.sync_from_project(target_path)
+                        print(f"✅ Synced {len(modified_files)} files from {target_path.name}")
+                        
+                        if modified_files:
+                            print("📝 Modified framework files:")
+                            for file_path in modified_files:
+                                rel_path = file_path.relative_to(patcher.framework_path)
+                                print(f"  • {rel_path}")
+                except Exception as e:
+                    print(f"❌ Error in sync-changes operation: {str(e)}")
+                    print("💡 Tip: Use --dry-run to preview changes before applying")
+                    sys.exit(1)
             
             else:
                 print(f"❌ Error: Unknown patch operation: {args.operation}")

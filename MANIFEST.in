@@ -2,6 +2,7 @@ include README.md
 include LICENSE
 include MANIFEST.in
 include scripts/agentic-patch
+include scripts/patch-project-init.sh
 recursive-include agentic_scrum_setup/templates *.j2
 recursive-include agentic_scrum_setup/templates *.sample
 recursive-include agentic_scrum_setup/templates *.sh
@@ -11,5 +12,7 @@ recursive-include agentic_scrum_setup/templates *.txt
 recursive-include agentic_scrum_setup/templates *.json
 recursive-include agentic_scrum_setup/templates *.yaml
 recursive-include agentic_scrum_setup/templates *.yml
+recursive-include agentic_scrum_setup/patching *.py
+recursive-include agentic_scrum_setup/patching/operations *.py
 global-exclude __pycache__
 global-exclude *.py[co]

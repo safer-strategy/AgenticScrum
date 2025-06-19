@@ -49,7 +49,7 @@ function check_api_keys() {
     fi
   fi
   
-  if [[ ${{'{#'}}missing_keys[@]} -gt 0 ]]; then
+  if [[ ${#missing_keys[@]} -gt 0 ]]; then
     error "Missing required API keys:"
     printf '  - %s\n' "${missing_keys[@]}"
     echo ""
@@ -81,6 +81,13 @@ function setup_mcp() {
     else
       info "envsubst not found - you'll need to manually update .mcp-secrets.json"
     fi
+  fi
+  
+  # Create agent memory directory if it doesn't exist
+  if [[ ! -d ".agent-memory" ]]; then
+    info "Creating agent memory directory..."
+    mkdir -p .agent-memory
+    success "Created .agent-memory directory"
   fi
 }
 
@@ -237,6 +244,7 @@ function show_help() {
   echo -e "  ${C_YELLOW}help${C_RESET}              - Show this help message."
   echo ""
   echo "Patch Operations:"
+  echo -e "  ${C_CYAN}update-all${C_RESET}   - Apply comprehensive project update (recommended)"
   echo -e "  ${C_CYAN}status${C_RESET}       - Show patching system status"
   echo -e "  ${C_CYAN}history${C_RESET}      - View patch history"
   echo -e "  ${C_CYAN}add-template${C_RESET} - Add new agent templates"

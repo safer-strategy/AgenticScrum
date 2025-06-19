@@ -37,3 +37,9 @@ wheels/
 .installed.cfg
 *.egg
 tmp/
+
+# Agent Memory (keep structure, ignore data)
+.agent-memory/**/*.jsonl
+.agent-memory/**/*.json
+!.agent-memory/.gitkeep
+!.agent-memory/**/.gitkeep
