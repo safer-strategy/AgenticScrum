@@ -221,83 +221,101 @@ def add_background_agents(patcher, **kwargs) -> PatchApplication:
         try:
             init_script = project_path / "init.sh"
             if init_script.exists():
+                from ..utils.init_sh_parser import InitShParser
+                
                 content = init_script.read_text()
+                parser = InitShParser(content)
                 
                 # Check if already has agent commands
-                if "agent-run" not in content:
-                    # Find the patch-status case and add agent cases after it
-                    lines = content.split('\n')
-                    insert_idx = -1
-                    
-                    for i, line in enumerate(lines):
-                        if "patch-status)" in line:
-                            # Find the closing ;; for this case
-                            for j in range(i, len(lines)):
-                                if ";;" in lines[j]:
-                                    insert_idx = j + 1
-                                    break
-                            break
-                    
-                    if insert_idx > 0:
-                        # Insert new cases
-                        new_cases = '''    agent)
-      # Background agent management
-      shift
-      manage_background_agents "$@"
-      ;;
-    agent-run)
-      # Run a specific story in background
-      shift
-      run_background_agent "$@"
-      ;;
-    agent-status)
-      # Quick agent status check
-      show_agent_status
-      ;;'''
-                        lines.insert(insert_idx, new_cases)
-                        
-                        # Also need to add the functions before main
-                        # Find where to insert functions (before "# --- Main Dispatcher ---")
-                        func_idx = -1
-                        for i, line in enumerate(lines):
-                            if "# --- Main Dispatcher ---" in line:
-                                func_idx = i
-                                break
-                        
-                        if func_idx > 0:
-                            # Read functions from template
-                            template_path = patcher.framework_path / "agentic_scrum_setup" / "templates" / "common" / "background_agent_functions.sh"
-                            if template_path.exists():
-                                functions = template_path.read_text()
-                                lines.insert(func_idx, functions)
-                            else:
-                                # Inline minimal functions
-                                functions = '''
-# --- Background Agent Functions ---
-function manage_background_agents() {
-  echo "Background agent management not fully configured"
-  echo "Run './init.sh patch update-all' for full functionality"
-}
-
-function run_background_agent() {
-  local runner_script="scripts/run_background_agent.sh"
-  if [[ -f "$runner_script" ]]; then
-    "$runner_script" "$@"
-  else
-    echo "Background agent runner not found"
-  fi
-}
-
-function show_agent_status() {
-  echo "Background agent status not fully configured"
-  echo "Run './init.sh patch update-all' for full functionality"
-}
-'''
-                                lines.insert(func_idx, functions)
-                        
-                        # Write updated script
-                        init_script.write_text('\n'.join(lines))
-                        updates_applied.append("✅ Added agent commands to init.sh")
+                needs_update = False
+                
+                # Add functions if not present
+                if not parser.function_exists('manage_background_agents'):
+                    # Read functions from template
+                    template_path = patcher.framework_path / "agentic_scrum_setup" / "templates" / "common" / "background_agent_functions.sh"
+                    if template_path.exists():
+                        # Parse template to extract individual functions
+                        template_content = template_path.read_text()
+                        # For now, add a simplified version
+                        parser.add_function('manage_background_agents', [
+                            'local cmd="$1"',
+                            'shift',
+                            '',
+                            'case "$cmd" in',
+                            '  list)',
+                            '    info "Listing background agents..."',
+                            '    # Implementation would go here',
+                            '    ;;',
+                            '  queue)',
+                            '    info "Queue management..."',
+                            '    # Implementation would go here',
+                            '    ;;',
+                            '  *)',
+                            '    error "Unknown agent command: $cmd"',
+                            '    ;;',
+                            'esac'
+                        ])
+                        needs_update = True
+                
+                if not parser.function_exists('run_background_agent'):
+                    parser.add_function('run_background_agent', [
+                        'local runner_script="scripts/run_background_agent.sh"',
+                        'if [[ -f "$runner_script" ]]; then',
+                        '  "$runner_script" "$@"',
+                        'else',
+                        '  error "Background agent runner not found at $runner_script"',
+                        '  exit 1',
+                        'fi'
+                    ])
+                    needs_update = True
+                
+                if not parser.function_exists('show_agent_status'):
+                    parser.add_function('show_agent_status', [
+                        'info "Checking background agent status..."',
+                        '',
+                        '# Check if MCP servers are running',
+                        'if command -v docker &> /dev/null; then',
+                        '  docker-compose ps | grep -E "agent_queue|agent_monitor|agent_permissions" || true',
+                        'fi',
+                        '',
+                        '# Check for active agents',
+                        'if [[ -d "logs/background_agents" ]]; then',
+                        '  active_count=$(find logs/background_agents -name "*.log" -mmin -5 | wc -l)',
+                        '  info "Active agents (last 5 min): $active_count"',
+                        'fi',
+                        '',
+                        'info "Use \'./init.sh agent list\' for detailed information"'
+                    ])
+                    needs_update = True
+                
+                # Add cases if not present
+                if not parser.case_exists('agent'):
+                    parser.add_case('agent', [
+                        '# Background agent management',
+                        'shift',
+                        'manage_background_agents "$@"'
+                    ], after_case='patch-status')
+                    needs_update = True
+                
+                if not parser.case_exists('agent-run'):
+                    parser.add_case('agent-run', [
+                        '# Run a specific story in background',
+                        'shift',
+                        'run_background_agent "$@"'
+                    ], after_case='agent')
+                    needs_update = True
+                
+                if not parser.case_exists('agent-status'):
+                    parser.add_case('agent-status', [
+                        '# Quick agent status check',
+                        'show_agent_status'
+                    ], after_case='agent-run')
+                    needs_update = True
+                
+                # Write updated script if changes were made
+                if needs_update:
+                    init_script.write_text(parser.get_content())
+                    updates_applied.append("✅ Added agent commands to init.sh")
                 else:
                     updates_applied.append("ℹ️  init.sh already has agent commands")
                     

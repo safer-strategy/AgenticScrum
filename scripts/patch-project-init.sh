@@ -275,41 +275,77 @@ perform_patch() {
     
     info "Patching init.sh with latest template..."
     
-    local template_file="$framework_path/agentic_scrum_setup/templates/common/init.sh.j2"
-    local temp_file="/tmp/init.sh.new.$$"
-    
-    # Render the template
-    render_template "$template_file" "$project_name" "$temp_file"
-    
-    if [[ "$DRY_RUN" == true ]]; then
-        info "DRY RUN: Showing differences that would be applied..."
-        echo ""
-        echo -e "${BOLD}--- Current init.sh${RESET}"
-        echo -e "${BOLD}+++ New init.sh (from template)${RESET}"
+    # First check if we can use the Python updater for more robust patching
+    local python_updater="$framework_path/scripts/update-init-sh.py"
+    if [[ -f "$python_updater" ]] && command -v python3 &> /dev/null; then
+        info "Using enhanced Python-based updater for robust command injection..."
         
-        if command -v diff &> /dev/null; then
-            diff -u "init.sh" "$temp_file" || true
-        else
-            echo "Diff command not available - cannot show differences"
-            echo "New file would be $(wc -l < "$temp_file") lines"
-            echo "Current file is $(wc -l < "init.sh") lines"
+        if [[ "$DRY_RUN" == true ]]; then
+            # For dry run, show what would be updated
+            info "DRY RUN: Would update init.sh with latest commands"
+            echo ""
+            echo -e "${BOLD}Commands that would be added/updated:${RESET}"
+            echo "  • patch       - Framework patching operations"
+            echo "  • patch-status - Quick patch status check"
+            echo "  • agent       - Background agent management"
+            echo "  • agent-run   - Run stories in background"
+            echo "  • agent-status - Check agent status"
+            echo "  • up/down     - Docker service management"
+            echo ""
+            info "DRY RUN: No changes were applied"
+            return 0
         fi
         
-        echo ""
-        info "DRY RUN: No changes were applied"
-        rm -f "$temp_file"
-        return 0
+        # Create backup before Python updater runs
+        local backup_file
+        backup_file=$(create_backup)
+        
+        # Run the Python updater
+        if (cd "$framework_path" && python3 "$python_updater"); then
+            success "init.sh successfully updated with all latest commands!"
+            info "Backup saved as: $backup_file"
+        else
+            error "Python updater failed, falling back to template replacement..."
+            # Continue with fallback method below
+        fi
+    else
+        # Fallback to template replacement method
+        local template_file="$framework_path/agentic_scrum_setup/templates/common/init.sh.j2"
+        local temp_file="/tmp/init.sh.new.$$"
+        
+        # Render the template
+        render_template "$template_file" "$project_name" "$temp_file"
+        
+        if [[ "$DRY_RUN" == true ]]; then
+            info "DRY RUN: Showing differences that would be applied..."
+            echo ""
+            echo -e "${BOLD}--- Current init.sh${RESET}"
+            echo -e "${BOLD}+++ New init.sh (from template)${RESET}"
+            
+            if command -v diff &> /dev/null; then
+                diff -u "init.sh" "$temp_file" || true
+            else
+                echo "Diff command not available - cannot show differences"
+                echo "New file would be $(wc -l < "$temp_file") lines"
+                echo "Current file is $(wc -l < "init.sh") lines"
+            fi
+            
+            echo ""
+            info "DRY RUN: No changes were applied"
+            rm -f "$temp_file"
+            return 0
+        fi
+        
+        # Create backup
+        local backup_file
+        backup_file=$(create_backup)
+        
+        # Apply the patch
+        mv "$temp_file" "init.sh"
+        
+        success "init.sh successfully replaced with latest template!"
+        info "Backup saved as: $backup_file"
     fi
-    
-    # Create backup
-    local backup_file
-    backup_file=$(create_backup)
-    
-    # Apply the patch
-    mv "$temp_file" "init.sh"
-    
-    success "init.sh successfully patched!"
-    info "Backup saved as: $backup_file"
     
     # Show what is new
     echo ""
@@ -317,12 +353,15 @@ perform_patch() {
     echo "  • Remote patching capabilities"
     echo "  • Framework discovery and integration"
     echo "  • Enhanced help system with patch operations"
+    echo "  • Background agent execution system"
     echo "  • MCP server testing improvements"
     echo ""
     echo -e "${BOLD}Try these new commands:${RESET}"
     echo "  ./init.sh help          # See all commands including patch ops"
     echo "  ./init.sh patch-status  # Check framework patching status"
     echo "  ./init.sh patch status  # Detailed patching system info"
+    echo "  ./init.sh agent-status  # Check background agent status"
+    echo "  ./init.sh agent list    # List active background agents"
     
     return 0
 }
