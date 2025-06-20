@@ -185,13 +185,14 @@ class MCPConfigMerger:
     
     @classmethod
     def merge_configs_safely(cls, template_path: Path, target_path: Path, 
-                           project_name: str) -> Optional[Path]:
+                           project_name: str, context: Dict[str, Any] = None) -> Optional[Path]:
         """Safely merge template config with existing config.
         
         Args:
             template_path: Path to template config
             target_path: Path to existing config
             project_name: Project name for template rendering
+            context: Full template context (optional, uses project_name if not provided)
             
         Returns:
             Path to backup if merge was performed, None if no changes
@@ -202,7 +203,16 @@ class MCPConfigMerger:
             
             # Read and render template
             template_content = template_path.read_text()
-            rendered_template = template_content.replace("{{ project_name }}", project_name)
+            
+            if context:
+                # Use full context with Jinja2
+                from jinja2 import Template
+                template = Template(template_content)
+                rendered_template = template.render(**context)
+            else:
+                # Fallback to simple replacement
+                rendered_template = template_content.replace("{{ project_name }}", project_name)
+                
             template_config = json.loads(rendered_template)
             
             # Validate both configs

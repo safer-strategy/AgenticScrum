@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 from ..patcher import PatchApplication
+from ..utils.project_context import load_project_context
+from ..utils.template_renderer import TemplateRenderer
 
 def update_all(patcher, **kwargs) -> PatchApplication:
     """
@@ -29,6 +31,10 @@ def update_all(patcher, **kwargs) -> PatchApplication:
     def apply_comprehensive_update():
         updates_applied = []
         errors = []
+        
+        # Load project context for template rendering
+        context = load_project_context(project_path)
+        renderer = TemplateRenderer(context)
         
         # 1. Update init.sh with latest template (most important)
         try:
@@ -63,10 +69,7 @@ def update_all(patcher, **kwargs) -> PatchApplication:
                 
                 if template_path.exists() and not target_path.exists():
                     # Render template with project context
-                    project_name = _get_project_name(project_path)
-                    content = template_path.read_text()
-                    rendered = content.replace("{{ project_name }}", project_name)
-                    target_path.write_text(rendered)
+                    renderer.render_file(template_path, target_path)
                     updates_applied.append(f"✅ Added {mcp_file}")
                     mcp_updated = True
                 elif template_path.exists() and target_path.exists() and mcp_file == ".mcp.json":
@@ -76,7 +79,7 @@ def update_all(patcher, **kwargs) -> PatchApplication:
                         merger = MCPConfigMerger()
                         
                         project_name = _get_project_name(project_path)
-                        backup_path = merger.merge_configs_safely(template_path, target_path, project_name)
+                        backup_path = merger.merge_configs_safely(template_path, target_path, project_name, context)
                         
                         if backup_path:
                             updates_applied.append(f"✅ Updated {mcp_file} (preserved customizations, backup: {backup_path.name})")

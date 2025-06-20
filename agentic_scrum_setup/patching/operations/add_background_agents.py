@@ -6,6 +6,8 @@ from typing import List, Dict, Any
 
 from ..patcher import PatchApplication
 from ..utils.mcp_merger import MCPConfigMerger
+from ..utils.project_context import load_project_context
+from ..utils.template_renderer import TemplateRenderer
 
 def add_background_agents(patcher, **kwargs) -> PatchApplication:
     """
@@ -33,6 +35,10 @@ def add_background_agents(patcher, **kwargs) -> PatchApplication:
         print("🤖 Adding Background Agent System...")
         print(f"📁 Project: {project_path}")
         print("")
+        
+        # Load project context for template rendering
+        context = load_project_context(project_path)
+        renderer = TemplateRenderer(context)
         
         # 1. Create necessary directories
         try:
@@ -81,11 +87,13 @@ def add_background_agents(patcher, **kwargs) -> PatchApplication:
                     target_path = project_path / "mcp_servers" / server_name / "server.py"
                     target_path.parent.mkdir(parents=True, exist_ok=True)
                     
-                    # Copy and make executable
-                    content = template_path.read_text()
-                    # Remove .j2 template markers if any
-                    content = content.replace("{{ project_name }}", project_path.name)
-                    target_path.write_text(content)
+                    # Use template renderer for .j2 files
+                    if template_path.suffix == '.j2':
+                        renderer.render_file(template_path, target_path)
+                    else:
+                        # Direct copy for non-template files
+                        shutil.copy2(template_path, target_path)
+                    
                     target_path.chmod(0o755)
                     
                     updates_applied.append(f"✅ Added {server_name} MCP server")
