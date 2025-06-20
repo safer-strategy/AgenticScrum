@@ -242,7 +242,33 @@ def update_all(patcher, **kwargs) -> PatchApplication:
         except Exception as e:
             errors.append(f"❌ Error adding background agent system: {str(e)}")
         
-        # 7. Summary
+        # 7. Add animated banner if not present
+        try:
+            # Check if animated banner is already present
+            init_sh_content = init_sh_path.read_text() if init_sh_path.exists() else ""
+            if init_sh_path.exists() and "show_animated_banner" not in init_sh_content:
+                # Import and apply animated banner
+                from .add_animated_banner import add_animated_banner
+                
+                # Create a simple mock patcher for the operation
+                class SimplePatcher:
+                    def __init__(self, fw_path):
+                        self.framework_path = fw_path
+                
+                simple_patcher = SimplePatcher(patcher.framework_path)
+                result = add_animated_banner(simple_patcher, dry_run=False)
+                
+                if result.success:
+                    updates_applied.append("✅ Added animated ASCII art banner to init.sh")
+                else:
+                    errors.append("⚠️  Could not add animated banner")
+            elif init_sh_path.exists():
+                updates_applied.append("ℹ️  Animated banner already present in init.sh")
+                
+        except Exception as e:
+            errors.append(f"⚠️  Error checking animated banner: {str(e)}")
+        
+        # 8. Summary
         if updates_applied and not errors:
             print("\n🎉 Project Update Summary:")
             for update in updates_applied:

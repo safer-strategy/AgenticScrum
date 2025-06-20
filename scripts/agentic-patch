@@ -14,7 +14,8 @@ def get_basic_operations():
     """Get basic operations that are always available."""
     return ['add-template', 'update-mcp', 'fix-cli', 'add-command', 
             'sync-changes', 'rollback', 'history', 'status',
-            'update-all', 'add-background-agents', 'update-security']
+            'update-all', 'add-background-agents', 'update-security',
+            'add-animated-banner']
 
 
 def get_available_operations():
@@ -57,6 +58,12 @@ def get_available_operations():
         except ImportError:
             pass
             
+        try:
+            from agentic_scrum_setup.patching.operations import add_animated_banner
+            operations['add-animated-banner'] = add_animated_banner
+        except ImportError:
+            pass
+            
     except ImportError as e:
         print(f"Warning: Some operations unavailable: {e}")
     
@@ -78,6 +85,7 @@ def main():
         'update-all': 'Apply all available updates to project',
         'add-background-agents': 'Add background agent execution system',
         'update-security': 'Add security training features',
+        'add-animated-banner': 'Add animated ASCII art banner to init.sh',
         'add-template': 'Add new agent template',
         'update-mcp': 'Update MCP configuration',
         'fix-cli': 'Apply CLI fixes',
@@ -107,6 +115,11 @@ def main():
         examples.append('  ')
         examples.append('  # Add security training features')
         examples.append('  agentic-patch update-security')
+    
+    if 'add-animated-banner' in operation_names:
+        examples.append('  ')
+        examples.append('  # Add animated banner to init.sh')
+        examples.append('  agentic-patch add-animated-banner')
     
     examples.extend([
         '  ',
@@ -279,7 +292,7 @@ def main():
             print(f"🔄 Rolling back patch {args.patch_id}...")
             patcher.rollback_patch(args.patch_id)
         
-        elif args.operation in ['update-all', 'add-background-agents', 'update-security']:
+        elif args.operation in ['update-all', 'add-background-agents', 'update-security', 'add-animated-banner']:
             # Handle function-based operations
             operation = operations.get(args.operation)
             if not operation:

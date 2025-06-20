@@ -91,16 +91,138 @@ function setup_mcp() {
   fi
 }
 
+function show_animated_banner() {
+    local text="$1"
+    local subtitle="${2:-AI-Driven Development Framework}"
+    
+    # ANSI codes
+    local CLEAR_LINE='\033[2K'
+    local HIDE_CURSOR='\033[?25l'
+    local SHOW_CURSOR='\033[?25h'
+    
+    # Neon colors
+    local NEON_YELLOW='\033[38;5;226m'
+    local BRIGHT_NEON='\033[38;5;228m'
+    local EXTRA_BRIGHT='\033[38;5;229m'
+    
+    # Convert text to uppercase
+    text="${text^^}"
+    
+    # Hide cursor
+    echo -ne "$HIDE_CURSOR"
+    
+    # Simple block text (3 lines high)
+    local line1=""
+    local line2=""
+    local line3=""
+    
+    # Build block letters
+    for (( i=0; i<${#text}; i++ )); do
+        local char="${text:i:1}"
+        case "$char" in
+            A) line1+="█████  "; line2+=" ███   "; line3+="█   █  " ;;
+            G) line1+="█████  "; line2+="█  ██  "; line3+="█████  " ;;
+            E) line1+="█████  "; line2+="███    "; line3+="█████  " ;;
+            N) line1+="█   █  "; line2+="██  █  "; line3+="█   █  " ;;
+            T) line1+="█████  "; line2+="  █    "; line3+="  █    " ;;
+            I) line1+="█████  "; line2+="  █    "; line3+="█████  " ;;
+            C) line1+="█████  "; line2+="█      "; line3+="█████  " ;;
+            S) line1+="█████  "; line2+=" ███   "; line3+="█████  " ;;
+            R) line1+="████   "; line2+="████   "; line3+="█   █  " ;;
+            U) line1+="█   █  "; line2+="█   █  "; line3+="█████  " ;;
+            M) line1+="█   █  "; line2+="█████  "; line3+="█   █  " ;;
+            " ") line1+="   "; line2+="   "; line3+="   " ;;
+            *) line1+="███ "; line2+="█ █ "; line3+="███ " ;;
+        esac
+    done
+    
+    # Animation variables
+    local width=${#line1}
+    local lines=("$line1" "$line2" "$line3")
+    
+    # Print empty lines
+    echo && echo && echo
+    
+    # Move cursor back up
+    echo -ne "\033[3A"
+    
+    # Scan effect
+    for (( x=0; x<=width; x++ )); do
+        for (( y=0; y<3; y++ )); do
+            local line="${lines[$y]}"
+            local output=""
+            
+            for (( i=0; i<${#line}; i++ )); do
+                if (( i < x )); then
+                    local char="${line:i:1}"
+                    if [[ "$char" != " " ]]; then
+                        output+="${NEON_YELLOW}${char}${C_RESET}"
+                    else
+                        output+=" "
+                    fi
+                else
+                    output+=" "
+                fi
+            done
+            
+            echo -ne "\r${CLEAR_LINE}${output}"
+            if (( y < 2 )); then echo; fi
+        done
+        
+        if (( x < width )); then
+            echo -ne "\033[2A"
+        fi
+        
+        sleep 0.01
+    done
+    
+    # Pulse effect
+    echo
+    for (( pulse=0; pulse<2; pulse++ )); do
+        for color in "$NEON_YELLOW" "$BRIGHT_NEON" "$EXTRA_BRIGHT"; do
+            echo -ne "\033[3A"
+            for line in "${lines[@]}"; do
+                echo -ne "\r${CLEAR_LINE}"
+                for (( i=0; i<${#line}; i++ )); do
+                    local char="${line:i:1}"
+                    if [[ "$char" != " " ]]; then
+                        echo -ne "${color}${char}${C_RESET}"
+                    else
+                        echo -ne " "
+                    fi
+                done
+                echo
+            done
+            sleep 0.05
+        done
+    done
+    
+    # Add subtitle
+    echo
+    echo -e "${C_YELLOW}════════════ ${subtitle} ════════════${C_RESET}"
+    echo
+    
+    # Show cursor
+    echo -ne "$SHOW_CURSOR"
+}
+
 function header() {
-  echo -e "${C_PURPLE}${C_BOLD}"
-  echo "    ___    __  __   ____   _____   ____    ___    _   _ "
-  echo "   / __|  |  \/  | |  _ \  | ____| |  _ \  / __|  | | | |"
-  echo "  | |     | |\/| | | |_) | |  _|   | |_) | \_ \  | |_| |"
-  echo "  | |___  | |  | | |  __/  | |___  |  _ <  |___/  |  _  |"
-  echo "   \___|  |_|  |_| |_|     |_____| |_| \_\ ____/  |_| |_|"
-  echo ""
-  echo -e "      >> Welcome to the ${PROJECT_NAME} Environment Manager <<      "
-  echo -e "${C_RESET}"
+  # Check if animation is disabled
+  if [[ "$NO_ANIMATION" == "true" ]] || [[ "$1" == "--no-animation" ]]; then
+    # Fall back to static banner
+    echo -e "${C_PURPLE}${C_BOLD}"
+    echo "    ___    __  __   ____   _____   ____    ___    _   _ "
+    echo "   / __|  |  \/  | |  _ \  | ____| |  _ \  / __|  | | | |"
+    echo "  | |     | |\/| | | |_) | |  _|   | |_) | \_ \  | |_| |"
+    echo "  | |___  | |  | | |  __/  | |___  |  _ <  |___/  |  _  |"
+    echo "   \___|  |_|  |_| |_|     |_____| |_| \_\ ____/  |_| |_|"
+    echo ""
+    echo -e "      >> Welcome to the ${PROJECT_NAME} Environment Manager <<      "
+    echo -e "${C_RESET}"
+  else
+    # Show animated banner
+    show_animated_banner "${PROJECT_NAME}"
+  fi
 }
 
 function info() {

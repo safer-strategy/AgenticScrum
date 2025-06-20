@@ -13,6 +13,7 @@ from .sync_changes import SyncChangesOperation
 from .update_security import update_security
 from .add_background_agents import add_background_agents
 from .update_all import update_all
+from .add_animated_banner import add_animated_banner
 
 __all__ = [
     'AddTemplateOperation',
@@ -22,5 +23,6 @@ __all__ = [
     'SyncChangesOperation',
     'update_security',
     'add_background_agents',
-    'update_all'
+    'update_all',
+    'add_animated_banner'
 ]
