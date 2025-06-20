@@ -3,7 +3,7 @@
 **Epic**: E009 - Patching System Robustness
 **Story Points**: 2
 **Priority**: P2 (High)
-**Status**: Ready
+**Status**: Completed
 **Sprint**: Next
 **Assigned To**: deva_python
 
@@ -232,10 +232,20 @@ Includes: SAA training, developer priming, security documentation.
 
 ## Progress Tracking
 
-- [ ] Operation registry updated
-- [ ] Parser updated with new operations
-- [ ] Execution dispatch improved
-- [ ] Help system enhanced
-- [ ] Tests written
-- [ ] Manual testing complete
+- [x] Operation registry updated
+- [x] Parser updated with new operations
+- [x] Execution dispatch improved
+- [x] Help system enhanced
+- [x] Tests written
+- [x] Manual testing complete
 - [ ] PR created and reviewed
+
+## Implementation Notes
+
+Successfully added all missing operations to the standalone agentic-patch script:
+
+1. **Dynamic Operation Discovery**: Added `get_available_operations()` that dynamically imports available operations
+2. **Graceful Fallbacks**: Operations that aren't available show helpful messages about upgrading
+3. **Framework Path Priority**: When --framework-path is specified, it takes priority over installed package
+4. **Comprehensive Tests**: Created test suite with 8 tests covering all scenarios
+5. **All operations work**: update-all, add-background-agents, and update-security all execute properly

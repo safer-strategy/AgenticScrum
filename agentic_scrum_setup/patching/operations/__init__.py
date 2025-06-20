@@ -12,6 +12,7 @@ from .add_command import AddCommandOperation
 from .sync_changes import SyncChangesOperation
 from .update_security import update_security
 from .add_background_agents import add_background_agents
+from .update_all import update_all
 
 __all__ = [
     'AddTemplateOperation',
@@ -20,5 +21,6 @@ __all__ = [
     'AddCommandOperation',
     'SyncChangesOperation',
     'update_security',
-    'add_background_agents'
+    'add_background_agents',
+    'update_all'
 ]
