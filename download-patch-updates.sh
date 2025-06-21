@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # Configuration
-GITHUB_RAW_URL="https://raw.githubusercontent.com/safer-strategy/AgenticScrum/main"
+GITHUB_RAW_URL="https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main"
 BACKUP_DIR=".agentic_patch_backup_$(date +%Y%m%d_%H%M%S)"
 TEMP_DIR=".agentic_patch_temp"
 VERSION_FILE="VERSION"
@@ -650,7 +650,7 @@ main() {
 }
 
 # Security warning for curl | bash usage
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+if [[ "${BASH_SOURCE[0]:-$0}" == "${0}" ]]; then
     # Only show warning if piped from curl
     if [[ -t 0 ]]; then
         main "$@"

@@ -20,16 +20,16 @@ For the most common updates, use these one-liner commands:
 
 ```bash
 # Update init.sh with latest features
-curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/main/scripts/quick-init-update.sh | bash
+curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-init-update.sh | bash
 
 # Add security training features
-curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/main/scripts/quick-security-update.sh | bash
+curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-security-update.sh | bash
 
 # Add animated ASCII banner
-curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/main/scripts/quick-banner-update.sh | bash
+curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-banner-update.sh | bash
 
 # Install standalone patcher globally
-curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/main/scripts/quick-install-patcher.sh | bash
+curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-install-patcher.sh | bash
 ```
 
 ### Manual Download and Execute
@@ -38,7 +38,7 @@ For more control, download the main script first:
 
 ```bash
 # Download the main patching script
-curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/main/download-patch-updates.sh -o patch-updater.sh
+curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/download-patch-updates.sh -o patch-updater.sh
 chmod +x patch-updater.sh
 
 # Show available operations

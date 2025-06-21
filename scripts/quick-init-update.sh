@@ -23,7 +23,7 @@ if [[ ! -f "init.sh" ]]; then
 fi
 
 # Download and run main updater
-GITHUB_RAW_URL="https://raw.githubusercontent.com/safer-strategy/AgenticScrum/main"
+GITHUB_RAW_URL="https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main"
 
 if curl -fsSL "${GITHUB_RAW_URL}/download-patch-updates.sh" | bash -s init-sh-update; then
     print_success "Init.sh updated successfully!"
