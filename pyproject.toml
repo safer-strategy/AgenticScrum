@@ -45,9 +45,9 @@ dev = [
 agentic-scrum-setup = "agentic_scrum_setup.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/AgenticScrum"
-Repository = "https://github.com/yourusername/AgenticScrum"
-Issues = "https://github.com/yourusername/AgenticScrum/issues"
+Homepage = "https://github.com/safer-strategy/AgenticScrum"
+Repository = "https://github.com/safer-strategy/AgenticScrum"
+Issues = "https://github.com/safer-strategy/AgenticScrum/issues"
 
 [tool.setuptools]
 packages = ["agentic_scrum_setup"]

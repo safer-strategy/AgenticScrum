@@ -1,6 +1,6 @@
 # **AgenticScrum: A Framework for Structured AI-Driven Code Generation**
 
-> **🚀 BETA RELEASE v1.0.0-beta.8** - [Join our beta testing program!](BETA_LAUNCH.md)
+> **🚀 BETA RELEASE v1.0.0-beta.10** - [Join our beta testing program!](BETA_LAUNCH.md)
 > 
 > ⚠️ **Beta Software**: This is pre-release software. While core features are stable, expect some rough edges. See [known limitations](BETA_LAUNCH.md#known-beta-limitations) and [how to provide feedback](BETA_LAUNCH.md#beta-feedback-collection).
 
@@ -205,7 +205,7 @@ The primary way to start an AgenticScrum project is by using the agentic-scrum-s
 
 ```bash
 # Install the latest beta release
-pip install agentic-scrum-setup==1.0.0b8
+pip install agentic-scrum-setup==1.0.0b10
 
 # Verify installation
 python -c "import agentic_scrum_setup; print(f'AgenticScrum v{agentic_scrum_setup.__version__} installed')"

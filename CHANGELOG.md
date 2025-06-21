@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-beta.10] - 2025-01-21
+
+### Added
+- **Conversational Onboarding System** - Natural language project setup through POA-guided conversations
+  - Users can describe projects in their own words instead of filling technical forms
+  - Supports multiple input formats: informal descriptions, formal PRDs, technical specs
+  - Automatic detection of existing projects for non-invasive retrofitting
+  - New modules: conversational_onboarding.py and codebase_analyzer.py
+  - --conversational flag for CLI
+- **Autonomous QA Validation System** - Background QA agent monitoring and validation
+  - Continuous quality checks without human intervention
+  - qa_daemon.sh: Background monitoring service
+  - qa_runner.py: Core QA execution engine with multiple validation modules
+  - story_completion_trigger.py: Automated story completion detection
+  - Enhanced agentic_config.yaml with QA-specific configurations
+- Enhanced POA persona rules for conversational interactions
+- Adaptive CLAUDE.md template for retrofit scenarios
+- PRD.md and PROJECT_SUMMARY.md templates
+- Comprehensive QA infrastructure templates
+
+### Changed
+- Updated init.sh with QA daemon management commands
+- Enhanced setup_core.py to handle conversational mode and QA integration
+- Improved README.md with documentation for new features
+
+## [1.0.0-beta.9] - 2025-01-20
+
 ### Added
 - Story 309: Production readiness fixes (4 test fixes, documentation alignment)
 - Story 308: Project scoping questionnaire (PROJECT_SCOPE.md) and kickoff guide
