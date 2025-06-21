@@ -1,0 +1,253 @@
+# {{ project_name }} - Autonomous QA Validation System
+
+This directory contains the autonomous QA validation system for {{ project_name }}, providing comprehensive automated testing, bug detection, and quality assurance capabilities.
+
+## Overview
+
+The QA validation system automatically:
+- Validates completed stories and features
+- Detects bugs through multi-layer testing
+- Generates detailed bug reports and validation reports
+- Manages bugfix story creation and assignment
+- Provides real-time quality metrics and monitoring
+
+## Directory Structure
+
+```
+qa/
+├── README.md                     # This file
+├── reports/
+│   ├── automated/               # Auto-generated QA reports
+│   ├── bugs/                   # Bug reports by severity
+│   │   ├── critical/
+│   │   ├── high/
+│   │   ├── medium/
+│   │   └── low/
+│   └── validation/             # Feature validation reports
+├── agents/
+│   ├── qa_automation_agent/    # Enhanced QA automation agent
+│   └── background_qa_runner/   # Background QA execution agent
+├── templates/
+│   ├── bug_report_template.md
+│   ├── validation_report_template.md
+│   └── test_execution_report.md
+├── queue/
+│   ├── pending_validation.json    # Queue of features to validate
+│   ├── active_qa_sessions.json    # Currently running QA processes
+│   └── bugfix_queue.json         # Generated bugfix stories
+├── scripts/
+│   ├── qa_monitor.py             # QA monitoring and reporting
+│   ├── validation_runner.py     # Validation execution engine
+│   └── bug_detector.py          # Bug detection and analysis
+└── config/
+    ├── qa_config.yaml           # QA system configuration
+    └── validation_rules.yaml   # Validation rules and thresholds
+```
+
+## Quick Start
+
+### 1. Check QA System Status
+```bash
+./init.sh qa status
+```
+
+### 2. Validate a Specific Story
+```bash
+./init.sh qa validate STORY_325
+```
+
+### 3. Generate QA Reports
+```bash
+# Daily summary
+./init.sh qa reports summary
+
+# Bug reports
+./init.sh qa reports bugs
+
+# Quality trends
+./init.sh qa reports trends
+```
+
+### 4. Monitor Background Agents
+```bash
+./init.sh agent-status
+```
+
+## Configuration
+
+The QA system is configured through several files:
+
+- `qa/config/qa_config.yaml` - Main QA system configuration
+- `qa/config/validation_rules.yaml` - Validation rules and quality gates
+- `agentic_config.yaml` - Project-wide QA integration settings
+
+### Key Configuration Options
+
+```yaml
+qa_validation:
+  enabled: true
+  validation_modes: ['automatic', 'manual']
+  
+  background_agents:
+    enabled: true
+    max_concurrent: 3
+    auto_assignment: true
+  
+  validation_layers:
+    code_quality: true
+    functional: true
+    integration: true
+    user_experience: true
+  
+  quality_gates:
+    minimum_coverage: 85
+    max_performance_regression: 20
+    security_scan_required: true
+```
+
+## Validation Layers
+
+### Layer 1: Code Quality Validation
+- Lint checking and code standards compliance
+- Security vulnerability scanning
+- Performance benchmarking
+- Documentation completeness check
+
+### Layer 2: Functional Testing
+- API endpoint testing (all CRUD operations)
+- Database integration testing
+- Business logic validation
+- Error handling and edge case testing
+
+### Layer 3: Integration Testing
+- Cross-feature integration validation
+- Data flow between components
+- MCP server integration testing
+- Agent coordination testing
+
+### Layer 4: User Experience Testing
+- CLI responsiveness validation
+- Error message clarity checking
+- Performance under load testing
+- User workflow validation
+
+## Bug Management
+
+### Automatic Bug Detection
+The system automatically detects bugs through:
+- Pattern recognition for common bug types
+- Regression testing against previous implementations
+- Performance degradation detection
+- Security vulnerability identification
+
+### Bug Report Format
+```markdown
+# BUG-{ID}: {Title}
+**Severity**: Critical/High/Medium/Low
+**Story**: {Related Story ID}
+**Component**: {Affected Component}
+
+## Summary
+Brief description of the issue
+
+## Steps to Reproduce
+1. Step 1
+2. Step 2
+3. Expected vs Actual Result
+
+## Evidence
+- Screenshots
+- Log Files
+- Error Messages
+
+## Suggested Fix
+Technical recommendations for resolution
+```
+
+## Agent Coordination
+
+### QA Automation Agent
+- Autonomous validation execution
+- Bug detection and classification
+- Report generation
+- Integration with background agent system
+
+### Background QA Runner
+- Parallel validation processing
+- Resource management and optimization
+- Progress tracking and status updates
+- Autonomous decision-making
+
+## Monitoring and Alerts
+
+### Real-Time Monitoring
+- Validation queue status
+- Active validation sessions
+- Bug discovery trends
+- Agent performance metrics
+
+### Automated Alerts
+- Critical bugs detected
+- Quality threshold breaches
+- Validation system failures
+- Agent health issues
+
+## Integration Points
+
+### MCP Servers
+- `agent_queue` - Task distribution and management
+- `agent_monitor` - Health monitoring and metrics
+- `agent_permissions` - Autonomous decision approval
+- `memory` - Pattern storage and learning
+- `datetime` - Timing and performance tracking
+
+### Development Workflow
+- Story completion triggers
+- Automatic validation initiation
+- Bugfix story creation
+- Quality metrics integration
+
+## Troubleshooting
+
+### Common Issues
+
+**QA validation not starting**
+- Check queue status: `./init.sh qa status`
+- Verify MCP servers: `./init.sh up`
+- Check agent health: `./init.sh agent-status`
+
+**Background agents not responding**
+- Review agent logs: `tail -f logs/background_agents/*.log`
+- Check resource usage: `./init.sh qa reports`
+- Restart background agents: `./init.sh restart`
+
+**False positive bug reports**
+- Review validation rules: `qa/config/validation_rules.yaml`
+- Check pattern learning: `./init.sh qa reports trends`
+- Update detection thresholds in configuration
+
+### Log Files
+- Background agent logs: `logs/background_agents/`
+- QA validation logs: `qa/reports/automated/`
+- MCP server logs: `logs/`
+
+## Best Practices
+
+1. **Regular Monitoring**: Check QA status daily during active development
+2. **Threshold Tuning**: Adjust quality gates based on project requirements
+3. **Pattern Learning**: Review and validate bug detection patterns weekly
+4. **Performance Optimization**: Monitor validation execution times and optimize as needed
+5. **Documentation**: Keep validation rules and thresholds documented and updated
+
+## Support
+
+For issues with the QA validation system:
+1. Check the troubleshooting section above
+2. Review system logs for error details
+3. Consult the AgenticScrum documentation
+4. Report persistent issues to the development team
+
+---
+
+*Generated by AgenticScrum Framework v{{ version | default('1.0.0') }}*
+*QA Validation System - Ensuring Quality Through Automation*

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "last_updated": "{{ ansible_date_time.iso8601 | default('2025-06-21T16:55:18Z') }}",
+  "project_name": "{{ project_name }}",
+  "bugfix_config": {
+    "auto_story_creation": {{ qa.bug_detection.auto_reporting | default(true) | tojson }},
+    "auto_assignment": {{ qa.background_agents.auto_assignment | default(true) | tojson }},
+    "priority_mapping": {
+      "critical": "P0",
+      "high": "P1", 
+      "medium": "P2",
+      "low": "P3"
+    },
+    "severity_thresholds": {
+      "critical": {{ qa.bug_detection.severity_thresholds.critical | default(0) }},
+      "high": {{ qa.bug_detection.severity_thresholds.high | default(2) }},
+      "medium": {{ qa.bug_detection.severity_thresholds.medium | default(5) }},
+      "low": {{ qa.bug_detection.severity_thresholds.low | default(10) }}
+    }
+  },
+  "bugfix_stories": []
+}

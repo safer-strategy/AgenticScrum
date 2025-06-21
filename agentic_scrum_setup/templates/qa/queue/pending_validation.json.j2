@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "last_updated": "{{ ansible_date_time.iso8601 | default('2025-06-21T16:55:18Z') }}",
+  "project_name": "{{ project_name }}",
+  "queue_config": {
+    "max_queue_size": 100,
+    "auto_processing": {{ qa.background_agents.enabled | default(true) | tojson }},
+    "priority_levels": ["critical", "high", "medium", "low"],
+    "max_concurrent_validations": {{ qa.background_agents.max_concurrent | default(3) }}
+  },
+  "queue": []
+}

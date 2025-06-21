@@ -1,0 +1,248 @@
+# {{ project_name }} QA Validation System Configuration
+
+# Project Information
+project:
+  name: "{{ project_name }}"
+  version: "{{ version | default('1.0.0') }}"
+  environment: "{{ environment | default('development') }}"
+  framework_version: "{{ agentic_scrum_version | default('1.0.0') }}"
+
+# QA System Configuration
+qa_system:
+  enabled: {{ qa.enabled | default(true) | tojson }}
+  version: "1.0.0"
+  
+  # Validation Modes
+  validation_modes: {{ qa.validation_modes | default(['automatic', 'manual']) | tojson }}
+  
+  # Background Agent Configuration
+  background_agents:
+    enabled: {{ qa.background_agents.enabled | default(true) | tojson }}
+    max_concurrent: {{ qa.background_agents.max_concurrent | default(3) }}
+    auto_assignment: {{ qa.background_agents.auto_assignment | default(true) | tojson }}
+    resource_limits:
+      cpu_time_minutes: 60
+      memory_mb: 1024
+      disk_mb: 500
+    retry_policy:
+      max_retries: 3
+      backoff_multiplier: 2
+      max_backoff_minutes: 10
+
+# Validation Layer Configuration
+validation_layers:
+  code_quality:
+    enabled: {{ qa.validation_layers.code_quality | default(true) | tojson }}
+    timeout_minutes: 15
+    tools:
+      - "flake8"
+      - "black"
+      - "mypy"
+      - "bandit"  # Security scanner
+    thresholds:
+      lint_errors_max: 0
+      security_issues_max: 0
+      code_complexity_max: 10
+  
+  functional:
+    enabled: {{ qa.validation_layers.functional | default(true) | tojson }}
+    timeout_minutes: 30
+    test_types:
+      - "unit_tests"
+      - "api_tests"
+      - "database_tests"
+      - "business_logic_tests"
+    thresholds:
+      test_coverage_min: {{ qa.quality_gates.minimum_coverage | default(85) }}
+      success_rate_min: 95
+  
+  integration:
+    enabled: {{ qa.validation_layers.integration | default(true) | tojson }}
+    timeout_minutes: 45
+    test_types:
+      - "mcp_integration"
+      - "agent_coordination"
+      - "cross_feature"
+      - "data_flow"
+    thresholds:
+      integration_success_min: 100
+      response_time_max: 5000  # milliseconds
+  
+  user_experience:
+    enabled: {{ qa.validation_layers.user_experience | default(true) | tojson }}
+    timeout_minutes: 20
+    test_types:
+      - "cli_responsiveness"
+      - "error_messages"
+      - "performance_load"
+      - "user_workflows"
+    thresholds:
+      cli_response_max: 2000  # milliseconds
+      error_clarity_min: 80   # percentage score
+
+# Bug Detection Configuration
+bug_detection:
+  enabled: {{ qa.bug_detection.enabled | default(true) | tojson }}
+  auto_reporting: {{ qa.bug_detection.auto_reporting | default(true) | tojson }}
+  
+  # Pattern Detection
+  pattern_detection:
+    enabled: true
+    learning_enabled: true
+    false_positive_threshold: 0.15
+    similarity_threshold: 0.8
+  
+  # Severity Thresholds
+  severity_thresholds:
+    critical: {{ qa.bug_detection.severity_thresholds.critical | default(0) }}
+    high: {{ qa.bug_detection.severity_thresholds.high | default(2) }}
+    medium: {{ qa.bug_detection.severity_thresholds.medium | default(5) }}
+    low: {{ qa.bug_detection.severity_thresholds.low | default(10) }}
+  
+  # Detection Categories
+  categories:
+    - "functional"
+    - "performance"
+    - "security"
+    - "integration"
+    - "ui_ux"
+    - "data_integrity"
+    - "configuration"
+
+# Quality Gates
+quality_gates:
+  minimum_coverage: {{ qa.quality_gates.minimum_coverage | default(85) }}
+  max_performance_regression: {{ qa.quality_gates.max_performance_regression | default(20) }}
+  security_scan_required: {{ qa.quality_gates.security_scan_required | default(true) | tojson }}
+  
+  # Additional Gates
+  max_critical_bugs: 0
+  max_high_bugs: 1
+  max_lint_errors: 0
+  min_documentation_coverage: 80
+  max_test_execution_time: 60  # minutes
+
+# Reporting Configuration
+reporting:
+  daily_summary: {{ qa.reporting.daily_summary | default(true) | tojson }}
+  weekly_trends: {{ qa.reporting.weekly_trends | default(true) | tojson }}
+  real_time_alerts: {{ qa.reporting.real_time_alerts | default(true) | tojson }}
+  
+  # Report Formats
+  formats:
+    - "markdown"
+    - "json"
+    - "html"
+  
+  # Alert Thresholds
+  alert_thresholds:
+    critical_bug_immediate: true
+    high_bug_within_hours: 2
+    quality_score_below: 75
+    validation_failure_rate_above: 20
+
+# Queue Management
+queue_management:
+  max_queue_size: 100
+  auto_processing: {{ qa.background_agents.enabled | default(true) | tojson }}
+  priority_levels: ["critical", "high", "medium", "low"]
+  
+  # Processing Rules
+  processing_rules:
+    critical_priority_first: true
+    max_retry_attempts: 3
+    retry_delay_minutes: 5
+    cleanup_completed_after_hours: 24
+
+# MCP Integration
+mcp_integration:
+  enabled: true
+  servers:
+    agent_queue:
+      enabled: true
+      timeout_seconds: 30
+    agent_monitor:
+      enabled: true
+      health_check_interval: 60
+    agent_permissions:
+      enabled: true
+      auto_approve_safe_operations: true
+    memory:
+      enabled: true
+      pattern_storage: true
+    datetime:
+      enabled: true
+      timezone: "UTC"
+
+# Performance Configuration
+performance:
+  validation_timeout_minutes: 60
+  parallel_validations: {{ qa.background_agents.max_concurrent | default(3) }}
+  resource_monitoring: true
+  
+  # Optimization Settings
+  optimization:
+    cache_validation_results: true
+    cache_duration_hours: 24
+    lazy_load_patterns: true
+    batch_processing: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Log Destinations
+  destinations:
+    file:
+      enabled: true
+      path: "logs/qa_validation.log"
+      max_size_mb: 100
+      backup_count: 5
+    console:
+      enabled: true
+      level: "INFO"
+  
+  # Component Logging
+  components:
+    validation_engine: "INFO"
+    bug_detector: "INFO"
+    queue_manager: "INFO"
+    background_agents: "INFO"
+    mcp_integration: "DEBUG"
+
+# Security Configuration
+security:
+  validation_sandbox: true
+  resource_limits_enforced: true
+  secure_temp_directories: true
+  
+  # Sensitive Data Protection
+  data_protection:
+    mask_secrets: true
+    exclude_sensitive_logs: true
+    sanitize_error_messages: true
+
+# Development Configuration
+development:
+  debug_mode: {{ 'true' if environment == 'development' else 'false' }}
+  verbose_logging: {{ 'true' if environment == 'development' else 'false' }}
+  skip_slow_validations: false
+  
+  # Testing Overrides
+  testing_overrides:
+    reduced_timeouts: {{ 'true' if environment == 'test' else 'false' }}
+    mock_external_services: {{ 'true' if environment == 'test' else 'false' }}
+    fast_feedback_mode: {{ 'true' if environment == 'development' else 'false' }}
+
+# Experimental Features
+experimental:
+  ml_bug_prediction: false
+  advanced_pattern_learning: false
+  distributed_validation: false
+  real_time_code_analysis: false
+
+---
+# Configuration Schema Version: 1.0
+# Last Updated: {{ ansible_date_time.iso8601 | default('2025-06-21T16:55:18Z') }}
+# Generated by: AgenticScrum Framework v{{ version | default('1.0.0') }}

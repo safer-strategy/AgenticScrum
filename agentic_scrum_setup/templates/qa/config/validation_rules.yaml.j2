@@ -1,0 +1,401 @@
+# {{ project_name }} Validation Rules Configuration
+
+# Validation Rules Schema Version
+schema_version: "1.0"
+project: "{{ project_name }}"
+last_updated: "{{ ansible_date_time.iso8601 | default('2025-06-21T16:55:18Z') }}"
+
+# Code Quality Validation Rules
+code_quality_rules:
+  
+  # Linting Rules
+  linting:
+    tools:
+      flake8:
+        max_line_length: 88
+        max_complexity: 10
+        ignore_errors: []
+        per_file_ignores: {}
+      
+      black:
+        line_length: 88
+        target_versions: ["py38", "py39", "py310", "py311"]
+        skip_string_normalization: false
+      
+      mypy:
+        strict_mode: {{ 'true' if environment != 'development' else 'false' }}
+        check_untyped_defs: true
+        disallow_untyped_calls: {{ 'true' if environment == 'production' else 'false' }}
+        warn_redundant_casts: true
+        warn_unused_ignores: true
+    
+    thresholds:
+      max_errors: 0
+      max_warnings: {{ 5 if environment == 'development' else 0 }}
+      max_style_issues: {{ 10 if environment == 'development' else 0 }}
+  
+  # Security Rules
+  security:
+    tools:
+      bandit:
+        severity_level: "medium"
+        confidence_level: "medium"
+        skip_tests: []
+      
+      safety:
+        check_vulnerabilities: true
+        ignore_ids: []
+        full_report: true
+    
+    thresholds:
+      max_high_severity: 0
+      max_medium_severity: {{ 1 if environment == 'development' else 0 }}
+      max_low_severity: 3
+  
+  # Performance Rules
+  performance:
+    benchmarks:
+      max_function_time_ms: 1000
+      max_import_time_ms: 500
+      max_startup_time_ms: 2000
+    
+    memory:
+      max_memory_usage_mb: 512
+      max_memory_growth_mb: 100
+      check_memory_leaks: true
+  
+  # Documentation Rules
+  documentation:
+    docstring_coverage_min: 80
+    public_api_coverage_min: 95
+    type_annotation_coverage_min: 90
+
+# Functional Testing Rules
+functional_rules:
+  
+  # Test Coverage Requirements
+  coverage:
+    minimum_total: {{ qa.quality_gates.minimum_coverage | default(85) }}
+    minimum_unit: 90
+    minimum_integration: 80
+    minimum_new_code: 95
+    
+    # Coverage Exclusions
+    exclude_patterns:
+      - "*/tests/*"
+      - "*/test_*"
+      - "*/__pycache__/*"
+      - "*/venv/*"
+      - "*/migrations/*"
+  
+  # Test Execution Rules
+  execution:
+    max_test_duration_minutes: 30
+    max_individual_test_seconds: 60
+    parallel_execution: true
+    fail_fast: false
+    
+    # Test Categories
+    required_categories:
+      - "unit_tests"
+      - "integration_tests"
+      - "api_tests"
+    
+    optional_categories:
+      - "performance_tests"
+      - "load_tests"
+      - "smoke_tests"
+  
+  # API Testing Rules
+  api_testing:
+    required_methods: ["GET", "POST", "PUT", "DELETE"]
+    test_error_responses: true
+    test_authentication: true
+    test_authorization: true
+    validate_response_schemas: true
+    
+    # Performance Thresholds
+    max_response_time_ms: 2000
+    max_concurrent_users: 100
+    min_throughput_rps: 10
+  
+  # Database Testing Rules
+  database:
+    test_transactions: true
+    test_rollbacks: true
+    test_constraints: true
+    test_migrations: true
+    
+    # Data Integrity
+    validate_foreign_keys: true
+    test_data_consistency: true
+    check_cascade_deletes: true
+
+# Integration Testing Rules
+integration_rules:
+  
+  # MCP Integration Rules
+  mcp_integration:
+    required_servers:
+      - "agent_queue"
+      - "agent_monitor"
+      - "memory"
+      - "datetime"
+    
+    test_scenarios:
+      - "server_startup"
+      - "server_shutdown"
+      - "message_handling"
+      - "error_recovery"
+      - "timeout_handling"
+    
+    performance_thresholds:
+      max_connection_time_ms: 1000
+      max_request_time_ms: 5000
+      max_queue_processing_time_ms: 10000
+  
+  # Agent Coordination Rules
+  agent_coordination:
+    test_agent_communication: true
+    test_task_distribution: true
+    test_result_aggregation: true
+    test_failure_recovery: true
+    
+    # Coordination Thresholds
+    max_coordination_time_ms: 5000
+    max_agents_per_task: 5
+    min_success_rate_percent: 95
+  
+  # Cross-Feature Integration Rules
+  cross_feature:
+    test_feature_interactions: true
+    test_data_sharing: true
+    test_workflow_dependencies: true
+    
+    # Integration Points
+    critical_integrations:
+      - "story_completion_to_qa_trigger"
+      - "bug_detection_to_story_creation"
+      - "validation_results_to_reporting"
+      - "agent_assignment_to_execution"
+
+# User Experience Testing Rules
+user_experience_rules:
+  
+  # CLI Testing Rules
+  cli_testing:
+    test_all_commands: true
+    test_error_handling: true
+    test_help_messages: true
+    test_output_formatting: true
+    
+    # Performance Thresholds
+    max_command_response_ms: 2000
+    max_startup_time_ms: 1000
+    max_help_display_ms: 500
+  
+  # Error Message Rules
+  error_messages:
+    clarity_requirements:
+      include_context: true
+      provide_solutions: true
+      use_clear_language: true
+      include_error_codes: true
+    
+    # Message Quality Metrics
+    min_clarity_score: 80
+    max_message_length: 200
+    require_actionable_advice: true
+  
+  # Performance Under Load Rules
+  load_testing:
+    concurrent_users: [1, 5, 10, 25]
+    test_duration_minutes: 5
+    acceptable_degradation_percent: 20
+    
+    # Load Test Scenarios
+    scenarios:
+      - "normal_usage"
+      - "peak_load"
+      - "stress_test"
+      - "endurance_test"
+  
+  # User Workflow Rules
+  workflows:
+    test_complete_workflows: true
+    test_error_recovery: true
+    test_user_guidance: true
+    
+    # Critical Workflows
+    critical_paths:
+      - "project_initialization"
+      - "story_creation_to_completion"
+      - "qa_validation_workflow"
+      - "bug_reporting_to_resolution"
+
+# Bug Detection Rules
+bug_detection_rules:
+  
+  # Pattern Recognition Rules
+  pattern_recognition:
+    similarity_threshold: 0.8
+    min_pattern_frequency: 3
+    learning_enabled: true
+    false_positive_learning: true
+    
+    # Pattern Categories
+    pattern_types:
+      - "null_pointer_exceptions"
+      - "performance_regressions"
+      - "security_vulnerabilities"
+      - "integration_failures"
+      - "data_corruption"
+      - "configuration_errors"
+  
+  # Severity Classification Rules
+  severity_classification:
+    critical:
+      conditions:
+        - "system_crash"
+        - "data_loss"
+        - "security_breach"
+        - "complete_feature_failure"
+      auto_escalate: true
+      max_resolution_time_hours: 4
+    
+    high:
+      conditions:
+        - "major_feature_broken"
+        - "performance_degradation_50_percent"
+        - "authentication_issues"
+        - "data_inconsistency"
+      max_resolution_time_hours: 24
+    
+    medium:
+      conditions:
+        - "minor_feature_issues"
+        - "performance_degradation_20_percent"
+        - "ui_display_problems"
+        - "non_critical_errors"
+      max_resolution_time_hours: 72
+    
+    low:
+      conditions:
+        - "cosmetic_issues"
+        - "minor_performance_impact"
+        - "documentation_errors"
+        - "code_style_violations"
+      max_resolution_time_hours: 168
+  
+  # Regression Detection Rules
+  regression_detection:
+    baseline_comparison: true
+    performance_regression_threshold: {{ qa.quality_gates.max_performance_regression | default(20) }}
+    functionality_regression_tolerance: 0
+    
+    # Regression Test Triggers
+    triggers:
+      - "story_completion"
+      - "code_changes"
+      - "dependency_updates"
+      - "configuration_changes"
+
+# Quality Metrics Rules
+quality_metrics_rules:
+  
+  # Overall Quality Score Calculation
+  quality_score:
+    weights:
+      code_quality: 0.25
+      test_coverage: 0.25
+      bug_density: 0.20
+      performance: 0.15
+      security: 0.15
+    
+    # Score Thresholds
+    thresholds:
+      excellent: 95
+      good: 85
+      acceptable: 75
+      poor: 60
+  
+  # Trend Analysis Rules
+  trend_analysis:
+    analysis_period_days: 30
+    trend_threshold_percent: 10
+    alert_on_negative_trends: true
+    
+    # Key Metrics to Track
+    tracked_metrics:
+      - "bug_discovery_rate"
+      - "bug_resolution_time"
+      - "test_success_rate"
+      - "code_coverage"
+      - "performance_metrics"
+      - "security_score"
+
+# Notification and Alerting Rules
+notification_rules:
+  
+  # Alert Conditions
+  immediate_alerts:
+    - "critical_bug_detected"
+    - "security_vulnerability_found"
+    - "system_failure"
+    - "quality_score_below_threshold"
+  
+  # Alert Destinations
+  alert_destinations:
+    console: true
+    log_file: true
+    email: false  # Configure email settings separately
+    slack: false  # Configure Slack integration separately
+  
+  # Alert Frequency Limits
+  frequency_limits:
+    same_issue_cooldown_minutes: 30
+    max_alerts_per_hour: 10
+    escalation_delay_minutes: 60
+
+# Environment-Specific Rule Overrides
+environment_overrides:
+  
+  development:
+    # More lenient rules for development
+    code_quality_rules:
+      linting:
+        thresholds:
+          max_warnings: 10
+          max_style_issues: 20
+    
+    functional_rules:
+      coverage:
+        minimum_total: 70
+        minimum_new_code: 80
+  
+  test:
+    # Strict rules for testing environment
+    functional_rules:
+      execution:
+        fail_fast: true
+        max_test_duration_minutes: 20
+  
+  production:
+    # Strictest rules for production validation
+    code_quality_rules:
+      linting:
+        thresholds:
+          max_errors: 0
+          max_warnings: 0
+          max_style_issues: 0
+    
+    security:
+      thresholds:
+        max_high_severity: 0
+        max_medium_severity: 0
+        max_low_severity: 0
+
+---
+# Validation Rules Schema Version: 1.0
+# Compatible with: AgenticScrum Framework v{{ version | default('1.0.0') }}
+# Configuration Template: validation_rules.yaml.j2

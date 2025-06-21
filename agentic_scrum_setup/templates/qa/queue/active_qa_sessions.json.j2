@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "last_updated": "{{ ansible_date_time.iso8601 | default('2025-06-21T16:55:18Z') }}",
+  "project_name": "{{ project_name }}",
+  "session_config": {
+    "max_session_duration_minutes": 60,
+    "health_check_interval_seconds": 30,
+    "progress_update_interval_seconds": 10,
+    "auto_cleanup_completed_sessions": true
+  },
+  "active_sessions": []
+}
