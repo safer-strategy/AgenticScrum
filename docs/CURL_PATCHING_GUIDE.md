@@ -20,16 +20,16 @@ For the most common updates, use these one-liner commands:
 
 ```bash
 # Update init.sh with latest features
-curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-init-update.sh | bash
+curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-init-update.sh | /bin/zsh
 
 # Add security training features
-curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-security-update.sh | bash
+curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-security-update.sh | /bin/zsh
 
 # Add animated ASCII banner
-curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-banner-update.sh | bash
+curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-banner-update.sh | /bin/zsh
 
 # Install standalone patcher globally
-curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-install-patcher.sh | bash
+curl -fsSL https://raw.githubusercontent.com/safer-strategy/AgenticScrum/refs/heads/main/scripts/quick-install-patcher.sh | /bin/zsh
 ```
 
 ### Manual Download and Execute

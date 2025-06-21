@@ -193,12 +193,18 @@ patch_animated_banner() {
     
     # Extract banner function
     if sed -n '/function show_animated_banner/,/^}/p' "$TEMP_DIR/init.sh.j2" > "$TEMP_DIR/banner_function.sh"; then
-        # Insert banner function into init.sh
-        if sed -i.bak '/^#!/a\
-\
-# Animated banner function\
-'"$(cat "$TEMP_DIR/banner_function.sh")"'
-' "$init_sh"; then
+        # Create a temporary file with the insertion
+        {
+            head -n 1 "$init_sh"
+            echo ""
+            echo "# Animated banner function"
+            cat "$TEMP_DIR/banner_function.sh"
+            echo ""
+            tail -n +2 "$init_sh"
+        } > "$TEMP_DIR/new_init.sh"
+        
+        # Replace the original file
+        if mv "$TEMP_DIR/new_init.sh" "$init_sh"; then
             print_success "Animated banner added to init.sh"
             return 0
         fi
@@ -239,9 +245,9 @@ patch_security_features() {
     
     # Download security templates
     local security_files=(
-        "agentic_scrum_setup/templates/agents/saa/persona_rules.yaml.j2:agents/saa/persona_rules.yaml"
-        "agentic_scrum_setup/templates/agents/saa/memory_patterns.yaml.j2:agents/saa/memory_patterns.yaml"
-        "agentic_scrum_setup/templates/standards/security_standards.md.j2:standards/security_standards.md"
+        "agentic_scrum_setup/templates/saa/persona_rules.yaml.j2:agents/saa/persona_rules.yaml"
+        "agentic_scrum_setup/templates/saa/training_protocol.yaml.j2:agents/saa/training_protocol.yaml"
+        "agentic_scrum_setup/templates/checklists/security_audit_checklist.md.j2:standards/security_audit_checklist.md"
     )
     
     local updated_files=0
