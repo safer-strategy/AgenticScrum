@@ -23,7 +23,7 @@ INSTALL_DIR="$HOME/.local/bin"
 mkdir -p "$INSTALL_DIR"
 
 # Download standalone patcher
-GITHUB_RAW_URL="https://raw.githubusercontent.com/Anthropic/AgenticScrum/main"
+GITHUB_RAW_URL="https://raw.githubusercontent.com/safer-strategy/AgenticScrum/main"
 
 print_info "Downloading standalone patcher..."
 

@@ -23,7 +23,7 @@ if [[ ! -f "agentic_config.yaml" ]] && [[ ! -f "init.sh" ]]; then
 fi
 
 # Download and run main updater
-GITHUB_RAW_URL="https://raw.githubusercontent.com/Anthropic/AgenticScrum/main"
+GITHUB_RAW_URL="https://raw.githubusercontent.com/safer-strategy/AgenticScrum/main"
 
 if curl -fsSL "${GITHUB_RAW_URL}/download-patch-updates.sh" | bash -s security-update; then
     print_success "Security features added successfully!"

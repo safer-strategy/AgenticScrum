@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # Configuration
-GITHUB_RAW_URL="https://raw.githubusercontent.com/Anthropic/AgenticScrum/main"
+GITHUB_RAW_URL="https://raw.githubusercontent.com/safer-strategy/AgenticScrum/main"
 BACKUP_DIR=".agentic_patch_backup_$(date +%Y%m%d_%H%M%S)"
 TEMP_DIR=".agentic_patch_temp"
 VERSION_FILE="VERSION"
