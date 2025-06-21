@@ -1,0 +1,276 @@
+#!/bin/bash
+"""
+QA Daemon for Autonomous Background Validation
+
+This daemon script manages the background QA validation system, ensuring continuous
+monitoring of story completion triggers and autonomous execution of validation workflows.
+
+Usage:
+    ./qa_daemon.sh start     # Start QA daemon
+    ./qa_daemon.sh stop      # Stop QA daemon  
+    ./qa_daemon.sh restart   # Restart QA daemon
+    ./qa_daemon.sh status    # Check daemon status
+    ./qa_daemon.sh logs      # Tail daemon logs
+"""
+
+# --- Configuration ---
+PROJECT_NAME="{{ project_name }}"
+QA_DAEMON_PID_FILE="tmp/qa_daemon.pid"
+QA_DAEMON_LOG_FILE="logs/qa/qa_daemon.log"
+QA_RUNNER_SCRIPT="qa/scripts/qa_runner.py"
+
+# --- Colors ---
+C_RESET='\033[0m'
+C_GREEN='\033[0;32m'
+C_YELLOW='\033[0;33m'
+C_RED='\033[0;31m'
+C_BLUE='\033[0;34m'
+C_BOLD='\033[1m'
+
+# --- Helper Functions ---
+function info() {
+  echo -e "${C_BLUE}${C_BOLD}INFO:${C_RESET} $1"
+}
+
+function success() {
+  echo -e "${C_GREEN}${C_BOLD}SUCCESS:${C_RESET} $1"
+}
+
+function error() {
+  echo -e "${C_RED}${C_BOLD}ERROR:${C_RESET} $1"
+}
+
+function warning() {
+  echo -e "${C_YELLOW}${C_BOLD}WARNING:${C_RESET} $1"
+}
+
+# --- Daemon Management Functions ---
+function ensure_directories() {
+  mkdir -p tmp logs/qa qa/queue qa/reports
+}
+
+function is_daemon_running() {
+  if [[ -f "$QA_DAEMON_PID_FILE" ]]; then
+    local pid=$(cat "$QA_DAEMON_PID_FILE")
+    if ps -p "$pid" > /dev/null 2>&1; then
+      return 0
+    else
+      # PID file exists but process is dead
+      rm -f "$QA_DAEMON_PID_FILE"
+      return 1
+    fi
+  fi
+  return 1
+}
+
+function start_daemon() {
+  info "Starting QA Daemon for $PROJECT_NAME..."
+  
+  ensure_directories
+  
+  if is_daemon_running; then
+    warning "QA Daemon is already running (PID: $(cat $QA_DAEMON_PID_FILE))"
+    return 1
+  fi
+  
+  # Check if Python runner exists
+  if [[ ! -f "$QA_RUNNER_SCRIPT" ]]; then
+    error "QA Runner script not found: $QA_RUNNER_SCRIPT"
+    error "Make sure QA system is properly initialized"
+    return 1
+  fi
+  
+  # Check Python dependencies
+  if ! python3 -c "import yaml, json" 2>/dev/null; then
+    error "Required Python dependencies not found"
+    info "Install with: pip install PyYAML"
+    return 1
+  fi
+  
+  # Start the daemon
+  nohup python3 "$QA_RUNNER_SCRIPT" --queue-worker > "$QA_DAEMON_LOG_FILE" 2>&1 &
+  local daemon_pid=$!
+  
+  # Save PID
+  echo "$daemon_pid" > "$QA_DAEMON_PID_FILE"
+  
+  # Wait a moment and check if it's still running
+  sleep 2
+  if is_daemon_running; then
+    success "QA Daemon started successfully (PID: $daemon_pid)"
+    info "Monitor with: ./qa_daemon.sh logs"
+    info "Check status with: ./qa_daemon.sh status"
+  else
+    error "QA Daemon failed to start"
+    info "Check logs: tail -f $QA_DAEMON_LOG_FILE"
+    return 1
+  fi
+}
+
+function stop_daemon() {
+  info "Stopping QA Daemon..."
+  
+  if ! is_daemon_running; then
+    warning "QA Daemon is not running"
+    return 1
+  fi
+  
+  local pid=$(cat "$QA_DAEMON_PID_FILE")
+  
+  # Send TERM signal first
+  kill -TERM "$pid" 2>/dev/null
+  
+  # Wait for graceful shutdown
+  for i in {1..10}; do
+    if ! ps -p "$pid" > /dev/null 2>&1; then
+      break
+    fi
+    sleep 1
+  done
+  
+  # Force kill if still running
+  if ps -p "$pid" > /dev/null 2>&1; then
+    warning "Daemon didn't stop gracefully, force killing..."
+    kill -KILL "$pid" 2>/dev/null
+  fi
+  
+  # Clean up PID file
+  rm -f "$QA_DAEMON_PID_FILE"
+  
+  success "QA Daemon stopped"
+}
+
+function restart_daemon() {
+  info "Restarting QA Daemon..."
+  stop_daemon
+  sleep 2
+  start_daemon
+}
+
+function show_daemon_status() {
+  echo -e "${C_BOLD}QA Daemon Status for $PROJECT_NAME${C_RESET}"
+  echo ""
+  
+  if is_daemon_running; then
+    local pid=$(cat "$QA_DAEMON_PID_FILE")
+    success "QA Daemon is RUNNING (PID: $pid)"
+    
+    # Show process info
+    if command -v ps >/dev/null 2>&1; then
+      echo ""
+      echo -e "${C_BOLD}Process Information:${C_RESET}"
+      ps -p "$pid" -o pid,ppid,pcpu,pmem,etime,cmd 2>/dev/null || echo "  Process details unavailable"
+    fi
+    
+  else
+    error "QA Daemon is NOT RUNNING"
+  fi
+  
+  echo ""
+  echo -e "${C_BOLD}Queue Status:${C_RESET}"
+  
+  # Show queue statistics
+  if [[ -f "qa/queue/pending_validation.json" ]]; then
+    local pending_count=$(jq length qa/queue/pending_validation.json 2>/dev/null || echo "0")
+    echo "  Pending Validations: $pending_count"
+  else
+    echo "  Pending Validations: 0"
+  fi
+  
+  if [[ -f "qa/queue/active_qa_sessions.json" ]]; then
+    local active_count=$(jq length qa/queue/active_qa_sessions.json 2>/dev/null || echo "0")
+    echo "  Active Sessions: $active_count"
+  else
+    echo "  Active Sessions: 0"
+  fi
+  
+  if [[ -f "qa/queue/bugfix_queue.json" ]]; then
+    local bugfix_count=$(jq length qa/queue/bugfix_queue.json 2>/dev/null || echo "0")
+    echo "  Bugfix Queue: $bugfix_count"
+  else
+    echo "  Bugfix Queue: 0"
+  fi
+  
+  echo ""
+  echo -e "${C_BOLD}Recent Activity:${C_RESET}"
+  if [[ -f "$QA_DAEMON_LOG_FILE" ]]; then
+    tail -n 5 "$QA_DAEMON_LOG_FILE" | while read -r line; do
+      echo "  $line"
+    done
+  else
+    echo "  No log file found"
+  fi
+  
+  echo ""
+  echo -e "${C_BOLD}Log File:${C_RESET} $QA_DAEMON_LOG_FILE"
+  echo -e "${C_BOLD}PID File:${C_RESET} $QA_DAEMON_PID_FILE"
+}
+
+function tail_logs() {
+  info "Tailing QA Daemon logs (Press Ctrl+C to exit)"
+  echo ""
+  
+  if [[ -f "$QA_DAEMON_LOG_FILE" ]]; then
+    tail -f "$QA_DAEMON_LOG_FILE"
+  else
+    error "Log file not found: $QA_DAEMON_LOG_FILE"
+    info "Start the daemon first: ./qa_daemon.sh start"
+  fi
+}
+
+function show_help() {
+  echo -e "${C_BOLD}QA Daemon Management for $PROJECT_NAME${C_RESET}"
+  echo ""
+  echo "Usage: ./qa_daemon.sh [command]"
+  echo ""
+  echo "Commands:"
+  echo -e "  ${C_YELLOW}start${C_RESET}     - Start the QA daemon for background validation"
+  echo -e "  ${C_YELLOW}stop${C_RESET}      - Stop the QA daemon"
+  echo -e "  ${C_YELLOW}restart${C_RESET}   - Restart the QA daemon"
+  echo -e "  ${C_YELLOW}status${C_RESET}    - Show daemon status and queue information"
+  echo -e "  ${C_YELLOW}logs${C_RESET}      - Tail daemon logs in real-time"
+  echo -e "  ${C_YELLOW}help${C_RESET}      - Show this help message"
+  echo ""
+  echo "The QA daemon continuously monitors for:"
+  echo "  - Story completion triggers"
+  echo "  - Validation tasks in the queue"
+  echo "  - Background validation execution"
+  echo "  - Autonomous bug detection and reporting"
+  echo ""
+  echo "Monitor validation progress with:"
+  echo "  ./init.sh qa-status"
+  echo "  ./init.sh qa-reports"
+  echo "  ./init.sh qa-queue status"
+}
+
+# --- Main Dispatcher ---
+function main() {
+  case "$1" in
+    start)
+      start_daemon
+      ;;
+    stop)
+      stop_daemon
+      ;;
+    restart)
+      restart_daemon
+      ;;
+    status)
+      show_daemon_status
+      ;;
+    logs)
+      tail_logs
+      ;;
+    help|"")
+      show_help
+      ;;
+    *)
+      error "Unknown command: $1"
+      echo ""
+      show_help
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

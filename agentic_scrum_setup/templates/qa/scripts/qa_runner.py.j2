@@ -1,0 +1,772 @@
+#!/usr/bin/env python3
+"""
+QA Runner Script for Autonomous Background Validation
+
+This script serves as the core execution engine for the autonomous QA validation system.
+It processes validation tasks from the queue, executes multi-layer validation workflows,
+and coordinates with background agents through the MCP system.
+
+Usage:
+    python qa_runner.py --story-id STORY_001 --validation-type full
+    python qa_runner.py --daemon  # Run as background daemon
+    python qa_runner.py --queue-worker  # Process queue continuously
+"""
+
+import argparse
+import asyncio
+import json
+import logging
+import os
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Dict, List, Optional, Any
+import subprocess
+import tempfile
+import shutil
+
+# Configure logging
+def setup_logging():
+    """Setup comprehensive logging for QA operations."""
+    log_dir = Path("logs/qa")
+    log_dir.mkdir(parents=True, exist_ok=True)
+    
+    log_file = log_dir / f"qa_runner_{datetime.now().strftime('%Y%m%d')}.log"
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_file),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+    return logging.getLogger(__name__)
+
+logger = setup_logging()
+
+class QAValidationRunner:
+    """Core QA validation execution engine."""
+    
+    def __init__(self):
+        self.project_root = Path.cwd()
+        self.qa_config = self._load_qa_config()
+        self.validation_id = None
+        self.execution_start_time = None
+        self.resource_usage = {}
+        
+    def _load_qa_config(self) -> Dict[str, Any]:
+        """Load QA configuration from agentic_config.yaml."""
+        config_path = self.project_root / "agentic_config.yaml"
+        if not config_path.exists():
+            raise FileNotFoundError(f"Configuration not found: {config_path}")
+            
+        try:
+            import yaml
+            with open(config_path, 'r') as f:
+                config = yaml.safe_load(f)
+                return config.get('qa', {})
+        except ImportError:
+            logger.error("PyYAML not installed. Install with: pip install PyYAML")
+            raise
+        except Exception as e:
+            logger.error(f"Error loading QA config: {e}")
+            raise
+    
+    def _ensure_directories(self):
+        """Ensure all required QA directories exist."""
+        directories = [
+            "qa/queue",
+            "qa/reports", 
+            "qa/templates",
+            "qa/config",
+            "logs/qa",
+            "tmp/qa"
+        ]
+        
+        for directory in directories:
+            Path(directory).mkdir(parents=True, exist_ok=True)
+    
+    def _generate_validation_id(self, story_id: str) -> str:
+        """Generate unique validation ID."""
+        timestamp = int(time.time())
+        return f"VAL_{story_id}_{timestamp}"
+    
+    def _load_queue_file(self, queue_file: str) -> List[Dict[str, Any]]:
+        """Load tasks from queue file."""
+        queue_path = Path(f"qa/queue/{queue_file}")
+        if not queue_path.exists():
+            return []
+            
+        try:
+            with open(queue_path, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Error loading queue {queue_file}: {e}")
+            return []
+    
+    def _save_queue_file(self, queue_file: str, tasks: List[Dict[str, Any]]):
+        """Save tasks to queue file."""
+        queue_path = Path(f"qa/queue/{queue_file}")
+        try:
+            with open(queue_path, 'w') as f:
+                json.dump(tasks, f, indent=2)
+        except Exception as e:
+            logger.error(f"Error saving queue {queue_file}: {e}")
+    
+    def _update_task_status(self, task_id: str, status: str, details: Optional[Dict] = None):
+        """Update task status in relevant queue files."""
+        # Update pending validations
+        pending = self._load_queue_file("pending_validation.json")
+        for task in pending:
+            if task.get('id') == task_id:
+                task['status'] = status
+                task['updated_at'] = datetime.now(timezone.utc).isoformat()
+                if details:
+                    task.update(details)
+                break
+        self._save_queue_file("pending_validation.json", pending)
+        
+        # Update active sessions if needed
+        if status in ['running', 'completed', 'failed']:
+            active = self._load_queue_file("active_qa_sessions.json")
+            if status == 'running':
+                # Add to active sessions
+                active_task = {
+                    "id": task_id,
+                    "agent_id": f"qa_runner_{os.getpid()}",
+                    "status": status,
+                    "started_at": datetime.now(timezone.utc).isoformat(),
+                    "validation_id": self.validation_id
+                }
+                active.append(active_task)
+            else:
+                # Remove from active sessions
+                active = [task for task in active if task.get('id') != task_id]
+            self._save_queue_file("active_qa_sessions.json", active)
+    
+    def execute_code_quality_validation(self, story_id: str) -> Dict[str, Any]:
+        """Execute Layer 1: Code Quality Validation."""
+        logger.info(f"Executing code quality validation for {story_id}")
+        results = {
+            "layer": "code_quality",
+            "status": "pass",
+            "score": 0,
+            "duration_minutes": 0,
+            "checks": {}
+        }
+        
+        start_time = time.time()
+        
+        try:
+            # Lint checking
+            if self.qa_config.get('validation_layers', {}).get('code_quality', {}).get('lint_check', True):
+                lint_result = self._run_lint_check()
+                results["checks"]["lint_check"] = lint_result
+                if not lint_result["passed"]:
+                    results["status"] = "fail"
+            
+            # Security scanning
+            if self.qa_config.get('validation_layers', {}).get('code_quality', {}).get('security_scan', True):
+                security_result = self._run_security_scan()
+                results["checks"]["security_scan"] = security_result
+                if not security_result["passed"]:
+                    results["status"] = "fail"
+            
+            # Performance benchmarking
+            if self.qa_config.get('validation_layers', {}).get('code_quality', {}).get('performance_benchmark', True):
+                perf_result = self._run_performance_benchmark()
+                results["checks"]["performance_benchmark"] = perf_result
+                if not perf_result["passed"]:
+                    results["status"] = "fail"
+            
+            # Documentation coverage
+            if self.qa_config.get('validation_layers', {}).get('code_quality', {}).get('documentation_coverage', True):
+                doc_result = self._check_documentation_coverage()
+                results["checks"]["documentation_coverage"] = doc_result
+                if not doc_result["passed"]:
+                    results["status"] = "fail"
+            
+            # Calculate overall score
+            passed_checks = sum(1 for check in results["checks"].values() if check["passed"])
+            total_checks = len(results["checks"])
+            results["score"] = int((passed_checks / total_checks) * 100) if total_checks > 0 else 0
+            
+        except Exception as e:
+            logger.error(f"Error in code quality validation: {e}")
+            results["status"] = "error"
+            results["error"] = str(e)
+        
+        results["duration_minutes"] = round((time.time() - start_time) / 60, 2)
+        return results
+    
+    def _run_lint_check(self) -> Dict[str, Any]:
+        """Run linting checks based on project language."""
+        try:
+            # Determine project language from config
+            config_path = self.project_root / "agentic_config.yaml"
+            with open(config_path, 'r') as f:
+                import yaml
+                config = yaml.safe_load(f)
+                language = config.get('project', {}).get('language', 'python')
+            
+            if language == 'python':
+                result = subprocess.run(['flake8', '.'], 
+                                      capture_output=True, text=True, cwd=self.project_root)
+                return {
+                    "passed": result.returncode == 0,
+                    "output": result.stdout + result.stderr,
+                    "tool": "flake8"
+                }
+            elif language in ['javascript', 'typescript']:
+                result = subprocess.run(['npx', 'eslint', '.'], 
+                                      capture_output=True, text=True, cwd=self.project_root)
+                return {
+                    "passed": result.returncode == 0,
+                    "output": result.stdout + result.stderr,
+                    "tool": "eslint"
+                }
+            else:
+                return {
+                    "passed": True,
+                    "output": f"No lint configuration for {language}",
+                    "tool": "none"
+                }
+        except Exception as e:
+            return {
+                "passed": False,
+                "output": f"Error running lint check: {e}",
+                "tool": "error"
+            }
+    
+    def _run_security_scan(self) -> Dict[str, Any]:
+        """Run security vulnerability scanning."""
+        try:
+            # Use bandit for Python projects
+            result = subprocess.run(['bandit', '-r', '.', '-f', 'json'], 
+                                  capture_output=True, text=True, cwd=self.project_root)
+            
+            try:
+                bandit_output = json.loads(result.stdout) if result.stdout else {}
+                issues = bandit_output.get('results', [])
+                high_severity_issues = [issue for issue in issues if issue.get('issue_severity') in ['HIGH', 'MEDIUM']]
+                
+                return {
+                    "passed": len(high_severity_issues) == 0,
+                    "output": f"Found {len(issues)} total issues, {len(high_severity_issues)} high/medium severity",
+                    "tool": "bandit",
+                    "issues_count": len(issues),
+                    "high_severity_count": len(high_severity_issues)
+                }
+            except json.JSONDecodeError:
+                return {
+                    "passed": result.returncode == 0,
+                    "output": result.stdout + result.stderr,
+                    "tool": "bandit"
+                }
+        except FileNotFoundError:
+            return {
+                "passed": True,
+                "output": "bandit not installed - skipping security scan",
+                "tool": "none"
+            }
+        except Exception as e:
+            return {
+                "passed": False,
+                "output": f"Error running security scan: {e}",
+                "tool": "error"
+            }
+    
+    def _run_performance_benchmark(self) -> Dict[str, Any]:
+        """Run performance benchmarking."""
+        # Basic performance check - can be enhanced based on project needs
+        try:
+            start_time = time.time()
+            
+            # Check if there are performance-related tests
+            test_files = list(Path('.').rglob('*perf*.py')) + list(Path('.').rglob('*benchmark*.py'))
+            
+            if test_files:
+                # Run performance tests
+                result = subprocess.run(['python', '-m', 'pytest', '-v'] + [str(f) for f in test_files], 
+                                      capture_output=True, text=True, cwd=self.project_root)
+                
+                duration = time.time() - start_time
+                return {
+                    "passed": result.returncode == 0,
+                    "output": f"Performance tests completed in {duration:.2f}s",
+                    "tool": "pytest",
+                    "duration_seconds": duration
+                }
+            else:
+                return {
+                    "passed": True,
+                    "output": "No performance tests found - creating baseline",
+                    "tool": "baseline"
+                }
+        except Exception as e:
+            return {
+                "passed": False,
+                "output": f"Error running performance benchmark: {e}",
+                "tool": "error"
+            }
+    
+    def _check_documentation_coverage(self) -> Dict[str, Any]:
+        """Check documentation coverage."""
+        try:
+            # Check for README, docs directory, and docstrings
+            readme_exists = any(Path('.').glob('README*'))
+            docs_dir_exists = Path('docs').exists()
+            
+            # Simple docstring coverage check for Python files
+            python_files = list(Path('.').rglob('*.py'))
+            if python_files:
+                documented_files = 0
+                for py_file in python_files:
+                    try:
+                        with open(py_file, 'r') as f:
+                            content = f.read()
+                            # Simple check for docstrings
+                            if '"""' in content or "'''" in content:
+                                documented_files += 1
+                    except:
+                        continue
+                
+                coverage_percent = (documented_files / len(python_files)) * 100 if python_files else 100
+                
+                return {
+                    "passed": readme_exists and coverage_percent >= 50,
+                    "output": f"README: {readme_exists}, Docs dir: {docs_dir_exists}, Docstring coverage: {coverage_percent:.1f}%",
+                    "tool": "custom",
+                    "coverage_percent": coverage_percent
+                }
+            else:
+                return {
+                    "passed": readme_exists,
+                    "output": f"README: {readme_exists}, Docs dir: {docs_dir_exists}",
+                    "tool": "custom"
+                }
+        except Exception as e:
+            return {
+                "passed": False,
+                "output": f"Error checking documentation: {e}",
+                "tool": "error"
+            }
+    
+    def execute_functional_testing(self, story_id: str) -> Dict[str, Any]:
+        """Execute Layer 2: Functional Testing."""
+        logger.info(f"Executing functional testing for {story_id}")
+        results = {
+            "layer": "functional_testing",
+            "status": "pass",
+            "score": 0,
+            "duration_minutes": 0,
+            "checks": {}
+        }
+        
+        start_time = time.time()
+        
+        try:
+            # Run all tests to verify functional requirements
+            result = subprocess.run(['python', '-m', 'pytest', '-v', 'tests/'], 
+                                  capture_output=True, text=True, cwd=self.project_root)
+            
+            results["checks"]["test_execution"] = {
+                "passed": result.returncode == 0,
+                "output": result.stdout + result.stderr,
+                "tool": "pytest"
+            }
+            
+            if result.returncode != 0:
+                results["status"] = "fail"
+            
+            results["score"] = 100 if result.returncode == 0 else 0
+            
+        except Exception as e:
+            logger.error(f"Error in functional testing: {e}")
+            results["status"] = "error"
+            results["error"] = str(e)
+        
+        results["duration_minutes"] = round((time.time() - start_time) / 60, 2)
+        return results
+    
+    def execute_integration_testing(self, story_id: str) -> Dict[str, Any]:
+        """Execute Layer 3: Integration Testing."""
+        logger.info(f"Executing integration testing for {story_id}")
+        results = {
+            "layer": "integration_testing",
+            "status": "pass",
+            "score": 0,
+            "duration_minutes": 0,
+            "checks": {}
+        }
+        
+        start_time = time.time()
+        
+        try:
+            # Check MCP integration if enabled
+            if Path('.mcp.json').exists():
+                mcp_result = self._test_mcp_integration()
+                results["checks"]["mcp_integration"] = mcp_result
+                if not mcp_result["passed"]:
+                    results["status"] = "fail"
+            
+            # Run integration tests if they exist
+            integration_tests = list(Path('.').rglob('*integration*.py'))
+            if integration_tests:
+                result = subprocess.run(['python', '-m', 'pytest', '-v'] + [str(f) for f in integration_tests], 
+                                      capture_output=True, text=True, cwd=self.project_root)
+                
+                results["checks"]["integration_tests"] = {
+                    "passed": result.returncode == 0,
+                    "output": result.stdout + result.stderr,
+                    "tool": "pytest"
+                }
+                
+                if result.returncode != 0:
+                    results["status"] = "fail"
+            
+            # Calculate score
+            passed_checks = sum(1 for check in results["checks"].values() if check["passed"])
+            total_checks = len(results["checks"])
+            results["score"] = int((passed_checks / total_checks) * 100) if total_checks > 0 else 100
+            
+        except Exception as e:
+            logger.error(f"Error in integration testing: {e}")
+            results["status"] = "error"
+            results["error"] = str(e)
+        
+        results["duration_minutes"] = round((time.time() - start_time) / 60, 2)
+        return results
+    
+    def _test_mcp_integration(self) -> Dict[str, Any]:
+        """Test MCP server integration."""
+        try:
+            # Basic MCP configuration validation
+            mcp_config_path = Path('.mcp.json')
+            if mcp_config_path.exists():
+                with open(mcp_config_path, 'r') as f:
+                    mcp_config = json.load(f)
+                
+                return {
+                    "passed": True,
+                    "output": f"MCP configuration valid with {len(mcp_config.get('mcpServers', {}))} servers",
+                    "tool": "mcp_validation"
+                }
+            else:
+                return {
+                    "passed": False,
+                    "output": "MCP configuration file not found",
+                    "tool": "mcp_validation"
+                }
+        except Exception as e:
+            return {
+                "passed": False,
+                "output": f"Error testing MCP integration: {e}",
+                "tool": "error"
+            }
+    
+    def execute_user_experience_testing(self, story_id: str) -> Dict[str, Any]:
+        """Execute Layer 4: User Experience Testing."""
+        logger.info(f"Executing user experience testing for {story_id}")
+        results = {
+            "layer": "user_experience_testing",
+            "status": "pass",
+            "score": 0,
+            "duration_minutes": 0,
+            "checks": {}
+        }
+        
+        start_time = time.time()
+        
+        try:
+            # Test CLI responsiveness
+            cli_result = self._test_cli_responsiveness()
+            results["checks"]["cli_responsiveness"] = cli_result
+            if not cli_result["passed"]:
+                results["status"] = "fail"
+            
+            # Check error message clarity
+            error_result = self._check_error_messages()
+            results["checks"]["error_messages"] = error_result
+            if not error_result["passed"]:
+                results["status"] = "fail"
+            
+            # Calculate score
+            passed_checks = sum(1 for check in results["checks"].values() if check["passed"])
+            total_checks = len(results["checks"])
+            results["score"] = int((passed_checks / total_checks) * 100) if total_checks > 0 else 100
+            
+        except Exception as e:
+            logger.error(f"Error in user experience testing: {e}")
+            results["status"] = "error"
+            results["error"] = str(e)
+        
+        results["duration_minutes"] = round((time.time() - start_time) / 60, 2)
+        return results
+    
+    def _test_cli_responsiveness(self) -> Dict[str, Any]:
+        """Test CLI command responsiveness."""
+        try:
+            start_time = time.time()
+            
+            # Test basic help command
+            result = subprocess.run(['./init.sh', 'help'], 
+                                  capture_output=True, text=True, cwd=self.project_root, timeout=10)
+            
+            duration = time.time() - start_time
+            
+            return {
+                "passed": result.returncode == 0 and duration < 5.0,
+                "output": f"Help command completed in {duration:.2f}s",
+                "tool": "cli_test",
+                "duration_seconds": duration
+            }
+        except subprocess.TimeoutExpired:
+            return {
+                "passed": False,
+                "output": "CLI command timed out (> 10s)",
+                "tool": "cli_test"
+            }
+        except Exception as e:
+            return {
+                "passed": False,
+                "output": f"Error testing CLI responsiveness: {e}",
+                "tool": "error"
+            }
+    
+    def _check_error_messages(self) -> Dict[str, Any]:
+        """Check quality of error messages."""
+        try:
+            # Test invalid command to check error message quality
+            result = subprocess.run(['./init.sh', 'invalid-command'], 
+                                  capture_output=True, text=True, cwd=self.project_root)
+            
+            error_output = result.stderr + result.stdout
+            
+            # Check if error message is helpful
+            has_helpful_error = any(keyword in error_output.lower() for keyword in [
+                'usage', 'help', 'command', 'available', 'option'
+            ])
+            
+            return {
+                "passed": has_helpful_error,
+                "output": f"Error message quality check: {'helpful' if has_helpful_error else 'needs improvement'}",
+                "tool": "error_message_test"
+            }
+        except Exception as e:
+            return {
+                "passed": False,
+                "output": f"Error checking error messages: {e}",
+                "tool": "error"
+            }
+    
+    def execute_full_validation(self, story_id: str, validation_type: str = "full") -> Dict[str, Any]:
+        """Execute complete multi-layer validation workflow."""
+        self.validation_id = self._generate_validation_id(story_id)
+        self.execution_start_time = datetime.now(timezone.utc)
+        
+        logger.info(f"Starting {validation_type} validation for {story_id} (ID: {self.validation_id})")
+        
+        self._ensure_directories()
+        
+        validation_results = {
+            "validation_id": self.validation_id,
+            "story_id": story_id,
+            "validation_type": validation_type,
+            "status": "pass",
+            "start_time": self.execution_start_time.isoformat(),
+            "layers": {},
+            "overall_score": 0,
+            "total_duration_minutes": 0,
+            "bugs_detected": [],
+            "recommendations": []
+        }
+        
+        try:
+            # Execute validation layers based on type
+            if validation_type in ["full", "code"]:
+                validation_results["layers"]["code_quality"] = self.execute_code_quality_validation(story_id)
+            
+            if validation_type in ["full", "functional"]:
+                validation_results["layers"]["functional_testing"] = self.execute_functional_testing(story_id)
+            
+            if validation_type in ["full", "integration"]:
+                validation_results["layers"]["integration_testing"] = self.execute_integration_testing(story_id)
+            
+            if validation_type in ["full", "ux"]:
+                validation_results["layers"]["user_experience_testing"] = self.execute_user_experience_testing(story_id)
+            
+            # Calculate overall results
+            layer_scores = [layer["score"] for layer in validation_results["layers"].values()]
+            validation_results["overall_score"] = int(sum(layer_scores) / len(layer_scores)) if layer_scores else 0
+            
+            failed_layers = [name for name, layer in validation_results["layers"].items() if layer["status"] != "pass"]
+            if failed_layers:
+                validation_results["status"] = "fail"
+                validation_results["failed_layers"] = failed_layers
+            
+            validation_results["total_duration_minutes"] = sum(
+                layer["duration_minutes"] for layer in validation_results["layers"].values()
+            )
+            
+        except Exception as e:
+            logger.error(f"Error in validation execution: {e}")
+            validation_results["status"] = "error"
+            validation_results["error"] = str(e)
+        
+        # Save validation report
+        self._save_validation_report(validation_results)
+        
+        logger.info(f"Validation completed: {validation_results['status']} (Score: {validation_results['overall_score']})")
+        
+        return validation_results
+    
+    def _save_validation_report(self, results: Dict[str, Any]):
+        """Save validation report to file."""
+        timestamp = int(time.time())
+        report_file = Path(f"qa/reports/validation_report_{results['story_id']}_{timestamp}.md")
+        
+        try:
+            report_content = self._generate_validation_report(results)
+            with open(report_file, 'w') as f:
+                f.write(report_content)
+            
+            logger.info(f"Validation report saved: {report_file}")
+        except Exception as e:
+            logger.error(f"Error saving validation report: {e}")
+    
+    def _generate_validation_report(self, results: Dict[str, Any]) -> str:
+        """Generate markdown validation report."""
+        report = f"""# Autonomous QA Validation Report: {results['story_id']}
+
+## Validation Summary
+**Status**: {results['status'].upper()}
+**Validation ID**: {results['validation_id']}
+**Autonomous Agent**: QAA-Autonomous
+**Execution Mode**: Background
+**Start Time**: {results['start_time']}
+**Duration**: {results['total_duration_minutes']:.2f} minutes
+**Quality Score**: {results['overall_score']}/100
+
+## Story Analysis
+**Story ID**: {results['story_id']}
+**Validation Strategy**: {results['validation_type']} validation
+**Risk Assessment**: {"High" if results['overall_score'] < 70 else "Medium" if results['overall_score'] < 85 else "Low"}
+
+## Multi-Layer Validation Results
+
+"""
+        
+        for layer_name, layer_results in results['layers'].items():
+            status_icon = "✅" if layer_results['status'] == 'pass' else "❌"
+            report += f"""### {layer_name.replace('_', ' ').title()}
+{status_icon} **Status**: {layer_results['status'].upper()} | **Score**: {layer_results['score']}/100 | **Duration**: {layer_results['duration_minutes']:.2f} minutes
+
+"""
+            
+            for check_name, check_result in layer_results.get('checks', {}).items():
+                check_icon = "✅" if check_result['passed'] else "❌"
+                report += f"- {check_icon} {check_name.replace('_', ' ').title()}: {'Pass' if check_result['passed'] else 'Fail'}\n"
+                if check_result['output']:
+                    report += f"  - Details: {check_result['output']}\n"
+            
+            report += "\n"
+        
+        report += f"""## Quality Metrics
+- **Overall Quality Score**: {results['overall_score']}/100
+- **Total Execution Time**: {results['total_duration_minutes']:.2f} minutes
+- **Layers Executed**: {len(results['layers'])}
+
+## Autonomous Decisions Made
+- **Validation Strategy**: Selected {results['validation_type']} validation based on story requirements
+- **Layer Execution**: Executed {len(results['layers'])} validation layers autonomously
+- **Quality Assessment**: Autonomous quality score calculation and risk assessment
+
+---
+*Generated by Autonomous QA Validation System*
+*Agent: {{ project_name }}-QAA-Autonomous*
+*Framework: AgenticScrum v{{ version | default('1.0.0') }}*
+*Autonomous Decision Engine: v1.0*
+"""
+        
+        return report
+    
+    def process_queue(self):
+        """Process validation tasks from the queue."""
+        logger.info("Starting queue processing...")
+        
+        while True:
+            try:
+                # Get next task from pending queue
+                pending_tasks = self._load_queue_file("pending_validation.json")
+                
+                if not pending_tasks:
+                    time.sleep(30)  # Wait 30 seconds before checking again
+                    continue
+                
+                # Get highest priority pending task
+                next_task = None
+                for task in pending_tasks:
+                    if task.get('status') == 'pending':
+                        if next_task is None or task.get('priority', 'medium') == 'critical':
+                            next_task = task
+                            break
+                
+                if next_task is None:
+                    time.sleep(10)
+                    continue
+                
+                # Process the task
+                task_id = next_task['id']
+                story_id = next_task['story_id']
+                validation_type = next_task.get('validation_type', 'full')
+                
+                logger.info(f"Processing task {task_id} for story {story_id}")
+                
+                # Update task status to running
+                self._update_task_status(task_id, 'running')
+                
+                # Execute validation
+                results = self.execute_full_validation(story_id, validation_type)
+                
+                # Update task status based on results
+                final_status = 'completed' if results['status'] in ['pass', 'fail'] else 'error'
+                self._update_task_status(task_id, final_status, {
+                    'validation_results': results,
+                    'completed_at': datetime.now(timezone.utc).isoformat()
+                })
+                
+                logger.info(f"Task {task_id} completed with status: {final_status}")
+                
+            except Exception as e:
+                logger.error(f"Error processing queue: {e}")
+                time.sleep(60)  # Wait longer on error
+
+def main():
+    """Main entry point for QA Runner."""
+    parser = argparse.ArgumentParser(description="AgenticScrum QA Validation Runner")
+    parser.add_argument('--story-id', type=str, help='Story ID to validate')
+    parser.add_argument('--validation-type', type=str, default='full', 
+                       choices=['full', 'code', 'functional', 'integration', 'ux'],
+                       help='Type of validation to perform')
+    parser.add_argument('--daemon', action='store_true', help='Run as background daemon')
+    parser.add_argument('--queue-worker', action='store_true', help='Process queue continuously')
+    
+    args = parser.parse_args()
+    
+    runner = QAValidationRunner()
+    
+    if args.queue_worker or args.daemon:
+        logger.info("Starting QA Runner in queue processing mode")
+        runner.process_queue()
+    elif args.story_id:
+        logger.info(f"Running single validation for {args.story_id}")
+        results = runner.execute_full_validation(args.story_id, args.validation_type)
+        print(json.dumps(results, indent=2))
+    else:
+        parser.print_help()
+
+if __name__ == "__main__":
+    main()

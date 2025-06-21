@@ -145,9 +145,37 @@ def parse_arguments():
         help='Enable Perplexity search integration (requires PERPLEXITY_API_KEY environment variable)'
     )
     init_parser.add_argument(
+        '--enable-qa',
+        action='store_true',
+        default=True,
+        help='Enable autonomous QA validation system (enabled by default)'
+    )
+    init_parser.add_argument(
+        '--disable-qa',
+        action='store_true',
+        help='Disable autonomous QA validation system'
+    )
+    init_parser.add_argument(
+        '--qa-coverage-threshold',
+        type=int,
+        default=85,
+        help='Minimum code coverage threshold for QA validation (default: 85)'
+    )
+    init_parser.add_argument(
+        '--qa-max-performance-regression',
+        type=int,
+        default=20,
+        help='Maximum allowed performance regression percentage (default: 20)'
+    )
+    init_parser.add_argument(
         '--organization-name',
         type=str,
         help='Name of the organization (required for organization project type)'
+    )
+    init_parser.add_argument(
+        '--conversational',
+        action='store_true',
+        help='Start with conversational onboarding guided by POA (recommended for new users)'
     )
     
     # Add repository command
@@ -667,6 +695,53 @@ def main():
         sys.exit(1)
     
     if args.command == 'init':
+        # Handle conversational mode
+        if hasattr(args, 'conversational') and args.conversational:
+            from .conversational_onboarding import ConversationalOnboarding
+            
+            print("\n🤖 Starting conversational project setup with POA guidance...\n")
+            
+            # Start conversational onboarding
+            onboarding = ConversationalOnboarding(output_dir=args.output_dir)
+            initial_prompt = onboarding.start_conversation()
+            print(initial_prompt)
+            print("\n" + "="*70 + "\n")
+            
+            # Simulation message for non-interactive environment
+            print("💡 Note: In a real Claude Code session, you would continue the conversation here.")
+            print("   The POA would guide you through natural dialogue to understand your project needs.\n")
+            
+            # For now, show what would happen
+            if onboarding.is_retrofit:
+                print("📊 Codebase Analysis Results:")
+                print(f"   - Language: {onboarding.existing_analysis.get('language', 'Unknown')}")
+                print(f"   - Project Type: {onboarding.existing_analysis.get('project_type', 'Unknown')}")
+                print(f"   - Size: {onboarding.existing_analysis.get('size', {}).get('files', 0)} files")
+                print("\n✅ Your existing code will remain untouched.")
+                print("   AgenticScrum will add supportive structure around it.\n")
+            else:
+                print("📝 Example conversation flow:")
+                print("   User: 'I want to build a restaurant order management system'")
+                print("   POA: 'That sounds interesting! What challenges are you solving?'")
+                print("   User: 'Orders from multiple delivery apps are hard to track'")
+                print("   POA: 'I see. How many restaurants will use this system?'")
+                print("   ... (conversation continues)\n")
+            
+            print("🎯 The POA would then:")
+            print("   1. Extract requirements from your natural description")
+            print("   2. Identify any gaps and ask clarifying questions")
+            print("   3. Create a structured PRD and project plan")
+            print("   4. Generate epics and initial user stories")
+            print("   5. Set up your project with all necessary files\n")
+            
+            print("To use conversational mode in Claude Code:")
+            print("   1. Open Claude Code in your project directory")
+            print("   2. Say: 'I want to create a new project'")
+            print("   3. Have a natural conversation about your idea")
+            print("   4. POA will handle all the setup automatically\n")
+            
+            sys.exit(0)
+        
         # Handle --claude-code flag
         if hasattr(args, 'claude_code') and args.claude_code:
             args.llm_provider = 'anthropic'
@@ -704,6 +779,11 @@ def main():
                     print("Error: --frontend-framework is required for fullstack projects")
                     sys.exit(1)
             
+            # Handle QA configuration
+            enable_qa = getattr(args, 'enable_qa', True)
+            if getattr(args, 'disable_qa', False):
+                enable_qa = False
+            
             config = {
                 'project_name': args.project_name,
                 'project_type': args.project_type,
@@ -718,6 +798,9 @@ def main():
                 'output_dir': args.output_dir,
                 'enable_mcp': getattr(args, 'enable_mcp', False),
                 'enable_search': getattr(args, 'enable_search', False),
+                'enable_qa': enable_qa,
+                'qa_coverage_threshold': getattr(args, 'qa_coverage_threshold', 85),
+                'qa_max_performance_regression': getattr(args, 'qa_max_performance_regression', 20),
                 'organization_name': getattr(args, 'organization_name', None)
             }
         

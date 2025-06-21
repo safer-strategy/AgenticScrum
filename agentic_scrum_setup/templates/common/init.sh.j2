@@ -372,6 +372,12 @@ function show_help() {
   echo -e "  ${C_YELLOW}agent${C_RESET} assign      - Assign story to agent"
   echo -e "  ${C_YELLOW}agent${C_RESET} terminate   - Terminate agent session"
   echo ""
+  echo "QA Validation Commands:"
+  echo -e "  ${C_YELLOW}qa-status${C_RESET}         - Show QA system status and queue information"
+  echo -e "  ${C_YELLOW}qa-validate${C_RESET} <story> [type] - Queue story for QA validation"
+  echo -e "  ${C_YELLOW}qa-reports${C_RESET} [type] - View QA validation reports"
+  echo -e "  ${C_YELLOW}qa-queue${C_RESET} [action] - Manage QA validation queue"
+  echo ""
   echo -e "  ${C_YELLOW}help${C_RESET}              - Show this help message."
   echo ""
   echo "Patch Operations:"
@@ -450,6 +456,257 @@ function test_mcp_servers() {
       error "PERPLEXITY_API_KEY not set"
     fi
   fi
+}
+
+# --- QA Validation Functions ---
+function qa_status() {
+  info "QA System Status"
+  echo ""
+  
+  # Check if QA system is enabled
+  {% if qa.enabled %}
+  success "QA System: Enabled"
+  
+  # Show validation queue status
+  echo -e "${C_BOLD}Validation Queue Status:${C_RESET}"
+  if [[ -f "qa/queue/pending_validation.json" ]]; then
+    local pending_count=$(jq length qa/queue/pending_validation.json 2>/dev/null || echo "0")
+    echo "  Pending Validations: $pending_count"
+  else
+    echo "  Pending Validations: 0"
+  fi
+  
+  if [[ -f "qa/queue/active_qa_sessions.json" ]]; then
+    local active_count=$(jq length qa/queue/active_qa_sessions.json 2>/dev/null || echo "0")
+    echo "  Active Sessions: $active_count"
+  else
+    echo "  Active Sessions: 0"
+  fi
+  
+  if [[ -f "qa/queue/bugfix_queue.json" ]]; then
+    local bugfix_count=$(jq length qa/queue/bugfix_queue.json 2>/dev/null || echo "0")
+    echo "  Bugfix Queue: $bugfix_count"
+  else
+    echo "  Bugfix Queue: 0"
+  fi
+  
+  echo ""
+  echo -e "${C_BOLD}Background QA Agents:${C_RESET}"
+  if command -v claude >/dev/null 2>&1; then
+    claude -p "Show QA background agents status" \
+      --allowedTools "mcp__agent_monitor__list_agents" \
+      --mcp-config .mcp.json \
+      --output-format json 2>/dev/null | jq -r '.result | select(. != null)' || \
+      echo "  No active QA agents or MCP server not running"
+  else
+    echo "  Claude Code CLI not found"
+  fi
+  
+  {% else %}
+  error "QA System: Disabled"
+  info "Enable QA system by adding --enable-qa when creating the project"
+  {% endif %}
+}
+
+function qa_validate() {
+  local story_id="${1}"
+  local validation_type="${2:-full}"
+  
+  {% if qa.enabled %}
+  if [[ -z "$story_id" ]]; then
+    error "Usage: ./init.sh qa-validate <story_id> [validation_type]"
+    echo ""
+    echo "Validation types:"
+    echo "  full        - Complete 4-layer validation (default)"
+    echo "  code        - Code quality validation only"
+    echo "  functional  - Functional testing only"
+    echo "  integration - Integration testing only"
+    echo "  ux          - User experience testing only"
+    return 1
+  fi
+  
+  info "Starting QA validation for $story_id..."
+  echo "  Validation Type: $validation_type"
+  echo ""
+  
+  # Add validation task to queue
+  local validation_task="{
+    \"id\": \"$(date +%s)-$story_id\",
+    \"story_id\": \"$story_id\",
+    \"validation_type\": \"$validation_type\",
+    \"priority\": \"medium\",
+    \"status\": \"pending\",
+    \"created_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+    \"agent_type\": \"qaa\"
+  }"
+  
+  # Create queue file if it doesn't exist
+  mkdir -p qa/queue
+  if [[ ! -f "qa/queue/pending_validation.json" ]]; then
+    echo "[]" > qa/queue/pending_validation.json
+  fi
+  
+  # Add task to queue
+  local temp_file=$(mktemp)
+  jq ". += [$validation_task]" qa/queue/pending_validation.json > "$temp_file" && \
+    mv "$temp_file" qa/queue/pending_validation.json
+  
+  success "Validation task queued for $story_id"
+  echo ""
+  echo "Monitor progress with:"
+  echo "  ./init.sh qa-status"
+  echo "  ./init.sh qa-reports"
+  echo "  tail -f logs/qa/validation_$(date +%Y%m%d).log"
+  
+  {% else %}
+  error "QA System is not enabled for this project"
+  info "Enable QA system by recreating project with --enable-qa flag"
+  {% endif %}
+}
+
+function qa_reports() {
+  local report_type="${1:-recent}"
+  
+  {% if qa.enabled %}
+  info "QA Validation Reports"
+  echo ""
+  
+  case "$report_type" in
+    recent)
+      echo -e "${C_BOLD}Recent Validation Reports:${C_RESET}"
+      if [[ -d "qa/reports" ]]; then
+        find qa/reports -name "validation_report_*.md" -type f -mtime -7 | \
+          sort -t_ -k3 -r | \
+          head -10 | \
+          while read -r report; do
+            local story_id=$(basename "$report" | sed 's/validation_report_//;s/_[0-9]*\.md$//')
+            local timestamp=$(basename "$report" | sed 's/.*_\([0-9]*\)\.md$/\1/')
+            local date_str=$(date -r "$timestamp" '+%Y-%m-%d %H:%M' 2>/dev/null || echo "Unknown")
+            echo "  - $story_id ($date_str)"
+          done
+      else
+        echo "  No reports directory found"
+      fi
+      ;;
+    
+    summary)
+      echo -e "${C_BOLD}QA Summary Statistics:${C_RESET}"
+      if [[ -d "qa/reports" ]]; then
+        local total_reports=$(find qa/reports -name "validation_report_*.md" -type f | wc -l)
+        local recent_reports=$(find qa/reports -name "validation_report_*.md" -type f -mtime -7 | wc -l)
+        echo "  Total Reports: $total_reports"
+        echo "  Reports (Last 7 days): $recent_reports"
+        
+        # Count bug reports
+        local bug_reports=$(find qa/reports -name "bug_report_*.md" -type f | wc -l)
+        local recent_bugs=$(find qa/reports -name "bug_report_*.md" -type f -mtime -7 | wc -l)
+        echo "  Total Bug Reports: $bug_reports"
+        echo "  Bug Reports (Last 7 days): $recent_bugs"
+      else
+        echo "  No reports available"
+      fi
+      ;;
+    
+    bugs)
+      echo -e "${C_BOLD}Recent Bug Reports:${C_RESET}"
+      if [[ -d "qa/reports" ]]; then
+        find qa/reports -name "bug_report_*.md" -type f -mtime -7 | \
+          sort -t_ -k3 -r | \
+          head -10 | \
+          while read -r report; do
+            local bug_id=$(basename "$report" | sed 's/bug_report_//;s/_[0-9]*\.md$//')
+            local timestamp=$(basename "$report" | sed 's/.*_\([0-9]*\)\.md$/\1/')
+            local date_str=$(date -r "$timestamp" '+%Y-%m-%d %H:%M' 2>/dev/null || echo "Unknown")
+            echo "  - $bug_id ($date_str)"
+          done
+      else
+        echo "  No bug reports found"
+      fi
+      ;;
+    
+    *)
+      error "Unknown report type: $report_type"
+      echo "Usage: ./init.sh qa-reports [recent|summary|bugs]"
+      return 1
+      ;;
+  esac
+  
+  {% else %}
+  error "QA System is not enabled for this project"
+  {% endif %}
+}
+
+function qa_queue() {
+  local action="${1:-status}"
+  local item_id="${2}"
+  
+  {% if qa.enabled %}
+  case "$action" in
+    status)
+      info "QA Queue Status"
+      echo ""
+      
+      echo -e "${C_BOLD}Pending Validations:${C_RESET}"
+      if [[ -f "qa/queue/pending_validation.json" ]]; then
+        jq -r '.[] | "  - \(.story_id) (\(.priority)) - \(.validation_type)"' qa/queue/pending_validation.json 2>/dev/null || \
+          echo "  No pending validations"
+      else
+        echo "  No pending validations"
+      fi
+      
+      echo ""
+      echo -e "${C_BOLD}Active Sessions:${C_RESET}"
+      if [[ -f "qa/queue/active_qa_sessions.json" ]]; then
+        jq -r '.[] | "  - \(.story_id) (Agent: \(.agent_id)) - \(.status)"' qa/queue/active_qa_sessions.json 2>/dev/null || \
+          echo "  No active sessions"
+      else
+        echo "  No active sessions"
+      fi
+      
+      echo ""
+      echo -e "${C_BOLD}Bugfix Queue:${C_RESET}"
+      if [[ -f "qa/queue/bugfix_queue.json" ]]; then
+        jq -r '.[] | "  - \(.bug_id) (\(.severity)) - \(.status)"' qa/queue/bugfix_queue.json 2>/dev/null || \
+          echo "  No bugs in queue"
+      else
+        echo "  No bugs in queue"
+      fi
+      ;;
+    
+    clear)
+      if [[ -z "$item_id" ]]; then
+        info "Clearing completed items from all queues..."
+        
+        # Clear completed validations
+        if [[ -f "qa/queue/pending_validation.json" ]]; then
+          jq '[.[] | select(.status != "completed")]' qa/queue/pending_validation.json > qa/queue/pending_validation.json.tmp && \
+            mv qa/queue/pending_validation.json.tmp qa/queue/pending_validation.json
+        fi
+        
+        # Clear completed sessions
+        if [[ -f "qa/queue/active_qa_sessions.json" ]]; then
+          jq '[.[] | select(.status != "completed")]' qa/queue/active_qa_sessions.json > qa/queue/active_qa_sessions.json.tmp && \
+            mv qa/queue/active_qa_sessions.json.tmp qa/queue/active_qa_sessions.json
+        fi
+        
+        success "Cleared completed items from queues"
+      else
+        info "Removing specific item: $item_id"
+        # Implementation for removing specific item would go here
+        error "Specific item removal not yet implemented"
+      fi
+      ;;
+    
+    *)
+      error "Unknown queue action: $action"
+      echo "Usage: ./init.sh qa-queue [status|clear] [item_id]"
+      return 1
+      ;;
+  esac
+  
+  {% else %}
+  error "QA System is not enabled for this project"
+  {% endif %}
 }
 
 # --- Background Agent Functions ---
@@ -654,6 +911,25 @@ function main() {
     agent-status)
       # Quick agent status check
       show_agent_status
+      ;;
+    qa-status)
+      # QA system status check
+      qa_status
+      ;;
+    qa-validate)
+      # Queue story for QA validation
+      shift
+      qa_validate "$@"
+      ;;
+    qa-reports)
+      # View QA validation reports
+      shift
+      qa_reports "$@"
+      ;;
+    qa-queue)
+      # Manage QA validation queue
+      shift
+      qa_queue "$@"
       ;;
     help|*)
       show_help

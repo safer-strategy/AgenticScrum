@@ -1,0 +1,409 @@
+#!/usr/bin/env python3
+"""
+Story Completion Trigger for Autonomous QA Validation
+
+This script monitors for story completion events and automatically triggers
+QA validation workflows. It integrates with the SMA agent and background
+validation system to ensure seamless quality assurance.
+
+Usage:
+    python story_completion_trigger.py --story-id STORY_001
+    python story_completion_trigger.py --monitor  # Continuous monitoring
+    python story_completion_trigger.py --scan-directory spec/  # Scan for completed stories
+"""
+
+import argparse
+import json
+import logging
+import os
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Dict, List, Optional, Any
+import re
+import subprocess
+
+# Configure logging
+def setup_logging():
+    """Setup logging for story completion monitoring."""
+    log_dir = Path("logs/qa")
+    log_dir.mkdir(parents=True, exist_ok=True)
+    
+    log_file = log_dir / f"story_trigger_{datetime.now().strftime('%Y%m%d')}.log"
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler(log_file),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+    return logging.getLogger(__name__)
+
+logger = setup_logging()
+
+class StoryCompletionMonitor:
+    """Monitor for story completion and trigger QA validation."""
+    
+    def __init__(self):
+        self.project_root = Path.cwd()
+        self.qa_config = self._load_qa_config()
+        self.monitored_stories = set()
+        self.last_scan_time = datetime.now(timezone.utc)
+        
+    def _load_qa_config(self) -> Dict[str, Any]:
+        """Load QA configuration from agentic_config.yaml."""
+        config_path = self.project_root / "agentic_config.yaml"
+        if not config_path.exists():
+            logger.warning(f"Configuration not found: {config_path}")
+            return {}
+            
+        try:
+            import yaml
+            with open(config_path, 'r') as f:
+                config = yaml.safe_load(f)
+                return config.get('qa', {})
+        except ImportError:
+            logger.error("PyYAML not installed. Install with: pip install PyYAML")
+            return {}
+        except Exception as e:
+            logger.error(f"Error loading QA config: {e}")
+            return {}
+    
+    def _ensure_queue_directories(self):
+        """Ensure QA queue directories exist."""
+        directories = ["qa/queue", "qa/reports", "logs/qa"]
+        for directory in directories:
+            Path(directory).mkdir(parents=True, exist_ok=True)
+    
+    def _load_queue_file(self, queue_file: str) -> List[Dict[str, Any]]:
+        """Load tasks from queue file."""
+        queue_path = Path(f"qa/queue/{queue_file}")
+        if not queue_path.exists():
+            return []
+            
+        try:
+            with open(queue_path, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"Error loading queue {queue_file}: {e}")
+            return []
+    
+    def _save_queue_file(self, queue_file: str, tasks: List[Dict[str, Any]]):
+        """Save tasks to queue file."""
+        queue_path = Path(f"qa/queue/{queue_file}")
+        try:
+            with open(queue_path, 'w') as f:
+                json.dump(tasks, f, indent=2)
+        except Exception as e:
+            logger.error(f"Error saving queue {queue_file}: {e}")
+    
+    def _parse_story_file(self, story_file: Path) -> Optional[Dict[str, Any]]:
+        """Parse story file and extract metadata."""
+        try:
+            with open(story_file, 'r') as f:
+                content = f.read()
+            
+            # Extract story metadata
+            story_info = {
+                "file_path": str(story_file),
+                "story_id": story_file.stem,
+                "last_modified": datetime.fromtimestamp(story_file.stat().st_mtime, timezone.utc),
+                "content": content
+            }
+            
+            # Parse story title
+            title_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
+            if title_match:
+                story_info["title"] = title_match.group(1).strip()
+            
+            # Parse story status
+            status_patterns = [
+                r'(?i)status\s*:\s*(\w+)',
+                r'(?i)\*\*status\*\*\s*:\s*(\w+)',
+                r'(?i)## status\s*\n\s*(\w+)',
+            ]
+            
+            for pattern in status_patterns:
+                status_match = re.search(pattern, content)
+                if status_match:
+                    story_info["status"] = status_match.group(1).lower()
+                    break
+            else:
+                story_info["status"] = "unknown"
+            
+            # Parse acceptance criteria
+            ac_pattern = r'(?i)(?:acceptance criteria|success criteria)[:\s]*\n(.*?)(?=\n#|\n\*\*|\Z)'
+            ac_match = re.search(ac_pattern, content, re.DOTALL)
+            if ac_match:
+                story_info["acceptance_criteria"] = ac_match.group(1).strip()
+            
+            # Parse complexity/priority
+            complexity_patterns = [
+                r'(?i)complexity\s*:\s*(\d+)',
+                r'(?i)priority\s*:\s*(\w+)',
+                r'(?i)story points\s*:\s*(\d+)',
+            ]
+            
+            for pattern in complexity_patterns:
+                complexity_match = re.search(pattern, content)
+                if complexity_match:
+                    story_info["complexity"] = complexity_match.group(1)
+                    break
+            
+            # Determine if story is completed
+            completed_indicators = [
+                r'(?i)status\s*:\s*(?:completed?|done|finished|implemented)',
+                r'(?i)\[x\].*(?:completed?|done|finished)',
+                r'(?i)✓.*(?:completed?|done|finished)',
+            ]
+            
+            story_info["is_completed"] = any(
+                re.search(pattern, content) for pattern in completed_indicators
+            )
+            
+            return story_info
+            
+        except Exception as e:
+            logger.error(f"Error parsing story file {story_file}: {e}")
+            return None
+    
+    def _is_story_already_queued(self, story_id: str) -> bool:
+        """Check if story is already in validation queue."""
+        pending_tasks = self._load_queue_file("pending_validation.json")
+        active_tasks = self._load_queue_file("active_qa_sessions.json")
+        
+        # Check pending queue
+        for task in pending_tasks:
+            if task.get('story_id') == story_id and task.get('status') in ['pending', 'running']:
+                return True
+        
+        # Check active sessions
+        for task in active_tasks:
+            if task.get('story_id') == story_id and task.get('status') == 'running':
+                return True
+        
+        return False
+    
+    def _determine_validation_priority(self, story_info: Dict[str, Any]) -> str:
+        """Determine validation priority based on story characteristics."""
+        # High priority indicators
+        high_priority_keywords = [
+            'security', 'authentication', 'authorization', 'payment', 'data',
+            'critical', 'urgent', 'production', 'hotfix', 'bug'
+        ]
+        
+        # Check story content for high priority indicators
+        content_lower = story_info.get('content', '').lower()
+        title_lower = story_info.get('title', '').lower()
+        
+        if any(keyword in content_lower or keyword in title_lower for keyword in high_priority_keywords):
+            return 'high'
+        
+        # Check complexity
+        complexity = story_info.get('complexity', '0')
+        try:
+            complexity_num = int(complexity)
+            if complexity_num >= 8:
+                return 'high'
+            elif complexity_num >= 5:
+                return 'medium'
+        except (ValueError, TypeError):
+            pass
+        
+        return 'medium'
+    
+    def _determine_validation_type(self, story_info: Dict[str, Any]) -> str:
+        """Determine appropriate validation type based on story content."""
+        content_lower = story_info.get('content', '').lower()
+        title_lower = story_info.get('title', '').lower()
+        
+        # Infrastructure/config stories - focus on integration
+        if any(keyword in content_lower or keyword in title_lower for keyword in [
+            'infrastructure', 'config', 'setup', 'deployment', 'ci/cd', 'docker'
+        ]):
+            return 'integration'
+        
+        # UI/UX stories - focus on user experience
+        if any(keyword in content_lower or keyword in title_lower for keyword in [
+            'ui', 'ux', 'interface', 'frontend', 'user experience', 'usability'
+        ]):
+            return 'ux'
+        
+        # Performance stories - focus on code quality and performance
+        if any(keyword in content_lower or keyword in title_lower for keyword in [
+            'performance', 'optimization', 'speed', 'efficiency', 'benchmark'
+        ]):
+            return 'code'
+        
+        # API/backend stories - focus on functional testing
+        if any(keyword in content_lower or keyword in title_lower for keyword in [
+            'api', 'backend', 'database', 'service', 'endpoint'
+        ]):
+            return 'functional'
+        
+        # Default to full validation for complex or unclear stories
+        return 'full'
+    
+    def trigger_qa_validation(self, story_id: str, story_info: Optional[Dict[str, Any]] = None) -> bool:
+        """Trigger QA validation for a completed story."""
+        self._ensure_queue_directories()
+        
+        # Check if already queued
+        if self._is_story_already_queued(story_id):
+            logger.info(f"Story {story_id} already queued for validation")
+            return False
+        
+        # Determine validation parameters
+        priority = 'medium'
+        validation_type = 'full'
+        
+        if story_info:
+            priority = self._determine_validation_priority(story_info)
+            validation_type = self._determine_validation_type(story_info)
+        
+        # Create validation task
+        validation_task = {
+            "id": f"{int(time.time())}-{story_id}",
+            "story_id": story_id,
+            "validation_type": validation_type,
+            "priority": priority,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "triggered_by": "story_completion_monitor",
+            "agent_type": "qaa",
+            "story_metadata": story_info
+        }
+        
+        # Add to pending validation queue
+        pending_tasks = self._load_queue_file("pending_validation.json")
+        pending_tasks.append(validation_task)
+        self._save_queue_file("pending_validation.json", pending_tasks)
+        
+        logger.info(f"Queued {validation_type} validation for {story_id} with {priority} priority")
+        
+        # Notify SMA agent if MCP is available
+        self._notify_sma_agent(story_id, validation_task)
+        
+        return True
+    
+    def _notify_sma_agent(self, story_id: str, validation_task: Dict[str, Any]):
+        """Notify SMA agent about triggered validation."""
+        try:
+            # Check if Claude Code CLI is available for MCP communication
+            if subprocess.run(['which', 'claude'], capture_output=True).returncode == 0:
+                # Use Claude Code CLI to notify SMA through MCP
+                notification_prompt = f"""
+                Story {story_id} has been completed and automatically queued for QA validation.
+                
+                Validation Details:
+                - Validation ID: {validation_task['id']}
+                - Validation Type: {validation_task['validation_type']}
+                - Priority: {validation_task['priority']}
+                - Agent: {validation_task['agent_type']}
+                
+                Please update your sprint tracking and consider this story for sprint review.
+                """
+                
+                subprocess.run([
+                    'claude', '-p', notification_prompt,
+                    '--allowedTools', 'mcp__memory__add_observations',
+                    '--mcp-config', '.mcp.json'
+                ], capture_output=True, cwd=self.project_root)
+                
+                logger.info(f"Notified SMA agent about {story_id} validation")
+        except Exception as e:
+            logger.debug(f"Could not notify SMA agent: {e}")
+    
+    def scan_for_completed_stories(self, directory: str = "spec") -> List[str]:
+        """Scan directory for completed stories and trigger validation."""
+        scan_dir = Path(directory)
+        if not scan_dir.exists():
+            logger.warning(f"Story directory not found: {scan_dir}")
+            return []
+        
+        triggered_stories = []
+        
+        # Find all story files
+        story_files = list(scan_dir.glob("STORY_*.md")) + list(scan_dir.glob("story_*.md"))
+        
+        for story_file in story_files:
+            try:
+                story_info = self._parse_story_file(story_file)
+                if not story_info:
+                    continue
+                
+                story_id = story_info["story_id"]
+                
+                # Skip if already monitored and not recently modified
+                if story_id in self.monitored_stories:
+                    if story_info["last_modified"] < self.last_scan_time:
+                        continue
+                
+                # Check if story is completed
+                if story_info.get("is_completed", False):
+                    if self.trigger_qa_validation(story_id, story_info):
+                        triggered_stories.append(story_id)
+                        logger.info(f"Triggered validation for completed story: {story_id}")
+                
+                # Add to monitored stories
+                self.monitored_stories.add(story_id)
+                
+            except Exception as e:
+                logger.error(f"Error processing story file {story_file}: {e}")
+        
+        self.last_scan_time = datetime.now(timezone.utc)
+        return triggered_stories
+    
+    def monitor_continuously(self, scan_interval: int = 60, directory: str = "spec"):
+        """Continuously monitor for completed stories."""
+        logger.info(f"Starting continuous monitoring of {directory} (interval: {scan_interval}s)")
+        
+        while True:
+            try:
+                triggered = self.scan_for_completed_stories(directory)
+                if triggered:
+                    logger.info(f"Triggered validation for {len(triggered)} stories: {', '.join(triggered)}")
+                
+                time.sleep(scan_interval)
+                
+            except KeyboardInterrupt:
+                logger.info("Stopping story completion monitoring")
+                break
+            except Exception as e:
+                logger.error(f"Error in monitoring loop: {e}")
+                time.sleep(scan_interval)
+
+def main():
+    """Main entry point for story completion trigger."""
+    parser = argparse.ArgumentParser(description="AgenticScrum Story Completion QA Trigger")
+    parser.add_argument('--story-id', type=str, help='Specific story ID to trigger validation for')
+    parser.add_argument('--monitor', action='store_true', help='Run continuous monitoring')
+    parser.add_argument('--scan-directory', type=str, default='spec', help='Directory to scan for stories')
+    parser.add_argument('--scan-interval', type=int, default=60, help='Scan interval in seconds (for monitoring)')
+    
+    args = parser.parse_args()
+    
+    monitor = StoryCompletionMonitor()
+    
+    if args.story_id:
+        logger.info(f"Triggering validation for story: {args.story_id}")
+        success = monitor.trigger_qa_validation(args.story_id)
+        if success:
+            print(f"Successfully triggered validation for {args.story_id}")
+        else:
+            print(f"Failed to trigger validation for {args.story_id}")
+    elif args.monitor:
+        monitor.monitor_continuously(args.scan_interval, args.scan_directory)
+    else:
+        # Single scan
+        triggered = monitor.scan_for_completed_stories(args.scan_directory)
+        if triggered:
+            print(f"Triggered validation for {len(triggered)} stories: {', '.join(triggered)}")
+        else:
+            print("No completed stories found requiring validation")
+
+if __name__ == "__main__":
+    main()

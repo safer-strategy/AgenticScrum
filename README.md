@@ -16,6 +16,7 @@
 * [Key Features](#key-features)  
 * [Getting Started](#getting-started)  
   * [The Setup Utility](#the-setup-utility)  
+  * [Conversational Onboarding](#conversational-onboarding-new)
   * [Retrofitting Existing Projects](#retrofitting-existing-projects)  
 * [Project Directory Structure](#project-directory-structure)  
 * [The AgenticScrum Workflow](#the-agenticscrum-workflow)  
@@ -106,6 +107,7 @@ AgenticScrum/
 
 ### **🆕 New Features Highlight**
 
+- **💬 Conversational Onboarding**: Natural language project setup guided by POA - just describe what you want!
 - **🔧 Remote Patching System**: Update AgenticScrum from any directory (`scripts/agentic-patch`)
 - **🧠 MCP Integration**: Enhanced agent memory and search capabilities  
 - **🏢 Organization Management**: Multi-repository project coordination
@@ -150,6 +152,7 @@ AgenticScrum is built upon the following foundational principles:
 
 ## **Key Features**
 
+* **Conversational Onboarding (NEW):** Natural language project setup guided by POA - describe your project in your own words!
 * **Automated Project Scaffolding:** CLI utility to instantly set up a standardized project.  
 * **Fullstack Support:** Create projects with multiple languages and frameworks in a single command.
 * **Defined AI Agent Roles:** Pre-defined personas (ProductOwnerAgent, ScrumMasterAgent, DeveloperAgent, QAAgent, SecurityAuditAgent) with customizable rules.  
@@ -215,6 +218,45 @@ python -c "import agentic_scrum_setup; print(f'AgenticScrum v{agentic_scrum_setu
 ```
 
 > **Beta Testers**: Please see [BETA_LAUNCH.md](BETA_LAUNCH.md) for beta-specific installation instructions and feedback guidelines.
+
+### **Conversational Onboarding (NEW)**
+
+AgenticScrum now offers a natural, conversation-based approach to project setup that's perfect for both new and existing projects:
+
+**Start with Conversational Mode:**
+```bash
+# Recommended for new users - let POA guide you through setup
+agentic-scrum-setup init --conversational
+
+# Or use init.sh
+./init.sh new --conversational
+```
+
+**How it Works:**
+1. **Natural Language Input**: Describe your project in your own words - no technical questionnaires!
+2. **Flexible Formats**: Paste an existing PRD, share informal ideas, or provide technical specs
+3. **POA Guidance**: Your Product Owner Agent extracts requirements and asks clarifying questions
+4. **Automatic Detection**: Recognizes existing projects and offers non-invasive enhancements
+5. **Structured Output**: Converts any input into well-organized PRD.md and project structure
+
+**Example Conversation:**
+```
+POA: Hello! I'm your Product Owner Agent (POA). What would you like to build?
+
+You: I want to create a task management app for remote teams with real-time collaboration
+
+POA: That sounds interesting! Let me understand better:
+- Who will be the primary users of this system?
+- What are the key features you envision?
+
+[Continue natural conversation until requirements are complete]
+```
+
+**Benefits:**
+- **Zero Learning Curve**: No need to understand AgenticScrum's structure upfront
+- **Retrofitting Support**: Enhances existing projects without modifying your code
+- **Adaptive Intelligence**: POA adjusts to your technical level and communication style
+- **Complete Documentation**: Automatically generates PRD.md, epics, and project summaries
 
 **Direct CLI Usage:**
 

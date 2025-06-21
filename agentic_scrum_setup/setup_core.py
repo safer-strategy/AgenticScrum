@@ -299,6 +299,15 @@ class SetupCore:
                     "Please check template availability and script permissions."
                 )
             
+            # Generate QA validation system
+            try:
+                self._generate_qa_system()
+            except (TemplateNotFound, OSError) as e:
+                raise RuntimeError(
+                    f"Failed to generate QA validation system: {e}. "
+                    "Please check QA template availability and disk space."
+                )
+            
             # Create memory structure for MCP integration
             if self.enable_mcp:
                 try:
@@ -335,7 +344,19 @@ class SetupCore:
                 'standards/backend/linter_configs',
                 'standards/frontend/linter_configs',
                 'checklists',
-                'scripts'
+                'scripts',
+                'qa/reports/automated',
+                'qa/reports/bugs/critical',
+                'qa/reports/bugs/high',
+                'qa/reports/bugs/medium',
+                'qa/reports/bugs/low',
+                'qa/reports/validation',
+                'qa/agents/qa_automation_agent',
+                'qa/agents/background_qa_runner',
+                'qa/templates',
+                'qa/queue',
+                'qa/scripts',
+                'qa/config'
             ]
         else:
             # Single language project structure
@@ -348,7 +369,19 @@ class SetupCore:
                 'docs/sprint_reports',
                 'standards/linter_configs',
                 'checklists',
-                'scripts'
+                'scripts',
+                'qa/reports/automated',
+                'qa/reports/bugs/critical',
+                'qa/reports/bugs/high',
+                'qa/reports/bugs/medium',
+                'qa/reports/bugs/low',
+                'qa/reports/validation',
+                'qa/agents/qa_automation_agent',
+                'qa/agents/background_qa_runner',
+                'qa/templates',
+                'qa/queue',
+                'qa/scripts',
+                'qa/config'
             ]
         
         for directory in directories:
@@ -487,12 +520,32 @@ class SetupCore:
         
         # Generate CLAUDE.md if claude agent is included or using anthropic provider
         if any('claude' in agent for agent in self.agents) or self.config.get('llm_provider') == 'anthropic':
-            claude_md = self.jinja_env.get_template('claude/CLAUDE.md.j2').render(
+            # Check if CLAUDE.md already exists (retrofit scenario)
+            existing_claude_content = None
+            existing_claude_path = self.project_path / 'CLAUDE.md'
+            if self.config.get('is_retrofit') and existing_claude_path.exists():
+                try:
+                    existing_claude_content = existing_claude_path.read_text()
+                except Exception:
+                    pass
+            
+            # Use adaptive template if retrofitting, otherwise use standard
+            template_name = 'claude/CLAUDE_ADAPTIVE.md.j2' if existing_claude_content else 'claude/CLAUDE.md.j2'
+            
+            claude_md = self.jinja_env.get_template(template_name).render(
                 project_name=self.project_name,
                 language=self.language,
                 agents=self.agents,
                 enable_mcp=self.enable_mcp,
-                enable_search=self.enable_search
+                enable_search=self.enable_search,
+                existing_claude_content=existing_claude_content,
+                is_retrofit=self.config.get('is_retrofit', False),
+                framework=self.framework or self.backend_framework,
+                project_type=self.project_type,
+                project_description=self.config.get('project_description'),
+                security_requirements=self.config.get('security_requirements'),
+                compliance_requirements=self.config.get('compliance_requirements'),
+                qa_coverage_threshold=self.config.get('qa_coverage_threshold', 85)
             )
             (self.project_path / 'CLAUDE.md').write_text(claude_md)
             
@@ -721,6 +774,30 @@ class SetupCore:
         )
         (self.project_path / 'docs' / 'PROJECT_KICKOFF.md').write_text(project_kickoff)
         
+        # Generate PRD.md if conversational mode or retrofit
+        if self.config.get('conversation_derived') or self.config.get('is_retrofit'):
+            from datetime import datetime
+            prd = self.jinja_env.get_template('docs/PRD.md.j2').render(
+                project_name=self.project_name,
+                current_date=datetime.now().strftime('%Y-%m-%d'),
+                project_vision=self.config.get('project_vision', ''),
+                project_description=self.config.get('project_description', '')
+            )
+            (self.project_path / 'docs' / 'PRD.md').write_text(prd)
+            
+            # Generate PROJECT_SUMMARY.md
+            summary = self.jinja_env.get_template('docs/PROJECT_SUMMARY.md.j2').render(
+                project_name=self.project_name,
+                current_date=datetime.now().strftime('%Y-%m-%d'),
+                current_year=datetime.now().year,
+                current_quarter=f"Q{(datetime.now().month-1)//3 + 1}",
+                next_quarter=f"Q{((datetime.now().month-1)//3 + 2) % 4 or 4}",
+                project_vision=self.config.get('project_vision', ''),
+                project_description=self.config.get('project_description', ''),
+                team_size=self.config.get('team_size', 'TBD')
+            )
+            (self.project_path / 'docs' / 'PROJECT_SUMMARY.md').write_text(summary)
+        
         # Generate coding standards
         coding_standards = self.jinja_env.get_template('standards/coding_standards.md.j2').render(
             language=self.language
@@ -900,3 +977,129 @@ Consider backing up important memories using the memory export utilities.
             for server_file in project_mcp_dir.rglob('server.py'):
                 current_permissions = server_file.stat().st_mode
                 server_file.chmod(current_permissions | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    
+    def _generate_qa_system(self):
+        """Generate the complete QA validation system."""
+        # QA system configuration from CLI or defaults
+        qa_enabled = self.config.get('enable_qa', True)
+        
+        if not qa_enabled:
+            return
+            
+        from datetime import datetime
+        
+        # Prepare QA configuration context
+        qa_config = {
+            'enabled': True,
+            'validation_modes': ['automatic', 'manual'],
+            'background_agents': {
+                'enabled': True,
+                'max_concurrent': 3,
+                'auto_assignment': True,
+                'retry_policy': {
+                    'max_retries': 3,
+                    'backoff_multiplier': 2,
+                    'max_backoff_minutes': 10
+                }
+            },
+            'validation_layers': {
+                'code_quality': True,
+                'functional': True,
+                'integration': True,
+                'user_experience': True
+            },
+            'bug_detection': {
+                'enabled': True,
+                'auto_reporting': True,
+                'severity_thresholds': {
+                    'critical': 0,
+                    'high': 2,
+                    'medium': 5,
+                    'low': 10
+                }
+            },
+            'quality_gates': {
+                'minimum_coverage': self.config.get('qa_coverage_threshold', 85),
+                'max_performance_regression': self.config.get('qa_max_performance_regression', 20),
+                'security_scan_required': True
+            },
+            'reporting': {
+                'daily_summary': True,
+                'weekly_trends': True,
+                'real_time_alerts': True
+            }
+        }
+        
+        # Create template context
+        template_context = {
+            'project_name': self.project_name,
+            'language': self.language,
+            'framework': self.framework or self.backend_framework,
+            'environment': 'development',
+            'llm_provider': self.llm_provider,
+            'default_model': self.default_model,
+            'qa': qa_config,
+            'version': '1.0.0',
+            'agentic_scrum_version': '1.0.0',
+            'ansible_date_time': {
+                'iso8601': datetime.now().isoformat()
+            }
+        }
+        
+        # Generate QA README
+        qa_readme = self.jinja_env.get_template('qa/README.md.j2').render(**template_context)
+        (self.project_path / 'qa' / 'README.md').write_text(qa_readme)
+        
+        # Generate QA queue management files
+        qa_queue_files = [
+            ('qa/queue/pending_validation.json.j2', 'qa/queue/pending_validation.json'),
+            ('qa/queue/active_qa_sessions.json.j2', 'qa/queue/active_qa_sessions.json'),
+            ('qa/queue/bugfix_queue.json.j2', 'qa/queue/bugfix_queue.json')
+        ]
+        
+        for template_file, output_file in qa_queue_files:
+            content = self.jinja_env.get_template(template_file).render(**template_context)
+            (self.project_path / output_file).write_text(content)
+        
+        # Generate QA report templates
+        qa_template_files = [
+            ('qa/templates/bug_report_template.md.j2', 'qa/templates/bug_report_template.md'),
+            ('qa/templates/validation_report_template.md.j2', 'qa/templates/validation_report_template.md'),
+            ('qa/templates/test_execution_report.md.j2', 'qa/templates/test_execution_report.md')
+        ]
+        
+        for template_file, output_file in qa_template_files:
+            content = self.jinja_env.get_template(template_file).render(**template_context)
+            (self.project_path / output_file).write_text(content)
+        
+        # Generate QA configuration files
+        qa_config_files = [
+            ('qa/config/qa_config.yaml.j2', 'qa/config/qa_config.yaml'),
+            ('qa/config/validation_rules.yaml.j2', 'qa/config/validation_rules.yaml')
+        ]
+        
+        for template_file, output_file in qa_config_files:
+            content = self.jinja_env.get_template(template_file).render(**template_context)
+            (self.project_path / output_file).write_text(content)
+        
+        # Generate enhanced QA agent configurations
+        qa_agent_files = [
+            ('qa/agents/qa_automation_agent/persona_rules.yaml.j2', 'qa/agents/qa_automation_agent/persona_rules.yaml'),
+            ('qa/agents/background_qa_runner/persona_rules.yaml.j2', 'qa/agents/background_qa_runner/persona_rules.yaml')
+        ]
+        
+        for template_file, output_file in qa_agent_files:
+            content = self.jinja_env.get_template(template_file).render(**template_context)
+            (self.project_path / output_file).write_text(content)
+        
+        # Generate QA MCP configuration for agent integration
+        if self.enable_mcp:
+            qa_mcp_config = self.jinja_env.get_template('agents/agent_mcp_config.json.j2').render(
+                agent_type='qa_automation_agent'
+            )
+            (self.project_path / 'qa' / 'agents' / 'qa_automation_agent' / 'mcp_config.json').write_text(qa_mcp_config)
+            
+            bg_mcp_config = self.jinja_env.get_template('agents/agent_mcp_config.json.j2').render(
+                agent_type='background_qa_runner'
+            )
+            (self.project_path / 'qa' / 'agents' / 'background_qa_runner' / 'mcp_config.json').write_text(bg_mcp_config)

@@ -1,0 +1,126 @@
+# {{ project_name }} - Project Summary
+
+**Vision**: {{ project_vision | default('[Project vision will be extracted from PRD]') }}  
+**Status**: Planning  
+**Started**: {{ current_date }}  
+**Last Updated**: {{ current_date }}
+
+---
+
+## 🎯 Project Overview
+
+{{ project_description | default('[High-level project description from PRD]') }}
+
+### Key Objectives
+1. {{ objective_1 | default('[Primary objective]') }}
+2. {{ objective_2 | default('[Secondary objective]') }}
+3. {{ objective_3 | default('[Tertiary objective]') }}
+
+---
+
+## 📊 Progress Tracker
+
+### Overall Progress
+- **Epics Completed**: 0 / {{ total_epics | default('TBD') }}
+- **Stories Completed**: 0 / {{ total_stories | default('TBD') }}
+- **Current Sprint**: Planning Phase
+
+---
+
+## ✅ Completed Capabilities
+
+*No capabilities completed yet - project in planning phase*
+
+<!-- As capabilities are completed, they'll appear here like:
+- ✅ **User Authentication** - Secure login with 2FA support
+- ✅ **Product Catalog** - Browse and search 10k+ products
+-->
+
+---
+
+## 🔄 In Progress
+
+### Current Sprint Focus
+- 📋 **Project Setup** - Establishing development environment
+- 📋 **Requirements Gathering** - Finalizing PRD with stakeholders
+
+---
+
+## 📋 Upcoming Epics
+
+### High Priority
+{% for epic in high_priority_epics | default([]) %}
+- **{{ epic.name }}** - {{ epic.description }}
+  - Estimated Stories: {{ epic.story_count | default('TBD') }}
+  - Business Value: {{ epic.value }}
+{% else %}
+- **EPIC-1: Core Infrastructure** - Set up foundational architecture
+  - Estimated Stories: 8-10
+  - Business Value: Enables all future development
+{% endfor %}
+
+### Medium Priority
+{% for epic in medium_priority_epics | default([]) %}
+- **{{ epic.name }}** - {{ epic.description }}
+  - Estimated Stories: {{ epic.story_count | default('TBD') }}
+  - Business Value: {{ epic.value }}
+{% else %}
+- **EPIC-2: TBD** - To be determined after requirements analysis
+{% endfor %}
+
+### Backlog
+{% for epic in backlog_epics | default([]) %}
+- **{{ epic.name }}** - {{ epic.description }}
+{% else %}
+- Additional epics will be added as requirements are refined
+{% endfor %}
+
+---
+
+## 🎯 Milestone Timeline
+
+### Q{{ current_quarter }} {{ current_year }}
+- [ ] Complete requirements gathering
+- [ ] Establish development environment
+- [ ] Complete MVP core features
+
+### Q{{ next_quarter }} {{ current_year }}
+- [ ] Beta release to initial users
+- [ ] Implement feedback improvements
+- [ ] Performance optimization
+
+---
+
+## 📈 Key Metrics
+
+### Development Velocity
+- **Average Story Points/Sprint**: TBD
+- **Sprint Duration**: 2 weeks
+- **Team Size**: {{ team_size | default('TBD') }}
+
+### Quality Metrics
+- **Test Coverage Target**: 85%
+- **Code Review Coverage**: 100%
+- **Bug Escape Rate**: < 5%
+
+---
+
+## 🔗 Quick Links
+
+- [Product Requirements Document](./PRD.md)
+- [Technical Architecture](./ARCHITECTURE.md)
+- [API Documentation](./api/README.md)
+- [Sprint Board](./sprints/current/README.md)
+
+---
+
+## 📝 Recent Updates
+
+### {{ current_date }}
+- Project initialized with AgenticScrum framework
+- Initial PRD created from requirements discussion
+- Development environment configured
+
+---
+
+*This document is automatically updated as epics and stories are completed. Last generated: {{ current_date }}*

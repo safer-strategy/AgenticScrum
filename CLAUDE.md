@@ -12,4 +12,6 @@ AgenticScrum is an open-source framework for structured AI-driven code generatio
 
 ## Key Architecture & Structure
 
-[Rest of the original file content remains the same]
+## Development Guidelines
+
+- Always take care of your git commits

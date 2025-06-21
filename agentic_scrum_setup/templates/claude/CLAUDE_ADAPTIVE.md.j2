@@ -1,0 +1,127 @@
+# CLAUDE.md
+{% if existing_claude_content %}
+{{ existing_claude_content }}
+
+---
+## AgenticScrum Integration
+
+This project now includes optional AgenticScrum agent support for enhanced development assistance.
+
+### Available AI Agents (Optional)
+
+You can activate specialized agent personas by prefixing your messages:
+
+- **`As POA:`** - Product Owner perspective for requirements and backlog management
+- **`As SMA:`** - Scrum Master perspective for process and sprint planning
+- **`As DEVA:`** - Developer perspective for implementation
+
+See `.agentic/agents.md` for detailed agent capabilities.
+
+{% else %}
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+**Project**: {{ project_name }}  
+**Type**: {{ project_type | default('Application') }}  
+**Primary Language**: {{ language | default('Not specified') }}  
+**Framework**: {{ framework | default('Not specified') }}  
+
+{{ project_description | default('This project aims to deliver high-quality software using AgenticScrum methodology.') }}
+
+## Development Approach
+
+This project uses AgenticScrum, an AI-assisted agile development framework. You can work with Claude in standard mode or activate specialized agent personas for specific tasks.
+
+## AI Agent Personas (Optional)
+
+When you need specialized assistance, you can activate these agent modes:
+
+### Product Owner Agent (POA)
+**Activation**: Prefix message with `As POA:` or when discussing requirements  
+**Specialties**: Requirements gathering, user story creation, backlog prioritization  
+**Example**: "As POA, help me create user stories for the authentication feature"
+
+### Scrum Master Agent (SMA) 
+**Activation**: Prefix message with `As SMA:` or when planning sprints  
+**Specialties**: Sprint planning, process optimization, blocker removal  
+**Example**: "As SMA, help me plan the next sprint based on our velocity"
+
+### Developer Agents
+{% if 'python' in language|lower %}
+**Python Developer (DEVA_PYTHON)**  
+**Activation**: Prefix with `As DEVA:` or when implementing Python code  
+**Specialties**: Python best practices, {{ framework|default('framework') }} patterns, testing  
+{% endif %}
+{% if 'javascript' in language|lower or 'typescript' in language|lower %}
+**{{ language|title }} Developer (DEVA_{{ language|upper }})**  
+**Activation**: Prefix with `As DEVA:` or when implementing {{ language }} code  
+**Specialties**: {{ language }} best practices, {{ framework|default('framework') }} patterns, testing  
+{% endif %}
+
+## Project Standards
+
+### Code Style
+- Follow existing patterns in the codebase
+- Maintain consistent formatting
+- Write self-documenting code
+
+### Testing
+- Write tests for new features
+- Maintain {{ qa_coverage_threshold|default(85) }}% coverage
+- Run tests before committing
+
+### Documentation
+- Update relevant docs with changes
+- Include examples in API documentation
+- Keep README current
+
+## Getting Started
+
+1. **Review Requirements**: Check `/docs/PRD.md` for project requirements
+2. **Understand Architecture**: See `/docs/ARCHITECTURE.md` for technical design
+3. **Check Progress**: Review `/docs/PROJECT_SUMMARY.md` for current status
+4. **Find Tasks**: Look in `/spec/` for current user stories
+
+## Important Context
+
+{% if is_retrofit %}
+### Retrofit Project
+This is an existing codebase being enhanced with AgenticScrum. Please:
+- Respect existing patterns and conventions
+- Make changes incrementally
+- Preserve backward compatibility
+- See `.agentic/retrofit-plan.md` for integration strategy
+{% endif %}
+
+{% if security_requirements %}
+### Security Requirements
+{{ security_requirements }}
+{% endif %}
+
+{% if compliance_requirements %}
+### Compliance Requirements
+{{ compliance_requirements }}
+{% endif %}
+
+## Working with Claude
+
+### Standard Mode
+Just ask questions or request help normally. Claude will assist without assuming any specific role.
+
+### Agent Mode
+Prefix your message with an agent identifier to get specialized assistance:
+- "As POA, review these requirements"
+- "As SMA, help plan our sprint"
+- "As DEVA, implement this feature"
+
+### Best Practices
+1. Be specific about what you need
+2. Reference file paths when discussing code
+3. Ask for clarification if requirements are unclear
+4. Request tests for new features
+
+---
+
+*AgenticScrum Integration - Enhancing development with AI assistance*
+{% endif %}

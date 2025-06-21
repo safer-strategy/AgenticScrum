@@ -23,9 +23,122 @@ settings:
   auto_save: true
   verbose_logging: false
   test_before_commit: true
+
+{% if qa.enabled %}
+qa:
+  enabled: {{ qa.enabled | tojson }}
+  
+  # Quality gates and thresholds
+  quality_gates:
+    minimum_coverage: {{ qa.quality_gates.minimum_coverage | default(85) }}
+    max_performance_regression: {{ qa.quality_gates.max_performance_regression | default(20) }}  # percent
+    security_scan_required: {{ qa.quality_gates.security_scan_required | default(true) | tojson }}
+    integration_test_required: {{ qa.quality_gates.integration_test_required | default(true) | tojson }}
+    
+  # Multi-layer validation configuration
+  validation_layers:
+    code_quality:
+      enabled: true
+      lint_check: true
+      security_scan: true
+      performance_benchmark: true
+      documentation_coverage: true
+      
+    functional_testing:
+      enabled: true
+      api_testing: true
+      database_testing: true
+      business_logic_testing: true
+      error_handling_testing: true
+      
+    integration_testing:
+      enabled: true
+      cross_feature_testing: true
+      data_flow_testing: true
+      mcp_integration_testing: true
+      agent_coordination_testing: true
+      
+    user_experience_testing:
+      enabled: true
+      cli_responsiveness: true
+      error_message_clarity: true
+      performance_under_load: true
+      workflow_validation: true
+  
+  # Background agent configuration
+  background_agents:
+    enabled: {{ qa.background_agents.enabled | default(true) | tojson }}
+    max_concurrent: {{ qa.background_agents.max_concurrent | default(3) }}
+    
+    retry_policy:
+      max_retries: {{ qa.background_agents.retry_policy.max_retries | default(3) }}
+      backoff_multiplier: {{ qa.background_agents.retry_policy.backoff_multiplier | default(2) }}
+      max_backoff_minutes: {{ qa.background_agents.retry_policy.max_backoff_minutes | default(10) }}
+    
+    resource_limits:
+      cpu_time_minutes: 60
+      memory_mb: 1024
+      disk_mb: 500
+      
+    escalation_thresholds:
+      critical_bugs: 0
+      high_bugs: 2
+      validation_failures: 3
+  
+  # Bug detection and classification
+  bug_detection:
+    pattern_recognition: true
+    severity_classification:
+      critical: "Security vulnerabilities, data corruption, system crashes"
+      high: "Functional failures, performance regressions, integration breaks"
+      medium: "UI/UX issues, minor performance impacts, documentation gaps"
+      low: "Code style violations, minor optimizations, cosmetic issues"
+      
+    auto_bugfix_story_creation: true
+    escalation_enabled: true
+    
+  # Reporting and monitoring
+  reporting:
+    generate_validation_reports: true
+    generate_bug_reports: true
+    generate_performance_reports: true
+    store_execution_patterns: true
+    
+    retention_days: 30
+    compress_old_reports: true
+    
+  # Performance monitoring
+  performance_monitoring:
+    enabled: true
+    baseline_establishment: true
+    regression_detection: true
+    optimization_recommendations: true
+    
+    metrics:
+      execution_time: true
+      resource_utilization: true
+      throughput_rates: true
+      error_rates: true
+      
+  # Integration with MCP servers
+  mcp_integration:
+    agent_queue_server: true
+    agent_monitor_server: true
+    agent_permissions_server: true
+    memory_server: true
+    datetime_server: true
+    filesystem_server: true
+    
+{% endif %}
   
 directories:
   source: "src"
   tests: "tests"
   docs: "docs"
   agents: "agents"
+{% if qa.enabled %}
+  qa: "qa"
+  qa_reports: "qa/reports"
+  qa_queue: "qa/queue"
+  qa_logs: "logs/qa"
+{% endif %}
